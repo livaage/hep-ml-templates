@@ -1,0 +1,6 @@
+from .ingest import csv_loader                 # registers "ingest.csv"
+from .preprocessing import standard_scaler     # registers "preprocessing.standard_scaler"
+from .feature_eng import column_selector       # registers "feature.column_selector"
+from .model import xgb_classifier              # registers "model.xgb_classifier"
+from .training import sklearn_trainer          # registers "train.sklearn"
+from .evaluation import classification_metrics # registers "eval.classification"

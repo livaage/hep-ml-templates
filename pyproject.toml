@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hep-ml-templates"
+version = "0.1.0"
+description = "Block-based HEP ML pipeline templates: install whole pipelines or individual components."
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+authors = [{ name = "Arvind Tawker" }]
+dependencies = [
+  "numpy>=1.22",
+  "pandas>=2.0",
+  "scikit-learn>=1.2",
+  "omegaconf>=2.3",
+]
+
+[project.optional-dependencies]
+core = ["omegaconf>=2.3","pydantic>=2.5","numpy>=1.22","pandas>=2.0","scikit-learn>=1.2"]
+xgb = ["xgboost>=1.7"]
+torch = ["torch>=2.2","lightning>=2.2"]
+gnn = ["torch-geometric>=2.5"]
+dev = ["pytest>=7.3","pytest-cov>=4.1","ruff>=0.5","black>=24.1","pre-commit>=3.6"]
+
+# convenience bundles (no self-referencing):
+pipeline-xgb = [
+  "omegaconf>=2.3","pydantic>=2.5","numpy>=1.22","pandas>=2.0","scikit-learn>=1.2","xgboost>=1.7"
+]
+
+pipeline-ae = ["hep-ml-templates[core,torch]"]
+pipeline-gnn = ["hep-ml-templates[core,torch,gnn]"]
+
+[project.scripts]
+mlpipe = "mlpipe.cli.main:main"
+
+[tool.black]
+line-length = 100
+
+[tool.ruff]
+line-length = 100
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mlpipe"]

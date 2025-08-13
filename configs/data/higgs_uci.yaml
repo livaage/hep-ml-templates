@@ -1,0 +1,8 @@
+# configs/data/higgs_uci.yaml
+block: ingest.csv
+path: data/HIGGS_100k.csv
+label: label
+has_header: true
+names: higgs               # use the built-in preset
+label_is_first_column: true
+nrows: 100000              # optional

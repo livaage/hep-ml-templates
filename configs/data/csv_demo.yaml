@@ -1,0 +1,3 @@
+block: ingest.csv
+path: data/higgs_100k.csv
+label: label  # if the first column is the label, rename it to 'label' or adjust the loader
