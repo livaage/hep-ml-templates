@@ -42,12 +42,28 @@ hep-ml-templates/
 │   ├── blocks/           # Modular pipeline components
 │   │   ├── ingest/       # Data ingestion blocks
 │   │   ├── preprocess/   # Preprocessing blocks
-│   │   └── feature_eng/  # Feature engineering blocks
+│   │   ├── feature_eng/  # Feature engineering blocks
+│   │   ├── model/        # ML model blocks
+│   │   ├── training/     # Training blocks
+│   │   └── evaluation/   # Evaluation blocks
 │   ├── core/             # Core framework components
 │   ├── pipelines/        # Complete pipeline implementations
-│   └── cli/              # Command-line interface
+│   ├── cli/              # Command-line interface
+│   └── templates/        # Pipeline templates
 ├── configs/              # YAML configuration files
-└── data/                 # Dataset storage
+│   ├── data/            # Dataset configurations
+│   ├── model/           # Model configurations
+│   ├── preprocessing/   # Preprocessing configurations
+│   ├── feature_eng/     # Feature engineering configurations
+│   ├── training/        # Training configurations
+│   └── evaluation/      # Evaluation configurations
+├── examples/            # Example pipeline implementations
+│   ├── xgb_basic/       # XGBoost classification example
+│   ├── ae_basic/        # Autoencoder example
+│   └── gnn_basic/       # Graph Neural Network example
+├── data/                # Dataset storage
+├── docs/                # Documentation
+└── tests/               # Unit and integration tests
 ```
 
 ## Supported Datasets
