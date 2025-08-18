@@ -1,7 +1,0 @@
-data: csv_demo
-preprocessing: standard
-feature_eng: demo_features
-model: xgb_classifier
-training: sklearn
-evaluation: classification
-runtime: local_cpu

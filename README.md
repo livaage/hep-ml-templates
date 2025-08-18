@@ -89,7 +89,7 @@ mlpipe list-configs
 
 **When to use**: Quick experiments, testing different combinations, one-off runs.
 
-### Tutorial 2: Persistent Configuration Changes (Editing pipeline.yaml)
+### Tutorial 2: Persistent Configuration Changes (Editing configs)
 
 For permanent changes or new default setups, edit the main pipeline orchestrator:
 
@@ -164,6 +164,47 @@ data: my_dataset
 feature_eng: my_features  # ← Points to your custom features
 # ... rest stays the same
 ```
+
+## Adding a New Component to the Pipeline
+
+To extend the pipeline with a new block (e.g. dataset, feature engineering step, training routine, or model), follow this general process:
+
+1. **Check if it already exists**
+
+   ```bash
+   mlpipe list-configs
+   ```
+
+   Look under the relevant section (e.g. `model`, `dataset`, `feature_eng`, `training`).
+
+2. **If not present, implement the component**
+
+   * Add the code to the correct folder under `src/mlpipe/blocks/<component>/`.
+     For example, a new model goes in:
+
+     ```
+     src/mlpipe/blocks/model/<your_model>.py
+     ```
+
+3. **Create a configuration file**
+
+   * Add a YAML file describing your component to:
+
+     ```
+     configs/<component>/<your_component>.yaml
+     ```
+
+4. **Modify the pipeline definition**
+
+   * Open `pipeline.yaml`.
+   * Update the relevant section (e.g. `model:`) to point to your new component.
+   * Ensure the **name** you use here is consistent with your code and config file.
+
+---
+
+💡 **Note**: The same workflow applies for switching out any block — whether `dataset`, `feature_eng`, `training`, or `model`. Just stay consistent with naming across **code**, **configs**, and **pipeline.yaml**.
+
+---
 
 **Key principle**: `pipeline.yaml` is your single control panel. It orchestrates everything by pointing to the right component configs in `configs/data/`, `configs/model/`, `configs/feature_eng/`, etc.
 
