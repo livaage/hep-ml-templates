@@ -1,0 +1,3 @@
+block: feature.column_selector
+include: [f1, f2, f3]
+exclude: []

@@ -1,3 +1,7 @@
 block: ingest.csv
-path: data/higgs_100k.csv
-label: label  # if the first column is the label, rename it to 'label' or adjust the loader
+path: data/demo_tabular.csv
+label: label
+has_header: true          # The generated file has headers
+names: null               # Use the headers from the file
+label_is_first_column: false  # label is the last column in generated data
+nrows: 500

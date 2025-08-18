@@ -30,9 +30,36 @@ pip install -e .
 ### Running a Pipeline
 
 ```bash
-# Run XGBoost pipeline on HIGGS dataset
-mlpipe --pipeline xgb_basic --config-path configs --config-name higgs_uci
+# Run with default configuration (HIGGS dataset)
+mlpipe run
+
+# Easy modularity - switch datasets with one command
+mlpipe run --overrides data=csv_demo feature_eng=demo_features
+
+# Switch back to HIGGS dataset  
+mlpipe run --overrides data=higgs_uci
+
+# Mix and match any components
+mlpipe run --overrides data=csv_demo model=xgb_classifier preprocessing=standard
+
+# List all available configurations
+mlpipe list-configs
+
+# List available pipeline blocks
+mlpipe list-blocks
 ```
+
+### Key Features: True Modularity
+
+The system is designed for **easy component swapping**:
+
+- **Change dataset**: `--overrides data=higgs_uci` or `data=csv_demo`
+- **Change model**: `--overrides model=xgb_classifier`
+- **Change preprocessing**: `--overrides preprocessing=standard`
+- **Change feature engineering**: `--overrides feature_eng=column_selector`
+- **Mix multiple**: `--overrides data=csv_demo model=xgb_classifier`
+
+No need to create new YAML files - just override the components you want to change!
 
 ## Project Structure
 

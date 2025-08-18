@@ -22,9 +22,31 @@ def load_pipeline_config(config_path: Path, pipeline_name: str, overrides: List[
       model: xgb_classifier
       training: sklearn
       evaluation: classification
+      
+    Overrides can change which configs to load for each group:
+      overrides=["data=higgs_uci", "model=different_model"]
     """
     cfg_root = config_path.resolve()
     pipe = load_yaml(cfg_root / f"{pipeline_name}.yaml")
+    
+    # Apply overrides to the pipeline config first (which configs to load)
+    if overrides:
+        pipe_overrides = {}
+        final_overrides = []
+        
+        for override in overrides:
+            if "=" in override:
+                key, value = override.split("=", 1)
+                # If it's a top-level group (data, model, etc.), override which config to load
+                if key in ["data", "preprocessing", "feature_eng", "model", "training", "evaluation", "runtime"]:
+                    pipe_overrides[key] = value
+                else:
+                    # Otherwise, it's a deep override for the final config
+                    final_overrides.append(override)
+        
+        # Update the pipeline config with group overrides
+        pipe.update(pipe_overrides)
+        overrides = final_overrides  # Keep only deep overrides for later
 
     def grp(group: str, name: str):
         return load_yaml(cfg_root / group / f"{name}.yaml")
@@ -38,5 +60,5 @@ def load_pipeline_config(config_path: Path, pipeline_name: str, overrides: List[
         "evaluation": grp("evaluation", pipe["evaluation"]),
         "runtime": load_yaml(cfg_root / "runtime" / f"{pipe.get('runtime','local_cpu')}.yaml"),
     }
-    # allow dotlist overrides
+    # Apply any remaining deep overrides
     return merge_overrides(final, overrides or [])
