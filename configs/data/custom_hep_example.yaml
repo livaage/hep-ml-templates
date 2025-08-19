@@ -1,0 +1,66 @@
+# Custom HEP Dataset Configuration Example
+# ========================================
+# Example configuration for a custom High Energy Physics dataset
+# This shows how easy it is to adapt to any new HEP dataset!
+
+block: ingest.csv
+
+# === REQUIRED SETTINGS ===
+file_path: "data/my_hep_experiment.csv"  # Your dataset file
+target_column: "signal_type"             # Target column name
+
+# === DATASET STRUCTURE ===
+has_header: true                         # CSV has column headers
+separator: ","                           # Standard CSV format
+encoding: "utf-8"                        # UTF-8 encoding
+
+# If you need to rename columns or your CSV has no header:
+# column_names:
+#   - "event_id"
+#   - "track_pt"
+#   - "track_eta" 
+#   - "track_phi"
+#   - "cluster_energy"
+#   - "cluster_eta"
+#   - "cluster_phi"
+#   - "missing_et"
+#   - "jet_count"
+#   - "signal_type"
+
+# === DATA SAMPLING ===
+# For development/testing with large HEP datasets
+nrows: 50000                            # Use first 50k events for quick testing
+# sample_fraction: 0.05                 # Alternative: 5% random sample
+
+# === TARGET PROCESSING ===
+target_type: "multiclass"               # Classification task
+# positive_class_labels: ["signal", "S", 1]  # For binary classification
+
+# === HEP-SPECIFIC PREPROCESSING ===
+missing_values: ["", "NA", "NaN", "null", "NULL", "-999", "-99", "inf"]  # Common HEP missing values
+drop_missing_threshold: 0.9             # Keep columns with <90% missing (HEP data can be sparse)
+
+# === QUALITY CONTROL ===
+validation: true                        # Perform data validation
+verbose: true                           # Show loading details
+
+# === TIPS FOR HEP RESEARCHERS ===
+# 
+# 1. Common HEP target types:
+#    - "binary": signal vs background
+#    - "multiclass": particle type classification  
+#    - "regression": energy/momentum prediction
+#
+# 2. Typical HEP missing value indicators:
+#    -999, -99, inf, nan, empty strings
+#
+# 3. For large datasets (millions of events):
+#    - Start with nrows: 10000 for testing
+#    - Use sample_fraction for random sampling
+#    - Set verbose: false for production runs
+#
+# 4. Column naming conventions:
+#    - pt, eta, phi for kinematic variables
+#    - E, energy for energy measurements  
+#    - m, mass for invariant masses
+#    - missing_et, met for missing energy

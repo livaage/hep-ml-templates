@@ -1,0 +1,55 @@
+# Medical Dataset Example - Complete Configuration Change
+# Shows how easy it is to switch to completely different domain
+
+block: ingest.csv
+
+# Dataset Info
+dataset_info:
+  name: "Medical Diagnosis Dataset"
+  description: "Binary classification for medical diagnosis"
+  domain: "Healthcare/Medical"
+  
+# Just change these basic settings!
+file_path: "data/medical_diagnosis.csv"
+target_column: "diagnosis"  # Different target name
+
+# Structure
+has_header: true
+separator: ","
+encoding: "utf-8"
+
+# Target Configuration - Different task
+target_type: "binary"  # Medical diagnosis: positive/negative
+
+# Feature Configuration (if needed)
+# column_names: ["age", "gender", "symptom1", "symptom2", "diagnosis"]
+
+# Quality Control
+validation: true
+verbose: true
+
+# Medical-specific missing value handling
+missing_values: 
+  - ""
+  - "NA" 
+  - "NaN"
+  - "unknown"
+  - "not_available"
+  - "N/A"
+  - "missing"
+  - "?"
+  - "-"
+  - "null"
+
+drop_missing_threshold: 0.85  # Slightly lower for medical data
+
+# Advanced Settings (optional)
+# preprocessing_options:
+#   handle_categorical: true
+#   scale_features: false  # Medical data might need different scaling
+
+# The power of true modularity:
+# ✅ Same loader works for HEP physics data
+# ✅ Same loader works for medical data  
+# ✅ Same loader works for any CSV dataset
+# ✅ Zero code changes needed - just config!

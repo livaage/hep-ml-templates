@@ -18,19 +18,40 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-core = ["omegaconf>=2.3","pydantic>=2.5","numpy>=1.22","pandas>=2.0","scikit-learn>=1.2"]
-xgb = ["xgboost>=1.7"]
-torch = ["torch>=2.2","lightning>=2.2"]
-gnn = ["torch-geometric>=2.5"]
-dev = ["pytest>=7.3","pytest-cov>=4.1","ruff>=0.5","black>=24.1","pre-commit>=3.6"]
+# Core framework (minimal dependencies)
+core = ["omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0"]
 
-# convenience bundles (no self-referencing):
+# Individual components
+data-csv = ["pandas>=2.0"]
+data-higgs = ["pandas>=2.0", "requests>=2.25"]
+model-xgb = ["xgboost>=1.7"]
+model-torch = ["torch>=2.2"]
+model-gnn = ["torch-geometric>=2.5", "torch>=2.2"]
+preprocessing = ["scikit-learn>=1.2"]
+evaluation = ["scikit-learn>=1.2"]
+
+# Algorithm-specific extras
+xgb = ["xgboost>=1.7", "scikit-learn>=1.2"]
+torch = ["torch>=2.2", "lightning>=2.2"]
+gnn = ["torch-geometric>=2.5", "torch>=2.2"]
+
+# Development
+dev = ["pytest>=7.3", "pytest-cov>=4.1", "ruff>=0.5", "black>=24.1", "pre-commit>=3.6"]
+
+# Complete pipeline bundles
 pipeline-xgb = [
-  "omegaconf>=2.3","pydantic>=2.5","numpy>=1.22","pandas>=2.0","scikit-learn>=1.2","xgboost>=1.7"
+  "omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0", "scikit-learn>=1.2", "xgboost>=1.7"
 ]
-
-pipeline-ae = ["hep-ml-templates[core,torch]"]
-pipeline-gnn = ["hep-ml-templates[core,torch,gnn]"]
+pipeline-torch = [
+  "omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0", "scikit-learn>=1.2", "torch>=2.2", "lightning>=2.2"
+]
+pipeline-gnn = [
+  "omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0", "scikit-learn>=1.2", "torch>=2.2", "torch-geometric>=2.5"
+]
+all = [
+  "omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0", "scikit-learn>=1.2", 
+  "xgboost>=1.7", "torch>=2.2", "lightning>=2.2", "torch-geometric>=2.5"
+]
 
 [project.scripts]
 mlpipe = "mlpipe.cli.main:main"

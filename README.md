@@ -27,6 +27,49 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -e .
 ```
 
+### Alternative: Pip Installation
+
+**🎯 Choose Your Components** - Install only what you need:
+
+```bash
+# Core framework only (minimal)
+pip install hep-ml-templates
+
+# Individual components
+pip install 'hep-ml-templates[model-xgb]'      # Just XGBoost
+pip install 'hep-ml-templates[data-higgs]'     # Just HIGGS dataset  
+pip install 'hep-ml-templates[preprocessing]'  # Just preprocessing
+
+# Combined components (what we tested ✅)
+pip install 'hep-ml-templates[model-xgb,data-higgs]'
+
+# Complete pipelines
+pip install 'hep-ml-templates[pipeline-xgb]'   # Full XGBoost pipeline
+pip install 'hep-ml-templates[all]'            # Everything
+```
+
+**🚀 Works Without Config** - Sensible defaults included:
+
+```python
+from mlpipe.core.registry import get
+import mlpipe.blocks
+
+# XGBoost with HEP-optimized defaults
+model = get('model.xgb_classifier')()  # No config needed!
+model.fit(X, y)
+predictions = model.predict(X)
+
+# HIGGS dataset with auto-download
+loader = get('data.higgs')(n_samples=10000)
+X, y = loader.load()  # Downloads automatically
+
+# CSV loader for any data
+loader = get('ingest.csv')('my_data.csv', 'target')
+X, y = loader.load()
+```
+
+**Note**: Requires OpenMP runtime on macOS (`brew install libomp`) for XGBoost support.
+
 ### Running a Pipeline
 
 ```bash

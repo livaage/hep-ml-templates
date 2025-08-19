@@ -1,8 +1,64 @@
-# configs/data/higgs_uci.yaml
+# HIGGS UCI Dataset Configuration
+# ================================
+# This config is for the HIGGS dataset from UCI Machine Learning Repository
+# Perfect example for High Energy Physics binary classification
+
 block: ingest.csv
-path: data/HIGGS_100k.csv
-label: label
-has_header: true
-names: higgs               # use the built-in preset
-label_is_first_column: true
-nrows: 100000              # optional
+
+# === REQUIRED SETTINGS ===
+file_path: "data/HIGGS_100k.csv"  # Path to your CSV file (relative to project root)
+target_column: "label"             # Column containing the target/label
+
+# === DATASET STRUCTURE ===
+has_header: false                  # HIGGS dataset has no header row
+separator: ","                     # CSV separator (auto-detected if not specified)
+encoding: "utf-8"                  # File encoding
+
+# Column names for HIGGS dataset (29 columns total)
+column_names:
+  - "label"                        # Target: 1=signal, 0=background
+  - "lepton_pT"                    # Lepton transverse momentum
+  - "lepton_eta"                   # Lepton pseudorapidity
+  - "lepton_phi"                   # Lepton azimuthal angle
+  - "missing_energy_magnitude"     # Missing energy magnitude
+  - "missing_energy_phi"           # Missing energy azimuthal angle
+  - "jet_1_pt"                     # Leading jet transverse momentum
+  - "jet_1_eta"                    # Leading jet pseudorapidity
+  - "jet_1_phi"                    # Leading jet azimuthal angle
+  - "jet_1_b_tag"                  # Leading jet b-tag
+  - "jet_2_pt"                     # Second jet transverse momentum
+  - "jet_2_eta"                    # Second jet pseudorapidity
+  - "jet_2_phi"                    # Second jet azimuthal angle
+  - "jet_2_b_tag"                  # Second jet b-tag
+  - "jet_3_pt"                     # Third jet transverse momentum
+  - "jet_3_eta"                    # Third jet pseudorapidity
+  - "jet_3_phi"                    # Third jet azimuthal angle
+  - "jet_3_b_tag"                  # Third jet b-tag
+  - "jet_4_pt"                     # Fourth jet transverse momentum
+  - "jet_4_eta"                    # Fourth jet pseudorapidity
+  - "jet_4_phi"                    # Fourth jet azimuthal angle
+  - "jet_4_b_tag"                  # Fourth jet b-tag
+  - "m_jj"                         # Invariant mass of two jets
+  - "m_jjj"                        # Invariant mass of three jets
+  - "m_lv"                         # Invariant mass of lepton and neutrino
+  - "m_jlv"                        # Invariant mass of jet, lepton and neutrino
+  - "m_bb"                         # Invariant mass of b-tagged jets
+  - "m_wbb"                        # Invariant mass of W boson and b-tagged jets
+  - "m_wwbb"                       # Invariant mass of two W bosons and b-tagged jets
+
+# === DATA SAMPLING (Optional) ===
+nrows: 100000                      # Limit to first 100k rows for faster processing
+# sample_fraction: 0.1             # Alternative: use 10% random sample
+# skip_rows: 0                     # Skip rows at the beginning
+
+# === TARGET PROCESSING ===
+target_type: "binary"              # Task type: binary classification
+positive_class_labels: [1]         # Values representing positive class (signal)
+
+# === DATA PREPROCESSING ===
+missing_values: ["", "NA", "NaN", "null", "NULL", "-999"]  # Values to treat as missing
+drop_missing_threshold: 0.5        # Drop columns with >50% missing values
+
+# === ADVANCED OPTIONS ===
+validation: true                   # Perform data validation
+verbose: true                      # Print detailed information during loading

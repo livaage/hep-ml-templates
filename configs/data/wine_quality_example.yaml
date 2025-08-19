@@ -1,0 +1,39 @@
+# Universal CSV Loader - Test with Different Datasets
+# This config demonstrates how easy it is to work with ANY CSV dataset
+
+# Test dataset: Wine Quality Dataset
+block: ingest.csv
+
+# Dataset Info (for documentation)
+dataset_info:
+  name: "Wine Quality Dataset"
+  description: "Predict wine quality based on physicochemical properties"
+  source: "UCI Machine Learning Repository"
+
+# Basic Configuration
+file_path: "data/wine_quality.csv"  # Just change the path!
+target_column: "quality"
+
+# Dataset Structure (completely different from HIGGS!)
+has_header: true
+separator: ";"  # Different separator - loader will auto-detect
+encoding: "utf-8"
+
+# Target Configuration
+target_type: "regression"  # Different task type from HIGGS
+
+# Quality Settings
+validation: true
+verbose: true
+nrows: 1000  # Load first 1000 rows for testing
+
+# Preprocessing (same settings work for any dataset!)
+missing_values: ["", "NA", "NaN", "null", "NULL", "?", "-", "missing"]
+drop_missing_threshold: 0.9
+
+# The loader automatically handles:
+# ✅ Different column names
+# ✅ Different separators  
+# ✅ Different target types
+# ✅ Different data types
+# ✅ Missing value patterns
