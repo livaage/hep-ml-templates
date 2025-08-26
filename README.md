@@ -353,11 +353,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Happy ML modeling! 🚀**
 
-# Get specific block
+### 1. Get specific block
+```python
 model_class = get("model.xgb_classifier")
 model_instance = model_class(config={'max_depth': 5})
+```
 
-# Use the block
+### 2. Use the block
+```python
 model_instance.build()
 model_instance.fit(X_train, y_train)
 predictions = model_instance.predict(X_test)
