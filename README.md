@@ -45,11 +45,7 @@ mlpipe --help
 # Run immediately - configs are already here!
 mlpipe run
 
-# Expected output:
-# ✅ Loading complete: Features: (100000, 28), Target: (100000,)
-# === Metrics ===
-# auc: 0.6886
-# accuracy: 0.6357
+# Will output training progress and evaluation metrics
 ```
 
 **That's it!** No config copying, no path issues, no complex setup.
@@ -95,18 +91,15 @@ Since you're in the repository directory, all configs are immediately available:
 ```bash
 # Switch to demo dataset (perfect for testing)
 mlpipe run --overrides data=csv_demo feature_eng=demo_features
-# Output: AUC: 1.0000, Accuracy: 1.0000 (300 samples, 3 features)
 
 # Switch models (keep same data)
-mlpipe run --overrides model=decision_tree  
-# Output: AUC: 0.6779, Accuracy: 0.6245 (HIGGS + Decision Tree)
+mlpipe run --overrides model=decision_tree
 
 # Mix and match anything
 mlpipe run --overrides data=csv_demo model=decision_tree feature_eng=demo_features
-# Output: AUC: 1.0000, Accuracy: 1.0000 (Demo + Decision Tree)
 
-# See all available options
-mlpipe list-configs
+# Back to default
+mlpipe run
 ```
 
 ## 🔍 Explore Available Components
@@ -133,15 +126,13 @@ mlpipe run --help
 ```bash
 # Test on HIGGS dataset (large, challenging)
 mlpipe run --overrides data=higgs_uci
-# Typical output: AUC: 0.6886, Accuracy: 0.6357
 
 # Test on demo dataset (small, easy)  
 mlpipe run --overrides data=csv_demo feature_eng=demo_features
-# Typical output: AUC: 1.0000, Accuracy: 1.0000
 
-# Compare results easily
-echo "=== HIGGS Dataset ===" && mlpipe run --overrides data=higgs_uci | grep -E "(auc|accuracy)"
-echo "=== Demo Dataset ===" && mlpipe run --overrides data=csv_demo feature_eng=demo_features | grep -E "(auc|accuracy)"
+# Compare results side by side
+echo "=== HIGGS Dataset ===" && mlpipe run --overrides data=higgs_uci
+echo "=== Demo Dataset ===" && mlpipe run --overrides data=csv_demo feature_eng=demo_features
 ```
 
 ## Tutorial 2: Model Comparison
@@ -151,11 +142,9 @@ echo "=== Demo Dataset ===" && mlpipe run --overrides data=csv_demo feature_eng=
 ```bash
 # XGBoost baseline (default)
 mlpipe run --overrides model=xgb_classifier
-# Typical output: AUC: 0.6886, Accuracy: 0.6357
 
 # Decision Tree comparison
 mlpipe run --overrides model=decision_tree  
-# Typical output: AUC: 0.6779, Accuracy: 0.6245
 
 # Test both on demo data for quick comparison
 mlpipe run --overrides data=csv_demo feature_eng=demo_features model=xgb_classifier
@@ -331,9 +320,9 @@ mlpipe run --overrides model=linear_regression
 mlpipe run --overrides data=csv_demo model=linear_regression feature_eng=demo_features
 
 # Compare with other models
-echo "=== XGBoost ===" && mlpipe run --overrides model=xgb_classifier | grep -E "(auc|accuracy)"
-echo "=== Decision Tree ===" && mlpipe run --overrides model=decision_tree | grep -E "(auc|accuracy)"  
-echo "=== Linear Regression ===" && mlpipe run --overrides model=linear_regression | grep -E "(auc|accuracy)"
+mlpipe run --overrides model=xgb_classifier
+mlpipe run --overrides model=decision_tree
+mlpipe run --overrides model=linear_regression
 ```
 
 ### Step 5: Verify It's Available
