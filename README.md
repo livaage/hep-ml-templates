@@ -27,7 +27,7 @@ This is currently a development library. Here's how to get started:
 ### Step 1: Get the Code
 ```bash
 # Clone or download the repository
-git clone https://github.com/YOUR_USERNAME/hep-ml-templates.git
+git clone https://github.com/Arvind-t33/hep-ml-templates.git
 cd hep-ml-templates
 ```
 
