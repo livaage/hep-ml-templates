@@ -3,6 +3,7 @@ from sklearn.preprocessing import StandardScaler
 from mlpipe.core.interfaces import Preprocessor
 from mlpipe.core.registry import register
 
+
 @register("preprocessing.standard_scaler")
 class StandardScalerBlock(Preprocessor):
     def __init__(self):

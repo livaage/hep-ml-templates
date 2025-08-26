@@ -1,0 +1,9 @@
+# Custom Feature Engineering for Test Dataset
+# ==========================================
+# Specific feature selection for our custom test dataset
+
+block: feature.column_selector
+
+# Select specific features for our test dataset
+include: ["feature1", "feature2", "feature3"]
+exclude: []

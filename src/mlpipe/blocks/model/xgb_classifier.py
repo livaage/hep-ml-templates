@@ -3,21 +3,22 @@ from xgboost import XGBClassifier
 from mlpipe.core.interfaces import ModelBlock
 from mlpipe.core.registry import register
 
+
 @register("model.xgb_classifier")
 class XGBClassifierBlock(ModelBlock):
     """XGBoost classifier that works with or without configuration.
-    
+
     Can be used standalone:
         model = XGBClassifierBlock()
         model.fit(X, y)  # Uses sensible defaults
         predictions = model.predict(X)
-    
+
     Or with custom config:
         model = XGBClassifierBlock()
         model.build({'n_estimators': 200, 'max_depth': 8})
         model.fit(X, y)
     """
-    
+
     def __init__(self, **kwargs):
         """Initialize with optional parameters."""
         # Default parameters for HEP use cases
@@ -29,11 +30,11 @@ class XGBClassifierBlock(ModelBlock):
             'n_jobs': -1,  # Use all cores
             'eval_metric': 'logloss'
         }
-        
+
         # Merge with any provided kwargs
         self.params = {**default_params, **kwargs}
         self.model: XGBClassifier | None = None
-        
+
         # Auto-build with defaults if no explicit build() call
         self._auto_built = False
 
@@ -56,7 +57,7 @@ class XGBClassifierBlock(ModelBlock):
         """Make predictions. Returns probabilities for binary classification."""
         if self.model is None:
             raise ValueError("Model not fitted. Call fit(X, y) first.")
-        
+
         # Prefer probabilities if available; fallback to decision_function/labels
         if hasattr(self.model, "predict_proba"):
             return self.model.predict_proba(X)[:, 1]

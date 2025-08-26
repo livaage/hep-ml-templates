@@ -10,7 +10,7 @@ file_path: "data/HIGGS_100k.csv"  # Path to your CSV file (relative to project r
 target_column: "label"             # Column containing the target/label
 
 # === DATASET STRUCTURE ===
-has_header: false                  # HIGGS dataset has no header row
+has_header: true                   # HIGGS dataset DOES have a header row
 separator: ","                     # CSV separator (auto-detected if not specified)
 encoding: "utf-8"                  # File encoding
 

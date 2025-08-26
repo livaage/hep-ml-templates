@@ -4,6 +4,7 @@ from mlpipe.core.interfaces import Evaluator
 from mlpipe.core.registry import register
 import numpy as np
 
+
 @register("eval.classification")
 class ClassificationEvaluator(Evaluator):
     def evaluate(self, y_true, y_pred, config: Dict[str, Any]) -> Dict[str, float]:

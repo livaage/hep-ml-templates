@@ -25,6 +25,7 @@ core = ["omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0"]
 data-csv = ["pandas>=2.0"]
 data-higgs = ["pandas>=2.0", "requests>=2.25"]
 model-xgb = ["xgboost>=1.7"]
+model-decision-tree = ["scikit-learn>=1.2"]  # Decision tree uses sklearn
 model-torch = ["torch>=2.2"]
 model-gnn = ["torch-geometric>=2.5", "torch>=2.2"]
 preprocessing = ["scikit-learn>=1.2"]
@@ -32,6 +33,7 @@ evaluation = ["scikit-learn>=1.2"]
 
 # Algorithm-specific extras
 xgb = ["xgboost>=1.7", "scikit-learn>=1.2"]
+decision-tree = ["scikit-learn>=1.2"]
 torch = ["torch>=2.2", "lightning>=2.2"]
 gnn = ["torch-geometric>=2.5", "torch>=2.2"]
 
@@ -41,6 +43,9 @@ dev = ["pytest>=7.3", "pytest-cov>=4.1", "ruff>=0.5", "black>=24.1", "pre-commit
 # Complete pipeline bundles
 pipeline-xgb = [
   "omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0", "scikit-learn>=1.2", "xgboost>=1.7"
+]
+pipeline-decision-tree = [
+  "omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0", "scikit-learn>=1.2"
 ]
 pipeline-torch = [
   "omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0", "scikit-learn>=1.2", "torch>=2.2", "lightning>=2.2"

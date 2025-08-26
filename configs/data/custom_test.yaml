@@ -1,0 +1,29 @@
+# Custom Test Dataset Configuration
+# =================================
+# Example of adding a new dataset to the hep-ml-templates framework
+
+block: ingest.csv
+
+# === REQUIRED SETTINGS ===
+file_path: "data/custom_test_data.csv"
+target_column: "target_class"
+
+# === DATASET STRUCTURE ===
+has_header: true
+separator: ","
+encoding: "utf-8"
+
+# === DATA SAMPLING ===
+nrows: null  # Load all rows (it's a small test dataset)
+
+# === TARGET PROCESSING ===
+target_type: "multiclass"  # Different from binary - testing multiclass
+positive_class_labels: ["A", "B"]  # Both classes are valid
+
+# === DATA QUALITY ===
+missing_values: ["", "NA", "NaN", "null", "NULL"]
+drop_missing_threshold: 0.8
+
+# === PROCESSING OPTIONS ===
+validation: true
+verbose: true

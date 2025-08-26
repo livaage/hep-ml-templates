@@ -3,18 +3,25 @@ from mlpipe.core.config import load_pipeline_config
 from mlpipe.core.registry import get
 from mlpipe.core.utils import maybe_make_demo_csv
 
+
 def run_pipeline(pipeline: str, config_path: str, config_name: str, overrides=None):
     assert pipeline == "xgb_basic", f"Only xgb_basic implemented in pass #1, got {pipeline}"
-    cfg = load_pipeline_config(Path(config_path), pipeline_name=config_name, overrides=overrides or [])
+    cfg = load_pipeline_config(
+        Path(config_path), pipeline_name=config_name, overrides=overrides or [])
 
     # 1) ingest
     data_cfg = cfg["data"]
-    path = data_cfg["path"]
-    if "demo_tabular.csv" in str(path):
+    # Handle both old and new config formats
+    path = data_cfg.get("path") or data_cfg.get("file_path")
+    label = data_cfg.get("label") or data_cfg.get("target_column")
+    
+    if path and "demo_tabular.csv" in str(path):
         maybe_make_demo_csv(path)
+    
     Ingest = get(data_cfg["block"])               # "ingest.csv"
-    ing = Ingest(path=path, label=data_cfg["label"], **{k: v for k, v in data_cfg.items() if k not in ['block', 'path', 'label']})
-    X, y = ing.load()
+    # Pass the entire config to the data ingestor (new style)
+    ing = Ingest(config=data_cfg)
+    X, y, metadata = ing.load()
 
     # 2) feature engineering (optional)
     feat_cfg = cfg.get("feature_eng", {})
