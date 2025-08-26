@@ -32,11 +32,30 @@ ENV/
 *.swp
 *.swo
 
-# Data files (optional - you might want to include small datasets)
-data/*.csv
-data/*.gz
-*.csv
+# Large data files (exclude large datasets but keep small demo/example data)
+data/*_large.csv
+data/*_big.csv
+data/*.parquet
+data/*.h5
+data/*.hdf5
 *.gz
+!data/demo_*.csv
+!data/custom_test_data.csv
+
+# User-generated data files (but keep examples)
+data/user_*
+data/my_*
+data/personal_*
+
+# Large model files (but keep small demo models)
+models/*.ckpt
+models/*.pth
+models/*.h5
+models/large_*
+*.pkl
+*.joblib
+!models/demo_*
+!models/example_*
 
 # Jupyter Notebooks checkpoints
 .ipynb_checkpoints/
@@ -48,11 +67,26 @@ Thumbs.db
 # Logs
 *.log
 
-# Model artifacts
-models/
-*.pkl
-*.joblib
-
 # Temporary files
 *.tmp
 *.temp
+
+# Testing artifacts
+.coverage
+.pytest_cache/
+htmlcov/
+.tox/
+coverage.xml
+*.cover
+
+# ML experiment tracking
+wandb/
+mlruns/
+experiments/
+.neptune/
+
+# Virtual environments that might be created in subdirectories
+*/venv/
+*/.venv/
+comprehensive_testing/*/
+sandbox_test/test_venv/
