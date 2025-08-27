@@ -45,8 +45,12 @@ class DecisionTreeModel(ModelBlock):
             params = {**self.params, **config}
         else:
             params = self.params
+        
+        # Filter out non-sklearn parameters
+        sklearn_params = {k: v for k, v in params.items() 
+                         if k not in ['block', '_target_', 'name', 'description']}
             
-        self.model = DecisionTreeClassifier(**params)
+        self.model = DecisionTreeClassifier(**sklearn_params)
         self._auto_built = True
         print(f"✅ Decision Tree model built with max_depth={params.get('max_depth')}, "
               f"criterion='{params.get('criterion')}', class_weight={params.get('class_weight')}")
@@ -80,3 +84,13 @@ class DecisionTreeModel(ModelBlock):
         if hasattr(self.model, "predict_proba"):
             return self.model.predict_proba(X_values)[:, 1]
         return self.model.predict(X_values)
+
+    def predict_proba(self, X):
+        """Predict class probabilities."""
+        if self.model is None:
+            raise ValueError("Model not fitted. Call fit(X, y) first.")
+            
+        # Convert to numpy arrays if needed
+        X_values = X.values if hasattr(X, 'values') else X
+        
+        return self.model.predict_proba(X_values)

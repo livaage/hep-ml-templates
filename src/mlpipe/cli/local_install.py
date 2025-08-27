@@ -19,7 +19,8 @@ EXTRAS_TO_BLOCKS = {
     'data-higgs': {
         'blocks': ['ingest/csv_loader.py'],
         'core': ['interfaces.py', 'registry.py'],
-        'configs': ['data/higgs_uci.yaml']
+        'configs': ['data/higgs_uci.yaml'],
+        'data': ['HIGGS_100k.csv']
     },
     'model-xgb': {
         'blocks': ['model/xgb_classifier.py'],
@@ -211,17 +212,18 @@ def get_package_path() -> Path:
 
 def get_blocks_and_configs_for_extras(extras: List[str]) -> Dict[str, Set[str]]:
     """
-    Given a list of extras, return the blocks, core modules, and configs that should be downloaded.
+    Given a list of extras, return the blocks, core modules, configs, and data that should be downloaded.
     
     Args:
         extras: List of extra names (e.g., ['model-xgb', 'data-higgs'])
     
     Returns:
-        Dict with 'blocks', 'core', and 'configs' keys containing sets of file paths
+        Dict with 'blocks', 'core', 'configs', and 'data' keys containing sets of file paths
     """
     all_blocks = set()
     all_core = set()
     all_configs = set()
+    all_data = set()
     
     # Always include essential core modules needed for CLI functionality
     essential_core = {"registry.py", "interfaces.py", "config.py", "utils.py"}
@@ -232,6 +234,7 @@ def get_blocks_and_configs_for_extras(extras: List[str]) -> Dict[str, Set[str]]:
             all_blocks.update(mapping.get('blocks', []))
             all_core.update(mapping.get('core', []))
             all_configs.update(mapping.get('configs', []))
+            all_data.update(mapping.get('data', []))
         else:
             print(f"⚠️  Warning: Unknown extra '{extra}' - skipping")
     
@@ -245,7 +248,8 @@ def get_blocks_and_configs_for_extras(extras: List[str]) -> Dict[str, Set[str]]:
     return {
         'blocks': all_blocks,
         'core': all_core,
-        'configs': all_configs
+        'configs': all_configs,
+        'data': all_data
     }
 
 def copy_core_modules(core_modules: Set[str], source_dir: Path, target_dir: Path):
@@ -402,6 +406,30 @@ def copy_configs(configs: Set[str], source_dir: Path, target_dir: Path):
         else:
             print(f"⚠️  Warning: Config file not found: {source_file}")
 
+def copy_data_files(data_files: Set[str], source_dir: Path, target_dir: Path):
+    """Copy data files from source to target directory."""
+    # The source directory for data files is typically at the same level as src
+    # Look for data directory in the parent directory of src
+    data_source = source_dir.parent.parent / 'data'  # Going up from src/mlpipe to find data/
+    
+    if not data_source.exists():
+        print(f"⚠️  Data directory not found: {data_source}")
+        return
+    
+    # Create target data directory
+    target_data = target_dir / 'data'
+    target_data.mkdir(parents=True, exist_ok=True)
+    
+    for data_file in data_files:
+        source_file = data_source / data_file
+        target_file = target_data / data_file
+        
+        if source_file.exists():
+            shutil.copy2(source_file, target_file)
+            print(f"✅ Copied data file: {data_file}")
+        else:
+            print(f"⚠️  Warning: Data file not found: {source_file}")
+
 def install_local(extras: List[str], target_dir: str) -> bool:
     """
     Install blocks and configs locally based on the provided extras.
@@ -434,6 +462,8 @@ def install_local(extras: List[str], target_dir: str) -> bool:
         print(f"   🧩 {len(to_download['blocks'])} blocks")
         print(f"   🔧 {len(to_download['core'])} core modules")
         print(f"   ⚙️  {len(to_download['configs'])} configs")
+        if to_download['data']:
+            print(f"   📊 {len(to_download['data'])} data files")
         
         # Copy core modules first (blocks depend on them)
         if to_download['core']:
@@ -449,6 +479,11 @@ def install_local(extras: List[str], target_dir: str) -> bool:
         if to_download['configs']:
             print(f"\n⚙️  Installing configs...")
             copy_configs(to_download['configs'], package_path, target_path)
+        
+        # Copy data files
+        if to_download['data']:
+            print(f"\n📊 Installing data files...")
+            copy_data_files(to_download['data'], package_path, target_path)
         
         # Create a simple setup.py for pip install -e
         create_setup_py(target_path, extras)
