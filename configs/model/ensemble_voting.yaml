@@ -1,0 +1,8 @@
+block: model.ensemble_voting
+params:
+  voting: "soft"  # "hard" or "soft"
+  weights: null  # Equal weights by default, or [1, 2, 1] for custom weights
+  use_xgb: true
+  use_rf: true
+  use_svm: true
+  random_state: 42

@@ -1,5 +1,4 @@
-# Default GNN - use GCN
-block: model.gnn_gcn
+block: model.gnn_gat
 params:
   input_dim: 4  # 4-momentum features
   hidden_dims: [64, 32, 16]
@@ -9,3 +8,4 @@ params:
   epochs: 100
   batch_size: 32
   task: "graph"
+  attention_heads: 4  # Number of attention heads in GAT

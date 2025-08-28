@@ -8,77 +8,98 @@ import os
 from pathlib import Path
 from typing import List, Dict, Set, Optional
 
+# Core modules needed by all extras
+CORE_MODULES = ['interfaces.py', 'registry.py', 'config.py', 'utils.py']
+
+# Helper function to create consistent model extra definitions
+def create_model_extra(block_file: str, config_files: List[str], include_data: List[str] = None) -> Dict:
+    """Create a standard model extra definition."""
+    return {
+        'blocks': [f'model/{block_file}'],
+        'core': CORE_MODULES,
+        'configs': [f'model/{config}' for config in config_files],
+        'data': include_data or []
+    }
+
+# Helper function to create algorithm combos (model + preprocessing)
+def create_algorithm_combo(model_file: str, model_config: str, include_preprocessing: bool = True) -> Dict:
+    """Create a complete algorithm package with model + preprocessing."""
+    blocks = [f'model/{model_file}']
+    configs = [f'model/{model_config}']
+    
+    if include_preprocessing:
+        blocks.append('preprocessing/standard_scaler.py')
+        configs.append('preprocessing/standard.yaml')
+    
+    return {
+        'blocks': blocks,
+        'core': CORE_MODULES,
+        'configs': configs,
+        'data': []
+    }
+
+# Helper function to create category-based extras (preprocessing, evaluation, etc.)
+def create_category_extra(category: str, block_files: List[str], config_files: List[str], include_data: List[str] = None) -> Dict:
+    """Create a standard category-based extra definition."""
+    return {
+        'blocks': [f'{category}/{block}' for block in block_files],
+        'core': CORE_MODULES,
+        'configs': [f'{category}/{config}' if not config.startswith(category) else config for config in config_files],
+        'data': include_data or []
+    }
+
 # Mapping of extras to their corresponding blocks and configs
 EXTRAS_TO_BLOCKS = {
-    # Individual components
+    # Data extras
     'data-csv': {
         'blocks': ['ingest/csv_loader.py'],
-        'core': ['interfaces.py', 'registry.py'],
-        'configs': ['data/csv_demo.yaml']
+        'core': CORE_MODULES,
+        'configs': ['data/csv_demo.yaml'],
+        'data': []
     },
     'data-higgs': {
         'blocks': ['ingest/csv_loader.py'],
-        'core': ['interfaces.py', 'registry.py'],
+        'core': CORE_MODULES,
         'configs': ['data/higgs_uci.yaml'],
         'data': ['HIGGS_100k.csv']
     },
-    'model-xgb': {
-        'blocks': ['model/xgb_classifier.py'],
-        'core': ['interfaces.py', 'registry.py'],
-        'configs': ['model/xgb_classifier.yaml']
-    },
-    'model-decision-tree': {
-        'blocks': ['model/decision_tree.py'],
-        'core': ['interfaces.py', 'registry.py'],
-        'configs': ['model/decision_tree.yaml']
-    },
-    'model-torch': {
-        'blocks': ['model/ae_lightning.py'],
-        'core': ['interfaces.py', 'registry.py'],
-        'configs': ['model/ae_lightning.yaml']
-    },
-    'model-gnn': {
-        'blocks': ['model/gnn_pyg.py'],
-        'core': ['interfaces.py', 'registry.py'],
-        'configs': ['model/gnn_pyg.yaml']
-    },
-    'preprocessing': {
-        'blocks': ['preprocessing/standard_scaler.py', 'preprocessing/onehot_encoder.py'],
-        'core': ['interfaces.py', 'registry.py'],
-        'configs': ['preprocessing/standard.yaml']
-    },
-    'feature-eng': {
-        'blocks': ['feature_eng/column_selector.py'],
-        'core': ['interfaces.py', 'registry.py'],
-        'configs': ['feature_eng/demo_features.yaml', 'feature_eng/column_selector.yaml']
-    },
-    'evaluation': {
-        'blocks': ['evaluation/classification_metrics.py', 'evaluation/reconstruction_metrics.py'],
-        'core': ['interfaces.py', 'registry.py'],
-        'configs': ['evaluation/classification.yaml', 'evaluation/reconstruction.yaml']
-    },
     
-    # Algorithm-specific extras (combinations)
-    'xgb': {
-        'blocks': ['model/xgb_classifier.py', 'preprocessing/standard_scaler.py'],
-        'core': ['interfaces.py', 'registry.py'],
-        'configs': ['model/xgb_classifier.yaml', 'preprocessing/standard.yaml']
-    },
-    'decision-tree': {
-        'blocks': ['model/decision_tree.py', 'preprocessing/standard_scaler.py'],
-        'core': ['interfaces.py', 'registry.py'],
-        'configs': ['model/decision_tree.yaml', 'preprocessing/standard.yaml']
-    },
-    'torch': {
-        'blocks': ['model/ae_lightning.py', 'preprocessing/standard_scaler.py'],
-        'core': ['interfaces.py', 'registry.py'],
-        'configs': ['model/ae_lightning.yaml', 'preprocessing/standard.yaml']
-    },
-    'gnn': {
-        'blocks': ['model/gnn_pyg.py', 'preprocessing/standard_scaler.py'],
-        'core': ['interfaces.py', 'registry.py'],
-        'configs': ['model/gnn_pyg.yaml', 'preprocessing/standard.yaml']
-    },
+    # Model extras (individual algorithms)
+    'model-xgb': create_model_extra('xgb_classifier.py', ['xgb_classifier.yaml']),
+    'model-decision-tree': create_model_extra('decision_tree.py', ['decision_tree.yaml']),
+    'model-random-forest': create_model_extra('ensemble_models.py', ['random_forest.yaml']),
+    'model-svm': create_model_extra('svm.py', ['svm.yaml']),
+    'model-mlp': create_model_extra('mlp.py', ['mlp.yaml']),
+    'model-adaboost': create_model_extra('ensemble_models.py', ['adaboost.yaml']),
+    'model-ensemble': create_model_extra('ensemble_models.py', ['ensemble_voting.yaml']),
+    
+    # Neural network models
+    'model-torch': create_model_extra('ae_lightning.py', ['ae_lightning.yaml', 'ae_vanilla.yaml', 'ae_variational.yaml']),
+    'model-gnn': create_model_extra('gnn_pyg.py', ['gnn_gat.yaml', 'gnn_gcn.yaml', 'gnn_pyg.yaml']),
+    'model-transformer': create_model_extra('hep_neural.py', ['transformer_hep.yaml']),
+    'model-cnn': create_model_extra('hep_neural.py', ['cnn_hep.yaml']),
+    
+    # Category-based extras
+    'preprocessing': create_category_extra('preprocessing', 
+                                         ['standard_scaler.py', 'onehot_encoder.py', 'data_split.py'], 
+                                         ['standard.yaml', 'data_split.yaml']),
+    'feature-eng': create_category_extra('feature_eng', ['column_selector.py'], ['demo_features.yaml', 'column_selector.yaml']),
+    'evaluation': create_category_extra('evaluation', ['classification_metrics.py', 'reconstruction_metrics.py'], ['classification.yaml', 'reconstruction.yaml']),
+    
+    # Data splitting extra (single flexible config)
+    'data-split': create_category_extra('preprocessing', ['data_split.py'], ['data_split.yaml']),
+    
+    
+    # Algorithm-specific extras (model + preprocessing combinations)
+    'xgb': create_algorithm_combo('xgb_classifier.py', 'xgb_classifier.yaml'),
+    'decision-tree': create_algorithm_combo('decision_tree.py', 'decision_tree.yaml'),
+    'random-forest': create_algorithm_combo('ensemble_models.py', 'random_forest.yaml'),
+    'svm': create_algorithm_combo('svm.py', 'svm.yaml'),
+    'mlp': create_algorithm_combo('mlp.py', 'mlp.yaml'),
+    'adaboost': create_algorithm_combo('ensemble_models.py', 'adaboost.yaml'),
+    'ensemble': create_algorithm_combo('ensemble_models.py', 'ensemble_voting.yaml'),
+    'torch': create_algorithm_combo('ae_lightning.py', 'ae_lightning.yaml'),
+    'gnn': create_algorithm_combo('gnn_pyg.py', 'gnn_pyg.yaml'),
     
     # Complete pipeline bundles
     'pipeline-xgb': {
@@ -163,11 +184,16 @@ EXTRAS_TO_BLOCKS = {
             'ingest/uproot_loader.py',
             'preprocessing/standard_scaler.py',
             'preprocessing/onehot_encoder.py',
+            'preprocessing/data_split.py',  # Data splitting functionality
             'feature_eng/column_selector.py',
             'model/xgb_classifier.py',
             'model/decision_tree.py',
+            'model/ensemble_models.py',  # Contains Random Forest, AdaBoost, Voting Ensemble
+            'model/svm.py',
+            'model/mlp.py',
             'model/ae_lightning.py',
             'model/gnn_pyg.py',
+            'model/hep_neural.py',  # Contains Transformer and CNN models
             'evaluation/classification_metrics.py',
             'evaluation/reconstruction_metrics.py'
         ],
@@ -178,12 +204,24 @@ EXTRAS_TO_BLOCKS = {
             'data/csv_demo.yaml',
             'data/custom_hep_example.yaml',
             'preprocessing/standard.yaml',
+            'preprocessing/data_split.yaml',
             'feature_eng/column_selector.yaml',
             'feature_eng/demo_features.yaml',
             'model/xgb_classifier.yaml',
             'model/decision_tree.yaml',
+            'model/random_forest.yaml',
+            'model/adaboost.yaml',
+            'model/ensemble_voting.yaml',
+            'model/svm.yaml',
+            'model/mlp.yaml',
             'model/ae_lightning.yaml',
+            'model/ae_vanilla.yaml',
+            'model/ae_variational.yaml',
             'model/gnn_pyg.yaml',
+            'model/gnn_gat.yaml',
+            'model/gnn_gcn.yaml',
+            'model/transformer_hep.yaml',
+            'model/cnn_hep.yaml',
             'evaluation/classification.yaml',
             'evaluation/reconstruction.yaml',
             'runtime/local_cpu.yaml',
@@ -191,6 +229,48 @@ EXTRAS_TO_BLOCKS = {
         ]
     }
 }
+
+def validate_extras_mappings() -> Dict[str, List[str]]:
+    """
+    Validate that all files referenced in EXTRAS_TO_BLOCKS actually exist.
+    Returns a dictionary of issues found.
+    """
+    issues = {
+        'missing_blocks': [],
+        'missing_configs': [],
+        'missing_data': []
+    }
+    
+    try:
+        package_path = get_package_path()
+        blocks_dir = package_path / 'blocks'
+        # Config files are two levels up from src/mlpipe
+        configs_dir = package_path.parent.parent / 'configs'
+        data_dir = package_path.parent.parent / 'data'
+        
+        for extra_name, mapping in EXTRAS_TO_BLOCKS.items():
+            # Check blocks
+            for block_path in mapping.get('blocks', []):
+                full_path = blocks_dir / block_path
+                if not full_path.exists():
+                    issues['missing_blocks'].append(f"{extra_name}: {block_path}")
+            
+            # Check configs
+            for config_path in mapping.get('configs', []):
+                full_path = configs_dir / config_path
+                if not full_path.exists():
+                    issues['missing_configs'].append(f"{extra_name}: {config_path}")
+            
+            # Check data files
+            for data_path in mapping.get('data', []):
+                full_path = data_dir / data_path
+                if not full_path.exists():
+                    issues['missing_data'].append(f"{extra_name}: {data_path}")
+                    
+    except Exception as e:
+        issues['validation_error'] = [f"Could not validate: {e}"]
+    
+    return issues
 
 def get_package_path() -> Path:
     """Get the path to the installed hep-ml-templates package."""
@@ -564,7 +644,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 try:
     from mlpipe.core.registry import list_blocks
-    from mlpipe.core.config import load_config
+    from mlpipe.core.config import load_pipeline_config
     import mlpipe.blocks  # This will register available blocks
     
     def main():
@@ -613,3 +693,5 @@ except ImportError as e:
     cli_file.chmod(cli_file.stat().st_mode | stat.S_IEXEC)
     
     print("✅ Created mlpipe_cli.py script")
+
+

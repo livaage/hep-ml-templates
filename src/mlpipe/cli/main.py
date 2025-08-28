@@ -4,6 +4,9 @@ from pathlib import Path
 from mlpipe.core.registry import list_blocks
 from mlpipe.pipelines.xgb_basic.run import run_pipeline
 from mlpipe.cli.local_install import install_local
+from mlpipe.cli.manager import (
+    list_extras, validate_installation, show_extra_details, preview_installation
+)
 import mlpipe.blocks  # Import to register all blocks  # noqa: F401
 
 
@@ -72,6 +75,17 @@ def main():
     p_install.add_argument("--target-dir", required=True, 
                           help="Directory where to install the local components")
 
+    # Add extras management commands
+    p_list_extras = sub.add_parser("list-extras", help="List all available extras")
+    
+    p_validate_extras = sub.add_parser("validate-extras", help="Validate extras configuration")
+    
+    p_extra_details = sub.add_parser("extra-details", help="Show details for a specific extra")
+    p_extra_details.add_argument("extra", help="Name of the extra to show details for")
+    
+    p_preview_install = sub.add_parser("preview-install", help="Preview what would be installed")
+    p_preview_install.add_argument("extras", nargs="+", help="Extras to preview")
+
     args = parser.parse_args()
 
     try:
@@ -88,6 +102,14 @@ def main():
             success = install_local(args.extras, args.target_dir)
             if not success:
                 exit(1)
+        elif args.cmd == "list-extras":
+            list_extras()
+        elif args.cmd == "validate-extras":
+            validate_installation()
+        elif args.cmd == "extra-details":
+            show_extra_details(args.extra)
+        elif args.cmd == "preview-install":
+            preview_installation(args.extras)
     except FileNotFoundError as e:
         if ".yaml" in str(e):
             print("❌ Error: Configuration file not found")

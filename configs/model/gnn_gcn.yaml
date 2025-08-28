@@ -1,0 +1,10 @@
+block: model.gnn_gcn
+params:
+  input_dim: 4  # 4-momentum features (px, py, pz, E)
+  hidden_dims: [64, 32, 16]
+  output_dim: 2  # binary classification
+  dropout: 0.2
+  learning_rate: 0.001
+  epochs: 100
+  batch_size: 32
+  task: "graph"  # "node" for node classification, "graph" for graph classification

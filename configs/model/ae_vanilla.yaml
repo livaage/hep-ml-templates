@@ -1,13 +1,12 @@
-# Default autoencoder - use vanilla AE
 block: model.ae_vanilla
 params:
   encoder_layers: [128, 64, 32]
   latent_dim: 16
-  decoder_layers: [32, 64, 128]
+  decoder_layers: [32, 64, 128]  # Mirror of encoder
   learning_rate: 0.001
   batch_size: 64
   max_epochs: 100
   dropout: 0.2
   weight_decay: 1e-5
-  reconstruction_loss: "mse"
+  reconstruction_loss: "mse"  # "mse" or "bce"
   normalize_inputs: true

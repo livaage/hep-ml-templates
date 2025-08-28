@@ -1,0 +1,13 @@
+block: model.cnn_hep
+params:
+  input_channels: 1
+  conv_layers: [16, 32, 64]
+  kernel_sizes: [3, 3, 3]
+  pool_sizes: [2, 2, 2]
+  fc_layers: [128, 64]
+  output_dim: 2
+  dropout: 0.3
+  learning_rate: 0.001
+  batch_size: 32
+  max_epochs: 100
+  normalize_inputs: true

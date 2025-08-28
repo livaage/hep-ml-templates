@@ -1,0 +1,13 @@
+block: model.mlp
+params:
+  hidden_layer_sizes: [100, 50, 25]
+  activation: "relu"  # "identity", "logistic", "tanh", "relu"
+  solver: "adam"  # "lbfgs", "sgd", "adam"
+  alpha: 0.0001  # L2 regularization
+  learning_rate: "constant"  # "constant", "invscaling", "adaptive"
+  learning_rate_init: 0.001
+  max_iter: 300
+  random_state: 42
+  early_stopping: true
+  validation_fraction: 0.1
+  n_iter_no_change: 15
