@@ -67,22 +67,22 @@ def main():
 
     p_list_configs = sub.add_parser("list-configs", help="List available configurations")
     p_list_configs.add_argument("--config-path", default="configs")
-    
+
     # Add local installation command
     p_install = sub.add_parser("install-local", help="Install blocks and configs locally to your project")
-    p_install.add_argument("extras", nargs="+", 
+    p_install.add_argument("extras", nargs="+",
                           help="Extras to install locally (e.g., model-xgb data-higgs pipeline-xgb all)")
-    p_install.add_argument("--target-dir", required=True, 
+    p_install.add_argument("--target-dir", required=True,
                           help="Directory where to install the local components")
 
     # Add extras management commands
     p_list_extras = sub.add_parser("list-extras", help="List all available extras")
-    
+
     p_validate_extras = sub.add_parser("validate-extras", help="Validate extras configuration")
-    
+
     p_extra_details = sub.add_parser("extra-details", help="Show details for a specific extra")
     p_extra_details.add_argument("extra", help="Name of the extra to show details for")
-    
+
     p_preview_install = sub.add_parser("preview-install", help="Preview what would be installed")
     p_preview_install.add_argument("extras", nargs="+", help="Extras to preview")
 

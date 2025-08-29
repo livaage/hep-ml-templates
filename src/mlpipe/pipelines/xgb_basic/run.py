@@ -14,10 +14,10 @@ def run_pipeline(pipeline: str, config_path: str, config_name: str, overrides=No
     # Handle both old and new config formats
     path = data_cfg.get("path") or data_cfg.get("file_path")
     label = data_cfg.get("label") or data_cfg.get("target_column")
-    
+
     if path and "demo_tabular.csv" in str(path):
         maybe_make_demo_csv(path)
-    
+
     Ingest = get(data_cfg["block"])               # "ingest.csv"
     # Pass the entire config to the data ingestor (new style)
     ing = Ingest(config=data_cfg)

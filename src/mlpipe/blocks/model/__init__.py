@@ -5,7 +5,7 @@ except ImportError:
     pass  # XGBoost not available
 
 try:
-    from . import decision_tree           # registers "model.decision_tree" 
+    from . import decision_tree           # registers "model.decision_tree"
 except ImportError:
     pass  # scikit-learn not available (though it should be in core dependencies)
 

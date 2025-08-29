@@ -1,6 +1,5 @@
 from __future__ import annotations
 from sklearn.tree import DecisionTreeClassifier
-import pandas as pd
 from typing import Dict, Any, Optional
 from mlpipe.core.interfaces import ModelBlock
 from mlpipe.core.registry import register
@@ -10,10 +9,10 @@ from mlpipe.core.registry import register
 class DecisionTreeModel(ModelBlock):
     """
     Decision Tree Classifier using scikit-learn.
-    
+
     A simple, interpretable model good for understanding feature importance
     and decision boundaries. Well-suited for both binary and multiclass classification.
-    
+
     Example usage via config:
         model = DecisionTreeModel()
         model.build(config)
@@ -33,7 +32,7 @@ class DecisionTreeModel(ModelBlock):
             'criterion': 'gini',
             'class_weight': None
         }
-        
+
         # Merge with any provided kwargs
         self.params = {**default_params, **kwargs}
         self.model: DecisionTreeClassifier | None = None
@@ -45,11 +44,11 @@ class DecisionTreeModel(ModelBlock):
             params = {**self.params, **config}
         else:
             params = self.params
-        
+
         # Filter out non-sklearn parameters
-        sklearn_params = {k: v for k, v in params.items() 
-                         if k not in ['block', '_target_', 'name', 'description']}
-            
+        sklearn_params = {k: v for k, v in params.items()
+                          if k not in ['block', '_target_', 'name', 'description']}
+
         self.model = DecisionTreeClassifier(**sklearn_params)
         self._auto_built = True
         print(f"✅ Decision Tree model built with max_depth={params.get('max_depth')}, "
@@ -59,15 +58,15 @@ class DecisionTreeModel(ModelBlock):
         """Fit the model. Auto-builds with defaults if not already built."""
         if self.model is None:
             self.build()  # Auto-build with defaults
-            
+
         print(f"🌳 Training Decision Tree on {X.shape[0]} samples, {X.shape[1]} features...")
-        
-        # Convert to numpy arrays if needed  
+
+        # Convert to numpy arrays if needed
         X_values = X.values if hasattr(X, 'values') else X
         y_values = y.values if hasattr(y, 'values') else y
-        
+
         self.model.fit(X_values, y_values)
-        
+
         print(f"✅ Decision Tree training completed!")
         print(f"   - Tree depth: {self.model.get_depth()}")
         print(f"   - Number of leaves: {self.model.get_n_leaves()}")
@@ -76,10 +75,10 @@ class DecisionTreeModel(ModelBlock):
         """Make predictions. Returns probabilities for binary classification."""
         if self.model is None:
             raise ValueError("Model not fitted. Call fit(X, y) first.")
-            
+
         # Convert to numpy arrays if needed
         X_values = X.values if hasattr(X, 'values') else X
-        
+
         # Prefer probabilities if available; fallback to decision_function/labels
         if hasattr(self.model, "predict_proba"):
             return self.model.predict_proba(X_values)[:, 1]
@@ -89,8 +88,8 @@ class DecisionTreeModel(ModelBlock):
         """Predict class probabilities."""
         if self.model is None:
             raise ValueError("Model not fitted. Call fit(X, y) first.")
-            
+
         # Convert to numpy arrays if needed
         X_values = X.values if hasattr(X, 'values') else X
-        
+
         return self.model.predict_proba(X_values)

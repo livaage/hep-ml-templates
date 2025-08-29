@@ -1,12 +1,13 @@
 # Always available blocks
 from .ingest import csv_loader                 # registers "ingest.csv"  # noqa: F401
-from .preprocessing import standard_scaler     # registers "preprocessing.standard_scaler"  # noqa: F401  
+from .preprocessing import standard_scaler     # registers "preprocessing.standard_scaler"  # noqa: F401
 from .feature_eng import column_selector       # registers "feature.column_selector"  # noqa: F401
 from .training import sklearn_trainer          # registers "train.sklearn"  # noqa: F401
 from .evaluation import classification_metrics  # registers "eval.classification"  # noqa: F401
 
 # Import model blocks (they handle their own optional imports)
-from . import model  # This will import available models based on dependencies
+# Note: This import ensures model blocks get registered
+from . import model  # noqa: F401
 
 
 # Function to register commonly used blocks for testing/demo purposes
