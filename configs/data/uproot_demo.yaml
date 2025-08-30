@@ -1,0 +1,27 @@
+# ROOT File Data Loading Configuration
+# For High Energy Physics data stored in ROOT format
+
+# Data ingestion block
+block: ingest.uproot_loader
+
+# File settings
+file_path: "data/events.root"  # Path to ROOT file
+tree_name: null                # Tree name (null = auto-detect)
+
+# Branch selection
+branches: null                 # Branches to load (null = all)
+target_branch: "label"         # Target variable column
+
+# Selection and filtering
+selection_cuts: null           # ROOT-style cuts (e.g., "pt > 20 && abs(eta) < 2.5")
+max_entries: null              # Maximum entries to load (null = all)
+
+# Array handling
+flatten_arrays: true           # Convert jagged arrays to flat arrays
+library: "np"                  # Output library: 'np' for numpy, 'pd' for pandas
+
+# Performance settings
+chunk_size: 100000             # Chunk size for memory management
+
+# Output settings
+verbose: true                  # Show loading progress

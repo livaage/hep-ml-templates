@@ -1,0 +1,23 @@
+# One-Hot Encoder Configuration
+# Converts categorical variables to binary vector representations
+
+# Preprocessing block for categorical feature encoding
+block: preprocessing.onehot_encoder
+
+# Auto-detect categorical columns by default
+categorical_columns: auto  # or specify: ['col1', 'col2', ...]
+
+# Encoding options
+drop_first: false          # Set to true to avoid multicollinearity
+handle_unknown: ignore     # Options: 'error', 'ignore', 'infrequent_if_exist'
+sparse_output: false       # Use sparse matrices (memory efficient for many categories)
+
+# Data type settings
+dtype: float32             # Output data type
+
+# Optional constraints
+max_categories: null       # Maximum categories per feature (null = no limit)
+min_frequency: null        # Minimum frequency for category inclusion
+
+# Output settings
+verbose: true              # Show encoding details

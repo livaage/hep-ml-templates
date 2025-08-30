@@ -1,0 +1,26 @@
+# Reconstruction Evaluation Configuration
+# For autoencoder and generative model evaluation
+
+# Evaluation block
+block: eval.reconstruction
+
+# Metrics to compute
+metrics:
+  - mse        # Mean Squared Error
+  - mae        # Mean Absolute Error  
+  - rmse       # Root Mean Squared Error
+  - snr        # Signal-to-Noise Ratio (dB)
+  # - ssim     # Structural Similarity Index (requires scikit-image)
+
+# Analysis options
+per_sample: true               # Compute per-sample errors
+plot_reconstruction: false    # Generate visualization plots
+save_outputs: false           # Save reconstructed samples
+
+# Output settings
+output_dir: "reconstruction_outputs"
+plot_samples: 5               # Number of samples to plot
+
+# Computation settings
+epsilon: 1.0e-8               # Small value to avoid division by zero
+verbose: true                 # Show evaluation details
