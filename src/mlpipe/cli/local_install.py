@@ -107,6 +107,7 @@ EXTRAS_TO_BLOCKS = {
             'preprocessing/standard_scaler.py',
             'feature_eng/column_selector.py',
             'model/xgb_classifier.py',
+            'training/sklearn_trainer.py',
             'evaluation/classification_metrics.py'
         ],
         'core': ['interfaces.py', 'registry.py', 'config.py', 'utils.py'],
@@ -117,6 +118,7 @@ EXTRAS_TO_BLOCKS = {
             'preprocessing/standard.yaml',
             'feature_eng/column_selector.yaml',
             'model/xgb_classifier.yaml',
+            'training/sklearn.yaml',
             'evaluation/classification.yaml',
             'runtime/local_cpu.yaml'
         ]
@@ -171,6 +173,28 @@ EXTRAS_TO_BLOCKS = {
             'data/custom_hep_example.yaml',
             'preprocessing/standard.yaml',
             'model/gnn_pyg.yaml',
+            'evaluation/classification.yaml',
+            'runtime/local_cpu.yaml'
+        ]
+    },
+    'pipeline-neural': {
+        'blocks': [
+            'ingest/csv_loader.py',
+            'preprocessing/standard_scaler.py',
+            'feature_eng/column_selector.py',
+            'model/mlp.py',
+            'training/sklearn_trainer.py',
+            'evaluation/classification_metrics.py'
+        ],
+        'core': ['interfaces.py', 'registry.py', 'config.py', 'utils.py'],
+        'configs': [
+            'pipeline.yaml',
+            'data/higgs_uci.yaml',
+            'data/csv_demo.yaml',
+            'preprocessing/standard.yaml',
+            'feature_eng/column_selector.yaml',
+            'model/mlp.yaml',
+            'training/sklearn.yaml',
             'evaluation/classification.yaml',
             'runtime/local_cpu.yaml'
         ]
@@ -646,6 +670,7 @@ def create_setup_py(target_dir: Path, extras: List[str]):
         'model-xgb': ['xgboost>=1.7'],
         'xgb': ['xgboost>=1.7'],
         'pipeline-xgb': ['xgboost>=1.7'],
+        'pipeline-neural': ['scikit-learn>=1.2'],
         'model-torch': ['torch>=2.0', 'pytorch-lightning>=2.0'],
         'torch': ['torch>=2.0', 'pytorch-lightning>=2.0'],
         'pipeline-torch': ['torch>=2.0', 'pytorch-lightning>=2.0'],
