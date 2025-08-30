@@ -403,14 +403,50 @@ def copy_blocks(blocks: Set[str], source_dir: Path, target_dir: Path):
     create_main_mlpipe_init(target_dir / 'mlpipe' / '__init__.py')
 
 def create_custom_blocks_init(installed_modules: Dict[str, List[str]], init_file_path: Path):
-    """Create a custom __init__.py file for blocks that only imports installed modules."""
-
+    """Create a custom __init__.py file for blocks that only imports installed modules.
+    
+    This function now supports additive installations - it merges with existing imports
+    rather than overwriting them completely.
+    """
+    
+    # Check if an existing __init__.py already exists
+    existing_imports = {}
+    if init_file_path.exists():
+        try:
+            with open(init_file_path, 'r') as f:
+                content = f.read()
+            
+            # Parse existing imports to preserve them
+            import re
+            for line in content.split('\n'):
+                if 'from .' in line and 'import ' in line:
+                    # Extract module import: "from .category import module"
+                    match = re.search(r'from \.(\w+) import (\w+)', line)
+                    if match:
+                        category, module = match.groups()
+                        if category not in existing_imports:
+                            existing_imports[category] = set()
+                        existing_imports[category].add(module)
+        except Exception as e:
+            print(f"⚠️  Warning: Could not parse existing __init__.py: {e}")
+    
+    # Merge existing and new imports
+    all_modules = {}
+    for category, modules in existing_imports.items():
+        all_modules[category] = set(modules)
+    
+    for category, modules in installed_modules.items():
+        if category not in all_modules:
+            all_modules[category] = set()
+        all_modules[category].update(modules)
+    
+    # Generate the new __init__.py content
     init_content = ['# Auto-generated __init__.py for locally installed blocks']
     init_content.append('# Only imports the blocks that were actually installed')
     init_content.append('')
 
-    for category, modules in installed_modules.items():
-        for module in modules:
+    for category, modules in all_modules.items():
+        for module in sorted(modules):
             init_content.append(f'try:')
             init_content.append(f'    from .{category} import {module}')
             # Add a comment about what this registers
@@ -420,6 +456,12 @@ def create_custom_blocks_init(installed_modules: Dict[str, List[str]], init_file
                 init_content[-1] += '              # registers "model.xgb_classifier"'
             elif category == 'model' and module == 'decision_tree':
                 init_content[-1] += '               # registers "model.decision_tree"'
+            elif category == 'model' and module == 'ensemble_models':
+                init_content[-1] += '              # registers multiple ensemble models'
+            elif category == 'model' and module == 'svm':
+                init_content[-1] += '                        # registers "model.svm"'
+            elif category == 'model' and module == 'mlp':
+                init_content[-1] += '                        # registers "model.mlp"'
             elif category == 'preprocessing' and module == 'standard_scaler':
                 init_content[-1] += '     # registers "preprocessing.standard_scaler"'
             elif category == 'feature_eng' and module == 'column_selector':
@@ -435,7 +477,14 @@ def create_custom_blocks_init(installed_modules: Dict[str, List[str]], init_file
     with open(init_file_path, 'w') as f:
         f.write('\n'.join(init_content))
 
-    print(f"✅ Created custom blocks/__init__.py with {sum(len(modules) for modules in installed_modules.values())} imports")
+    total_imports = sum(len(modules) for modules in all_modules.values())
+    existing_count = sum(len(modules) for modules in existing_imports.values())
+    new_count = sum(len(modules) for modules in installed_modules.values())
+    
+    if existing_count > 0:
+        print(f"✅ Updated blocks/__init__.py: {existing_count} existing + {new_count} new = {total_imports} total imports")
+    else:
+        print(f"✅ Created custom blocks/__init__.py with {total_imports} imports")
 
 def create_main_mlpipe_init(init_file_path: Path):
     """Create the main mlpipe/__init__.py file."""
@@ -586,11 +635,49 @@ def install_local(extras: List[str], target_dir: str) -> bool:
         return False
 
 def create_setup_py(target_dir: Path, extras: List[str]):
-    """Create a simple setup.py for local installation."""
+    """Create a simple setup.py for local installation with automatic dependency resolution."""
+    
+    # Base dependencies required by all installations
+    base_deps = [
+        "omegaconf>=2.3",
+        "pandas>=2.0", 
+        "numpy>=1.22",
+        "scikit-learn>=1.2",
+        "hydra-core>=1.3",
+    ]
+    
+    # Extra-specific dependencies that should be automatically installed
+    extra_deps = {
+        'model-xgb': ['xgboost>=1.7'],
+        'xgb': ['xgboost>=1.7'],
+        'pipeline-xgb': ['xgboost>=1.7'],
+        'model-torch': ['torch>=2.0', 'pytorch-lightning>=2.0'],
+        'torch': ['torch>=2.0', 'pytorch-lightning>=2.0'],
+        'pipeline-torch': ['torch>=2.0', 'pytorch-lightning>=2.0'],
+        'model-gnn': ['torch-geometric>=2.4', 'torch>=2.0'],
+        'gnn': ['torch-geometric>=2.4', 'torch>=2.0'],
+        'pipeline-gnn': ['torch-geometric>=2.4', 'torch>=2.0'],
+        'all': ['xgboost>=1.7', 'torch>=2.0', 'pytorch-lightning>=2.0', 'torch-geometric>=2.4'],
+    }
+    
+    # Collect all required dependencies for the installed extras
+    install_requires = base_deps.copy()
+    added_deps = set()
+    
+    for extra in extras:
+        if extra in extra_deps:
+            for dep in extra_deps[extra]:
+                if dep not in added_deps:
+                    install_requires.append(dep)
+                    added_deps.add(dep)
+    
+    # Generate install_requires string
+    install_requires_str = ',\n        '.join(f'"{dep}"' for dep in install_requires)
 
     setup_content = f'''"""
 Setup script for locally installed hep-ml-templates components.
 Installed extras: {', '.join(extras)}
+Auto-resolved dependencies: {', '.join(sorted(added_deps)) if added_deps else 'none'}
 """
 
 from setuptools import setup, find_packages
@@ -601,16 +688,11 @@ setup(
     description="Locally installed HEP ML Templates components",
     packages=find_packages(),
     install_requires=[
-        "omegaconf>=2.3",
-        "pandas>=2.0",
-        "numpy>=1.22",
-        "scikit-learn>=1.2",
-        "hydra-core>=1.3",
+        {install_requires_str}
     ],
     extras_require={{
-        "xgb": ["xgboost>=1.7"],
-        "torch": ["torch>=2.0", "pytorch-lightning>=2.0"],
-        "gnn": ["torch-geometric>=2.4", "torch>=2.0"],
+        "dev": ["pytest>=7.0", "pytest-cov>=4.0"],
+        "docs": ["sphinx>=5.0", "sphinx-rtd-theme>=1.0"],
     }},
     python_requires=">=3.9",
     entry_points={{
@@ -625,7 +707,10 @@ setup(
     with open(setup_file, 'w') as f:
         f.write(setup_content)
 
-    print("✅ Created setup.py for local installation")
+    if added_deps:
+        print(f"✅ Created setup.py with auto-resolved dependencies: {', '.join(sorted(added_deps))}")
+    else:
+        print("✅ Created setup.py for local installation")
 
 def create_cli_script(target_dir: Path):
     """Create a simple CLI script for the locally installed components."""
