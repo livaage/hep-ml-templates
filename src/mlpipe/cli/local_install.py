@@ -80,10 +80,10 @@ EXTRAS_TO_BLOCKS = {
 
     # Category-based extras
     'preprocessing': create_category_extra('preprocessing',
-                                         ['standard_scaler.py', 'onehot_encoder.py', 'data_split.py'],
+                                         ['standard_scaler.py', 'data_split.py'],
                                          ['standard.yaml', 'data_split.yaml']),
     'feature-eng': create_category_extra('feature_eng', ['column_selector.py'], ['demo_features.yaml', 'column_selector.yaml']),
-    'evaluation': create_category_extra('evaluation', ['classification_metrics.py', 'reconstruction_metrics.py'], ['classification.yaml', 'reconstruction.yaml']),
+    'evaluation': create_category_extra('evaluation', ['classification_metrics.py'], ['classification.yaml']),
 
     # Data splitting extra (single flexible config)
     'data-split': create_category_extra('preprocessing', ['data_split.py'], ['data_split.yaml']),
@@ -146,7 +146,7 @@ EXTRAS_TO_BLOCKS = {
             'ingest/csv_loader.py',
             'preprocessing/standard_scaler.py',
             'model/ae_lightning.py',
-            'evaluation/reconstruction_metrics.py'
+            'evaluation/classification_metrics.py'
         ],
         'core': ['interfaces.py', 'registry.py', 'config.py', 'utils.py'],
         'configs': [
@@ -154,8 +154,8 @@ EXTRAS_TO_BLOCKS = {
             'data/csv_demo.yaml',
             'preprocessing/standard.yaml',
             'model/ae_lightning.yaml',
-            'evaluation/reconstruction.yaml',
-            'runtime/local_gpu.yaml'
+            'evaluation/classification.yaml',
+            'runtime/local_cpu.yaml'
         ]
     },
     'pipeline-gnn': {
@@ -172,7 +172,7 @@ EXTRAS_TO_BLOCKS = {
             'preprocessing/standard.yaml',
             'model/gnn_pyg.yaml',
             'evaluation/classification.yaml',
-            'runtime/local_gpu.yaml'
+            'runtime/local_cpu.yaml'
         ]
     },
 
@@ -180,9 +180,7 @@ EXTRAS_TO_BLOCKS = {
     'all': {
         'blocks': [
             'ingest/csv_loader.py',
-            'ingest/uproot_loader.py',
             'preprocessing/standard_scaler.py',
-            'preprocessing/onehot_encoder.py',
             'preprocessing/data_split.py',  # Data splitting functionality
             'feature_eng/column_selector.py',
             'model/xgb_classifier.py',
@@ -193,10 +191,9 @@ EXTRAS_TO_BLOCKS = {
             'model/ae_lightning.py',
             'model/gnn_pyg.py',
             'model/hep_neural.py',  # Contains Transformer and CNN models
-            'evaluation/classification_metrics.py',
-            'evaluation/reconstruction_metrics.py'
+            'evaluation/classification_metrics.py'
         ],
-        'core': ['interfaces.py', 'registry.py', 'config.py', 'utils.py', 'metrics.py'],
+        'core': ['interfaces.py', 'registry.py', 'config.py', 'utils.py'],
         'configs': [
             'pipeline.yaml',
             'data/higgs_uci.yaml',
@@ -222,9 +219,7 @@ EXTRAS_TO_BLOCKS = {
             'model/transformer_hep.yaml',
             'model/cnn_hep.yaml',
             'evaluation/classification.yaml',
-            'evaluation/reconstruction.yaml',
-            'runtime/local_cpu.yaml',
-            'runtime/local_gpu.yaml'
+            'runtime/local_cpu.yaml'
         ]
     }
 }
