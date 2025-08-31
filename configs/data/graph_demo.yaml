@@ -1,0 +1,19 @@
+# Graph Dataset Configuration for GNN
+# ===================================
+# This configuration creates a graph from CSV data suitable for GNN training
+
+block: ingest.graph_csv
+
+# === REQUIRED SETTINGS ===
+file_path: "data/graph_nodes_demo.csv"   # Node features and labels
+target_column: "label"                   # Target column for node classification
+
+# === DATASET STRUCTURE ===
+has_header: true                         # CSV has column headers
+separator: ","                           # Standard CSV format  
+encoding: "utf-8"                        # UTF-8 encoding
+
+# === GRAPH STRUCTURE ===
+# For GNN, we create edges based on node feature similarity
+edge_threshold: 0.3                     # Cosine similarity threshold for edges (0-1)
+max_edges_per_node: 8                   # Maximum edges per node

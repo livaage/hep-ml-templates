@@ -4,8 +4,10 @@ Allows users to download blocks and configs to their project directory.
 """
 
 import shutil
+import yaml
 from pathlib import Path
 from typing import List, Dict, Set, Optional
+from mlpipe.core.pipeline_generator import generate_pipeline_config, PIPELINE_CONFIGS
 
 # Core modules needed by all extras
 CORE_MODULES = ['interfaces.py', 'registry.py', 'config.py', 'utils.py']
@@ -82,7 +84,7 @@ EXTRAS_TO_BLOCKS = {
     'preprocessing': create_category_extra('preprocessing',
                                          ['standard_scaler.py', 'data_split.py'],
                                          ['standard.yaml', 'data_split.yaml']),
-    'feature-eng': create_category_extra('feature_eng', ['column_selector.py'], ['demo_features.yaml', 'column_selector.yaml']),
+    'feature-eng': create_category_extra('feature_eng', ['column_selector.py'], ['all_columns.yaml', 'column_selector.yaml']),
     'evaluation': create_category_extra('evaluation', ['classification_metrics.py'], ['classification.yaml']),
 
     # Data splitting extra (single flexible config)
@@ -100,7 +102,7 @@ EXTRAS_TO_BLOCKS = {
     'torch': create_algorithm_combo('ae_lightning.py', 'ae_lightning.yaml'),
     'gnn': create_algorithm_combo('gnn_pyg.py', 'gnn_pyg.yaml'),
 
-    # Complete pipeline bundles
+    # Complete pipeline bundles - now generated dynamically
     'pipeline-xgb': {
         'blocks': [
             'ingest/csv_loader.py',
@@ -112,16 +114,16 @@ EXTRAS_TO_BLOCKS = {
         ],
         'core': ['interfaces.py', 'registry.py', 'config.py', 'utils.py'],
         'configs': [
-            'pipeline.yaml',
-            'data/higgs_uci.yaml',
             'data/csv_demo.yaml',
             'preprocessing/standard.yaml',
-            'feature_eng/column_selector.yaml',
+            'feature_eng/all_columns.yaml',
             'model/xgb_classifier.yaml',
             'training/sklearn.yaml',
             'evaluation/classification.yaml',
             'runtime/local_cpu.yaml'
-        ]
+        ],
+        'data': ['demo_tabular.csv'],
+        'pipeline_type': 'xgb'  # Used for dynamic pipeline.yaml generation
     },
     'pipeline-decision-tree': {
         'blocks': [
@@ -129,53 +131,66 @@ EXTRAS_TO_BLOCKS = {
             'preprocessing/standard_scaler.py',
             'feature_eng/column_selector.py',
             'model/decision_tree.py',
+            'training/sklearn_trainer.py',
             'evaluation/classification_metrics.py'
         ],
         'core': ['interfaces.py', 'registry.py', 'config.py', 'utils.py'],
         'configs': [
-            'pipeline.yaml',
-            'data/higgs_uci.yaml',
             'data/csv_demo.yaml',
             'preprocessing/standard.yaml',
-            'feature_eng/column_selector.yaml',
+            'feature_eng/all_columns.yaml',
             'model/decision_tree.yaml',
+            'training/sklearn.yaml',
             'evaluation/classification.yaml',
             'runtime/local_cpu.yaml'
-        ]
+        ],
+        'data': ['demo_tabular.csv'],
+        'pipeline_type': 'decision-tree'
     },
     'pipeline-torch': {
         'blocks': [
             'ingest/csv_loader.py',
             'preprocessing/standard_scaler.py',
+            'feature_eng/column_selector.py',
             'model/ae_lightning.py',
+            'training/sklearn_trainer.py',
             'evaluation/classification_metrics.py'
         ],
         'core': ['interfaces.py', 'registry.py', 'config.py', 'utils.py'],
         'configs': [
-            'pipeline.yaml',
             'data/csv_demo.yaml',
             'preprocessing/standard.yaml',
+            'feature_eng/all_columns.yaml',
             'model/ae_lightning.yaml',
+            'training/sklearn.yaml',
             'evaluation/classification.yaml',
             'runtime/local_cpu.yaml'
-        ]
+        ],
+        'data': ['demo_tabular.csv'],
+        'pipeline_type': 'torch'
     },
     'pipeline-gnn': {
         'blocks': [
             'ingest/csv_loader.py',
+            'ingest/graph_csv_loader.py',
             'preprocessing/standard_scaler.py',
+            'feature_eng/column_selector.py',
             'model/gnn_pyg.py',
+            'training/sklearn_trainer.py',
             'evaluation/classification_metrics.py'
         ],
         'core': ['interfaces.py', 'registry.py', 'config.py', 'utils.py'],
         'configs': [
-            'pipeline.yaml',
-            'data/custom_hep_example.yaml',
+            'data/graph_demo.yaml',
             'preprocessing/standard.yaml',
+            'feature_eng/all_columns.yaml',
             'model/gnn_pyg.yaml',
+            'training/sklearn.yaml',
             'evaluation/classification.yaml',
             'runtime/local_cpu.yaml'
-        ]
+        ],
+        'data': ['graph_nodes_demo.csv'],
+        'pipeline_type': 'gnn'
     },
     'pipeline-neural': {
         'blocks': [
@@ -188,16 +203,16 @@ EXTRAS_TO_BLOCKS = {
         ],
         'core': ['interfaces.py', 'registry.py', 'config.py', 'utils.py'],
         'configs': [
-            'pipeline.yaml',
-            'data/higgs_uci.yaml',
             'data/csv_demo.yaml',
             'preprocessing/standard.yaml',
-            'feature_eng/column_selector.yaml',
+            'feature_eng/all_columns.yaml',
             'model/mlp.yaml',
             'training/sklearn.yaml',
             'evaluation/classification.yaml',
             'runtime/local_cpu.yaml'
-        ]
+        ],
+        'data': ['demo_tabular.csv'],
+        'pipeline_type': 'neural'
     },
 
     # Bundle everything
@@ -577,6 +592,50 @@ def copy_data_files(data_files: Set[str], source_dir: Path, target_dir: Path):
         else:
             print(f"⚠️  Warning: Data file not found: {source_file}")
 
+
+def generate_pipeline_configs(pipeline_extras: List[str], target_path: Path):
+    """Generate pipeline.yaml files for installed pipeline extras."""
+    configs_dir = target_path / "configs"
+    configs_dir.mkdir(exist_ok=True)
+    
+    for extra in pipeline_extras:
+        # Extract pipeline type from extra name (e.g., pipeline-xgb -> xgb)
+        pipeline_type = extra.replace('pipeline-', '')
+        
+        if pipeline_type in PIPELINE_CONFIGS:
+            config = generate_pipeline_config(pipeline_type)
+            pipeline_file = configs_dir / "pipeline.yaml"
+            
+            # Write the generated config
+            with open(pipeline_file, 'w') as f:
+                yaml.dump(config, f, default_flow_style=False, sort_keys=False)
+            
+            print(f"✅ Generated {pipeline_type} pipeline config: pipeline.yaml")
+            
+            # Also create a specific pipeline config file
+            specific_file = configs_dir / f"pipeline_{pipeline_type}.yaml" 
+            with open(specific_file, 'w') as f:
+                yaml.dump(config, f, default_flow_style=False, sort_keys=False)
+            
+            print(f"✅ Generated specific config: pipeline_{pipeline_type}.yaml")
+        else:
+            print(f"⚠️  Warning: Unknown pipeline type '{pipeline_type}' - using default config")
+            # Generate default config
+            default_config = {
+                "data": "csv_demo",
+                "preprocessing": "standard",
+                "feature_eng": "all_columns",
+                "model": pipeline_type,  # Use the pipeline type as model name
+                "training": "sklearn",
+                "evaluation": "classification",
+                "runtime": "local_cpu"
+            }
+            pipeline_file = configs_dir / "pipeline.yaml"
+            with open(pipeline_file, 'w') as f:
+                yaml.dump(default_config, f, default_flow_style=False, sort_keys=False)
+            print(f"✅ Generated default pipeline config for: {pipeline_type}")
+
+
 def install_local(extras: List[str], target_dir: str) -> bool:
     """
     Install blocks and configs locally based on the provided extras.
@@ -626,6 +685,12 @@ def install_local(extras: List[str], target_dir: str) -> bool:
         if to_download['configs']:
             print(f"\n⚙️  Installing configs...")
             copy_configs(to_download['configs'], package_path, target_path)
+
+        # Generate appropriate pipeline.yaml for installed pipelines
+        pipeline_extras = [extra for extra in extras if extra.startswith('pipeline-')]
+        if pipeline_extras:
+            print(f"\n📄 Generating pipeline configurations...")
+            generate_pipeline_configs(pipeline_extras, target_path)
 
         # Copy data files
         if to_download['data']:
@@ -677,7 +742,8 @@ def create_setup_py(target_dir: Path, extras: List[str]):
         'model-gnn': ['torch-geometric>=2.4', 'torch>=2.0'],
         'gnn': ['torch-geometric>=2.4', 'torch>=2.0'],
         'pipeline-gnn': ['torch-geometric>=2.4', 'torch>=2.0'],
-        'all': ['xgboost>=1.7', 'torch>=2.0', 'pytorch-lightning>=2.0', 'torch-geometric>=2.4'],
+        'data-uproot': ['uproot>=5.0', 'awkward>=2.0'],  # For ROOT file ingestion
+        'all': ['xgboost>=1.7', 'torch>=2.0', 'pytorch-lightning>=2.0', 'torch-geometric>=2.4', 'uproot>=5.0', 'awkward>=2.0'],
     }
     
     # Collect all required dependencies for the installed extras
