@@ -1,31 +1,163 @@
 # HEP-ML-Templates
 
-A **modular, plug-and-play machine learning framework** designed specifically for **High Ener### **Individual Models** (11)
-Single algorithms with unified interfaces:
-
-**Traditional ML:**
-- `model-decision-tree` (1 blocks, 1 configs) - DecisionTreeModel with configurable depth, criteria
-- `model-random-forest` (1 blocks, 1 configs) - RandomForestModel with ensemble parameters
-- `model-svm` (1 blocks, 1 configs) - SVMModel with kernel options and regularization
-- `model-xgb` (1 blocks, 1 configs) - XGBClassifierModel with gradient boosting parameters
-- `model-mlp` (1 blocks, 1 configs) - MLPModel multi-layer perceptron with layer configuration
-- `model-adaboost` (1 blocks, 1 configs) - AdaBoostModel with weak learner boosting
-- `model-ensemble` (1 blocks, 1 configs) - VotingEnsembleModel for combining multiple algorithms
-
-**Neural & Graph Models:**
-- `model-torch` (1 blocks, 3 configs) - Generic PyTorch neural networks with flexible architectures
-- `model-cnn` (1 blocks, 1 configs) - HEPCNNModel convolutional networks optimized for HEP data
-- `model-gnn` (1 blocks, 3 configs) - Graph neural networks: GCNModel, GATModel via PyTorch Geometric
-- `model-transformer` (1 blocks, 1 configs) - HEPTransformerModel attention-based architectures for HEP
-
-**Autoencoder Models:**
-- `model-autoencoder-vanilla` - VanillaAutoencoderModel for unsupervised feature learning
-- `model-autoencoder-variational` - VariationalAutoencoderModel for generative modelingHEP)** research. Build, test, and deploy ML models with true modularity - swap datasets, models, and preprocessing components with minimal code changes and zero vendor lock-in.
+A **modular, plug-and-play machine learning framework** designed specifically for **High Energy Physics (HEP)** research. Build, test, and deploy ML models with true modularity - swap datasets, models, and preprocessing components with minimal code changes and zero vendor lock-in.
 
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > **Status:** Production-ready with comprehensive validation, beginner-tested setup (100% success rate, <10s per model), and real-world integration case studies demonstrating 3-line dataset swaps.
+
+---
+
+## 📚 Table of Contents
+
+### Getting Started (Start Here!)
+- [🚀 **Quick Start - Complete End-to-End Pipelines**](#-quick-start---complete-end-to-end-pipelines) 
+- [💻 **Installation Options**](#-installation--dependency-management)
+- [🛠️ **Three Core Workflows**](#%EF%B8%8F-three-core-workflows)
+
+### Core Documentation  
+- [✨ **Key Features**](#-key-features)
+- [📊 **Available Components Overview**](#-available-components-blocks)
+- [🏗️ **Core Architecture**](#%EF%B8%8F-core-architecture)
+
+### For Power Users
+- [💻 **Complete CLI Reference**](#-complete-cli-reference)
+- [🧬 **Advanced Model Configuration**](#-advanced-model-configuration-reference)
+- [🔄 **Advanced Data Splitting**](#-advanced-data-splitting)
+- [🐍 **Complete Python API Reference**](#-complete-python-api-reference)
+- [📁 **Project Structure**](#-project-structure)
+
+### Reference & Support
+- [🗂️ **Complete Component Reference**](#%EF%B8%8F-complete-component-reference)
+- [❓ **FAQ**](#-faq)
+- [🎯 **Latest Updates & New Features**](#-latest-updates--new-features)
+- [🤖 **Development Acknowledgments**](#-development-acknowledgments)
+
+---
+
+## 🚀 Quick Start - Complete End-to-End Pipelines
+
+The hep-ml-templates library now provides complete pre-configured pipeline types that include all necessary components (data, preprocessing, model, training, and evaluation) with automatic data file management. Each pipeline type is ready to run out-of-the-box:
+
+**Available Pipeline Types:**
+- `pipeline-decision-tree` - Complete Decision Tree workflow
+- `pipeline-xgb` - XGBoost pipeline with preprocessing and metrics  
+- `pipeline-ensemble` - Ensemble methods pipeline
+- `pipeline-torch` - PyTorch neural network pipeline
+- `pipeline-gnn` - Graph neural network pipeline
+
+**Quick Start - Any Pipeline in 3 Commands:**
+
+```bash
+# 1. Install a complete pipeline (includes data files automatically)
+mlpipe install-local pipeline-xgb --target-dir ./my-project
+
+# 2. Navigate to project
+cd my-project
+
+# 3. Run the pipeline
+mlpipe run
+```
+
+**Examples for Different Pipeline Types:**
+
+```bash
+# Decision Tree Pipeline
+mlpipe install-local pipeline-decision-tree --target-dir ./dt-project
+cd dt-project && mlpipe run
+
+# XGBoost Pipeline  
+mlpipe install-local pipeline-xgb --target-dir ./xgb-project
+cd xgb-project && mlpipe run
+
+# Neural Network Pipeline
+mlpipe install-local pipeline-torch --target-dir ./nn-project  
+cd nn-project && mlpipe run
+
+# Graph Neural Network Pipeline
+mlpipe install-local pipeline-gnn --target-dir ./gnn-project
+cd gnn-project && mlpipe run
+```
+
+**What You Get:**
+- ✅ Complete pipeline configuration (`pipeline.yaml`)
+- ✅ All necessary data files (`demo_tabular.csv`, specialized datasets)
+- ✅ Pre-configured preprocessing, training, and evaluation
+- ✅ Ready-to-run setup with `mlpipe run` command
+- ✅ Modular components you can customize independently
+
+**Expected Results:**
+- Decision Tree: ~100% accuracy on demo data
+- XGBoost: ~100% accuracy on demo data  
+- Neural Network: ~98% accuracy on demo data
+- All pipelines include ROC-AUC, F1-score, and confusion matrix metrics
+
+---
+
+## 🛠️ Three Core Workflows
+
+### 1. **Rapid Prototyping**
+Experiment with different models and datasets using config/CLI overrides:
+
+```bash
+# Try different models on the same data
+mlpipe run --overrides model=decision_tree
+mlpipe run --overrides model=xgb_classifier
+mlpipe run --overrides model=random_forest
+
+# Switch datasets and preprocessing
+mlpipe run --overrides data=csv_demo preprocessing=time_series_split
+mlpipe run --overrides data=higgs_100k feature_eng=demo_features
+```
+
+### 2. **Standalone Project Scaffolding** 
+Create self-contained projects with selected components:
+
+```bash
+# Create a new project directory
+mlpipe install-local model-random-forest data-higgs evaluation --target-dir ./research-project
+cd ./research-project && pip install -e .
+
+# Add more components later
+mlpipe install-local model-xgb preprocessing .
+mlpipe run --overrides model=xgb_classifier preprocessing=stratified_split
+```
+
+### 3. **Integration into Existing Code**
+Drop in individual blocks with minimal changes (~3 lines):
+
+**Before (traditional scikit-learn):**
+```python
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(X_train_scaled, y_train)
+predictions = model.predict_proba(X_test_scaled)[:, 1]
+```
+
+**After (with hep-ml-templates):**
+```python
+from mlpipe.blocks.model.ensemble_models import RandomForestModel  # Change 1
+
+config = {'n_estimators': 100, 'random_state': 42}
+model = RandomForestModel()                                        # Change 2
+model.build(config)
+model.fit(X_train, y_train)                                        # Change 3 - preprocessing handled internally
+predictions = model.predict_proba(X_test)[:, 1]
+```
+
+**Swap to XGBoost:**
+```python
+from mlpipe.blocks.model.xgb_classifier import XGBClassifierModel  # Only import changes
+model = XGBClassifierModel()                                       # Only class name changes
+model.build({'n_estimators': 200, 'learning_rate': 0.1})
+```
 
 ---
 
@@ -39,6 +171,45 @@ Single algorithms with unified interfaces:
 - 📊 **Standalone Projects**: Export templates to create self-contained, editable ML projects with no repository dependency
 - 🤖 **Multi-Algorithm Support**: Traditional ML (XGBoost, Decision Trees, SVM) + Neural Networks (PyTorch, GNNs, Autoencoders)
 - 📈 **Advanced Data Splitting**: Train/val/test splits with stratification, time-series support, and reproducible seeding
+
+---
+
+## 💻 Installation & Dependency Management
+
+### **Quick Install - Complete Pipelines**
+```bash
+# Install everything you need for end-to-end ML pipelines
+git clone https://github.com/Arvind-t33/hep-ml-templates.git
+cd hep-ml-templates
+pip install -e '.[all]'
+```
+
+### **Selective Installation**
+Install only the dependencies you need:
+
+```bash
+# Core framework only
+pip install -e '.[core]'
+
+# Complete pipeline bundles (recommended)
+pip install -e '.[pipeline-xgb,pipeline-torch]'
+
+# Traditional ML models
+pip install -e '.[xgb,decision-tree,random-forest,svm]'
+
+# Deep learning components  
+pip install -e '.[torch,gnn,autoencoder]'
+
+# Data science essentials
+pip install -e '.[data-csv,data-higgs,preprocessing,evaluation]'
+```
+
+### **Available Complete Pipeline Bundles**
+- `pipeline-xgb` → Complete XGBoost pipeline with all dependencies
+- `pipeline-decision-tree` → Complete Decision Tree pipeline  
+- `pipeline-ensemble` → Complete Ensemble methods pipeline
+- `pipeline-torch` → Complete PyTorch neural network pipeline
+- `pipeline-gnn` → Complete Graph neural network pipeline
 
 ---
 
@@ -157,70 +328,47 @@ mlpipe-manager install model-xgb ./my-project
 
 ---
 
-## 📊 Available Components (Blocks)
+## 📊 Available Components Overview
 
-> Use `mlpipe list-extras` and `mlpipe extra-details <name>` for exact identifiers and installation details.
+> 💡 **Tip**: Use `mlpipe list-extras` to see all available components, or `mlpipe extra-details <name>` for installation details.
 
-### 🎯 **Complete Pipelines** (4)
-End-to-end workflows with model + preprocessing + evaluation:
-- `pipeline-xgb` (5 blocks, 8 configs) - XGBoost pipeline with preprocessing and metrics
-- `pipeline-decision-tree` (5 blocks, 8 configs) - Decision tree complete workflow 
-- `pipeline-torch` (4 blocks, 6 configs) - PyTorch neural network pipeline
-- `pipeline-gnn` (4 blocks, 6 configs) - Graph neural network pipeline
+### 🚀 **Complete Pipelines** (Ready to Run)
+End-to-end workflows with everything included:
+- `pipeline-xgb` - XGBoost pipeline with preprocessing and metrics
+- `pipeline-decision-tree` - Decision tree complete workflow 
+- `pipeline-torch` - PyTorch neural network pipeline
+- `pipeline-gnn` - Graph neural network pipeline
+- `pipeline-ensemble` - Ensemble methods pipeline
 
-### 🧠 **Individual Models** (11)
-Single algorithms with unified interfaces:
+### 🧠 **Individual Models**
+**Traditional ML:** Decision Tree, Random Forest, XGBoost, SVM, MLP, AdaBoost, Ensemble  
+**Neural Networks:** PyTorch, CNN, Transformer, GNN (GCN/GAT), Autoencoders (Vanilla/Variational)
 
-**Traditional ML:**
-- `model-decision-tree` (1 blocks, 1 configs), `model-random-forest` (1 blocks, 1 configs), `model-svm` (1 blocks, 1 configs)
-- `model-xgb` (1 blocks, 1 configs), `model-mlp` (1 blocks, 1 configs), `model-adaboost` (1 blocks, 1 configs), `model-ensemble` (1 blocks, 1 configs)
+### ⚡ **Algorithm Combos** (Model + Preprocessing)
+Quick bundles: `xgb`, `decision-tree`, `random-forest`, `svm`, `mlp`, `torch`, `gnn`, `ensemble`
 
-**Neural & Graph Models:**
-- `model-torch` (1 blocks, 3 configs) (PyTorch neural networks)
-- `model-cnn` (1 blocks, 1 configs) (Convolutional networks)
-- `model-gnn` (1 blocks, 3 configs) (Graph neural networks via PyTorch Geometric)
-- `model-transformer` (1 blocks, 1 configs) (Transformer architectures)
+### 📁 **Data & Processing**
+**Data Sources:** HIGGS benchmark, CSV loader, ROOT file loader  
+**Preprocessing:** Standard scaling, advanced train/val/test splitting, feature engineering  
+**Evaluation:** Classification metrics (accuracy, ROC-AUC, F1), reconstruction metrics
 
-### ⚡ **Algorithm Combos** (9)
-Model + preprocessing bundles for quick setup:
-- `xgb` (2 blocks, 2 configs), `decision-tree` (2 blocks, 2 configs), `random-forest` (2 blocks, 2 configs), `svm` (2 blocks, 2 configs), `mlp` (2 blocks, 2 configs)
-- `ensemble` (2 blocks, 2 configs), `torch` (2 blocks, 2 configs), `gnn` (2 blocks, 2 configs), `adaboost` (2 blocks, 2 configs)
+### 🔍 **Discover More Components**
+```bash
+# See all available components
+mlpipe list-extras
 
-### **Data Sources** (3)
-Flexible data ingestion with format detection:
-- `data-higgs` (1 blocks, 1 configs) - HIGGS benchmark dataset with auto-download and validation
-- `data-csv` (1 blocks, 1 configs) - Universal CSV loader with flexible schema detection and parsing
-- `data-split` (1 blocks, 1 configs) - Advanced train/val/test splitting utilities with stratification and time-series support
+# Get details about a specific component
+mlpipe extra-details pipeline-xgb
 
-### 🏗️ **Component Categories** (3)
-Core processing and evaluation utilities:
-- `preprocessing` (3 blocks, 2 configs) - StandardScaler, DataSplitter, advanced preprocessing pipelines  
-- `evaluation` (2 blocks, 2 configs) - ClassificationEvaluator with comprehensive metrics, ReconstructionEvaluator
-- `feature-eng` (1 blocks, 2 configs) - ColumnSelector for feature selection, custom feature engineering demos
+# Preview what will be installed
+mlpipe preview-install model-xgb evaluation
+```
 
-### **Complete Neural Network Architecture Reference**
+---
 
 The framework includes specialized neural network architectures optimized for HEP data:
 
-#### **Transformer Models (`model-transformer`)**
-HEP-optimized transformer architectures with attention mechanisms:
-```python
-# Available configurations:
-configs/model/transformer_hep.yaml    # Multi-head attention for particle sequences
-```
-
-**Key Features:**
-- Multi-head attention mechanisms for particle interaction modeling
-- Position encoding for sequential data
-- Layer normalization and residual connections
-- Configurable attention heads and embedding dimensions
-
-#### **Convolutional Networks (`model-cnn`)**
-Specialized CNN architectures for HEP data analysis:
-```python
-# Available configurations:
-configs/model/cnn_hep.yaml           # CNN optimized for HEP detector data
-```
+## 🧬 Advanced Model Configuration Reference
 
 **Key Features:**
 - 1D and 2D convolutions for different data types
@@ -477,73 +625,7 @@ output_dir: "reconstruction_outputs"
 
 ---
 
-## 🛠️ Three Core Workflows
-
-### 1. **Rapid Prototyping**
-Experiment with different models and datasets using config/CLI overrides:
-
-```bash
-# Try different models on the same data
-mlpipe run --overrides model=decision_tree
-mlpipe run --overrides model=xgb_classifier
-mlpipe run --overrides model=random_forest
-
-# Switch datasets and preprocessing
-mlpipe run --overrides data=csv_demo preprocessing=time_series_split
-mlpipe run --overrides data=higgs_100k feature_eng=demo_features
-```
-
-### 2. **Standalone Project Scaffolding** 
-Create self-contained projects with selected components:
-
-```bash
-# Create a new project directory
-mlpipe install-local model-random-forest data-higgs evaluation --target-dir ./research-project
-cd ./research-project && pip install -e .
-
-# Add more components later
-mlpipe install-local model-xgb preprocessing .
-mlpipe run --overrides model=xgb_classifier preprocessing=stratified_split
-```
-
-### 3. **Integration into Existing Code**
-Drop in individual blocks with minimal changes (~3 lines):
-
-**Before (traditional scikit-learn):**
-```python
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import StandardScaler
-
-scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
-
-model = RandomForestClassifier(n_estimators=100, random_state=42)
-model.fit(X_train_scaled, y_train)
-predictions = model.predict_proba(X_test_scaled)[:, 1]
-```
-
-**After (with hep-ml-templates):**
-```python
-from mlpipe.blocks.model.ensemble_models import RandomForestModel  # Change 1
-
-config = {'n_estimators': 100, 'random_state': 42}
-model = RandomForestModel()                                        # Change 2
-model.build(config)
-model.fit(X_train, y_train)                                        # Change 3 - preprocessing handled internally
-predictions = model.predict_proba(X_test)[:, 1]
-```
-
-**Swap to XGBoost:**
-```python
-from mlpipe.blocks.model.xgb_classifier import XGBClassifierModel  # Only import changes
-model = XGBClassifierModel()                                       # Only class name changes
-model.build({'n_estimators': 200, 'learning_rate': 0.1})
-```
-
----
-
-## 🔄 Advanced Data Splitting
+##  Advanced Data Splitting
 
 Built-in splitting utilities with comprehensive support:
 
@@ -875,100 +957,6 @@ cd ./hep-research && pip install -e .
 # 4. Run experiments with different configurations
 mlpipe run --overrides model.params.max_depth=8
 mlpipe run --overrides data=csv_demo
-```
-
----
-
-## ⚙️ Installation & Dependency Management
-
-### **Development Installation**
-```bash
-# Full development setup with all dependencies
-git clone https://github.com/Arvind-t33/hep-ml-templates.git
-cd hep-ml-templates
-pip install -e '.[all]'
-```
-
-### **Selective Installation**
-Install only the dependencies you need:
-
-```bash
-# Core framework only
-pip install -e '.[core]'
-
-# Traditional ML models
-pip install -e '.[xgb,decision-tree,random-forest,svm]'
-
-# Deep learning components
-pip install -e '.[torch,gnn,autoencoder]'
-
-# Data science essentials
-pip install -e '.[data-csv,data-higgs,preprocessing,evaluation]'
-```
-
-### **Available Extras in `pyproject.toml`:**
-
-**Individual Model Components:**
-- `model-xgb` → XGBoost Classifier (requires: xgboost>=1.7)
-- `model-decision-tree` → Decision Tree Classifier (requires: scikit-learn>=1.2) 
-- `model-random-forest` → Random Forest Classifier (requires: scikit-learn>=1.2)
-- `model-svm` → Support Vector Machine (requires: scikit-learn>=1.2)
-- `model-mlp` → Multi-Layer Perceptron (requires: scikit-learn>=1.2)
-- `model-adaboost` → AdaBoost Classifier (requires: scikit-learn>=1.2)
-- `model-ensemble` → Ensemble Voting Classifier (requires: scikit-learn>=1.2, xgboost>=1.7)
-- `model-torch` → PyTorch Neural Networks (requires: torch>=2.2)
-- `model-lightning` → PyTorch Lightning Models (requires: torch>=2.2, lightning>=2.2)
-- `model-gnn` → Graph Neural Networks (requires: torch-geometric>=2.5, torch>=2.2)
-
-**Algorithm-Specific Bundles:**
-- `xgb` → XGBoost + preprocessing (xgboost>=1.7, scikit-learn>=1.2)
-- `decision-tree` → Decision Tree + preprocessing (scikit-learn>=1.2)
-- `random-forest` → Random Forest + preprocessing (scikit-learn>=1.2)
-- `svm` → SVM + preprocessing (scikit-learn>=1.2)
-- `mlp` → MLP + preprocessing (scikit-learn>=1.2)
-- `adaboost` → AdaBoost + preprocessing (scikit-learn>=1.2)
-- `ensemble` → Ensemble + preprocessing (scikit-learn>=1.2, xgboost>=1.7)
-- `torch` → PyTorch + Lightning framework (torch>=2.2, lightning>=2.2)
-- `gnn` → Graph Neural Networks + PyTorch (torch-geometric>=2.5, torch>=2.2)
-- `autoencoder` → Autoencoder models (torch>=2.2, lightning>=2.2)
-- `transformer` → Transformer architectures (torch>=2.2, lightning>=2.2)
-- `cnn` → Convolutional Neural Networks (torch>=2.2, lightning>=2.2)
-
-**Data & Processing:**
-- `data-csv` → Universal CSV data loading (pandas>=2.0)
-- `data-higgs` → HIGGS benchmark dataset (pandas>=2.0, requests>=2.25)
-- `preprocessing` → Data preprocessing utilities (scikit-learn>=1.2)
-- `evaluation` → Model evaluation metrics (scikit-learn>=1.2)
-
-**Complete Pipeline Bundles:**
-- `pipeline-xgb` → Complete XGBoost pipeline (omegaconf>=2.3, numpy>=1.22, pandas>=2.0, scikit-learn>=1.2, xgboost>=1.7)
-- `pipeline-decision-tree` → Complete Decision Tree pipeline (omegaconf>=2.3, numpy>=1.22, pandas>=2.0, scikit-learn>=1.2)
-- `pipeline-ensemble` → Complete Ensemble pipeline (omegaconf>=2.3, numpy>=1.22, pandas>=2.0, scikit-learn>=1.2, xgboost>=1.7)
-- `pipeline-torch` → Complete PyTorch pipeline (omegaconf>=2.3, numpy>=1.22, pandas>=2.0, scikit-learn>=1.2, torch>=2.2, lightning>=2.2)
-- `pipeline-gnn` → Complete GNN pipeline (omegaconf>=2.3, numpy>=1.22, pandas>=2.0, scikit-learn>=1.2, torch>=2.2, torch-geometric>=2.5)
-- `pipeline-autoencoder` → Complete Autoencoder pipeline (omegaconf>=2.3, numpy>=1.22, pandas>=2.0, scikit-learn>=1.2, torch>=2.2, lightning>=2.2)
-
-**Special Bundles:**
-- `core` → Minimal framework (omegaconf>=2.3, numpy>=1.22, pandas>=2.0)
-- `all` → Everything (omegaconf>=2.3, numpy>=1.22, pandas>=2.0, scikit-learn>=1.2, xgboost>=1.7, torch>=2.2, lightning>=2.2, torch-geometric>=2.5)
-- `dev` → Development dependencies (pytest>=7.3, pytest-cov>=4.1, ruff>=0.5, black>=24.1, pre-commit>=3.6)
-
-**Usage Examples:**
-```bash
-# Install minimal setup
-pip install -e '.[core]'
-
-# Install specific models
-pip install -e '.[model-xgb,model-decision-tree]'
-
-# Install complete pipelines
-pip install -e '.[pipeline-xgb,pipeline-torch]'
-
-# Install algorithm bundles
-pip install -e '.[xgb,torch,gnn]'
-
-# Install everything
-pip install -e '.[all]'
 ```
 
 ---
@@ -1393,65 +1381,6 @@ config.params.n_estimators = 200
 model = XGBClassifierModel()
 model.build(config.params)
 ```
-
-### **Complete End-to-End Pipeline**
-
-The hep-ml-templates library now provides complete pre-configured pipeline types that include all necessary components (data, preprocessing, model, training, and evaluation) with automatic data file management. Each pipeline type is ready to run out-of-the-box:
-
-**Available Pipeline Types:**
-- `pipeline-decision-tree` - Complete Decision Tree workflow
-- `pipeline-xgb` - XGBoost pipeline with preprocessing and metrics  
-- `pipeline-ensemble` - Ensemble methods pipeline
-- `pipeline-torch` - PyTorch neural network pipeline
-- `pipeline-gnn` - Graph neural network pipeline
-
-**Quick Start - Any Pipeline in 3 Commands:**
-
-```bash
-# 1. Install a complete pipeline (includes data files automatically)
-mlpipe install-local pipeline-xgb --target-dir ./my-project
-
-# 2. Navigate to project
-cd my-project
-
-# 3. Run the pipeline
-mlpipe run
-```
-
-**Examples for Different Pipeline Types:**
-
-```bash
-# Decision Tree Pipeline
-mlpipe install-local pipeline-decision-tree --target-dir ./dt-project
-cd dt-project && mlpipe run
-
-# XGBoost Pipeline  
-mlpipe install-local pipeline-xgb --target-dir ./xgb-project
-cd xgb-project && mlpipe run
-
-# Neural Network Pipeline
-mlpipe install-local pipeline-torch --target-dir ./nn-project  
-cd nn-project && mlpipe run
-
-# Graph Neural Network Pipeline
-mlpipe install-local pipeline-gnn --target-dir ./gnn-project
-cd gnn-project && mlpipe run
-```
-
-**What You Get:**
-- ✅ Complete pipeline configuration (`pipeline.yaml`)
-- ✅ All necessary data files (`demo_tabular.csv`, specialized datasets)
-- ✅ Pre-configured preprocessing, training, and evaluation
-- ✅ Ready-to-run setup with `mlpipe run` command
-- ✅ Modular components you can customize independently
-
-**Expected Results:**
-- Decision Tree: ~100% accuracy on demo data
-- XGBoost: ~100% accuracy on demo data  
-- Neural Network: ~98% accuracy on demo data
-- All pipelines include ROC-AUC, F1-score, and confusion matrix metrics
-
----
 
 ---
 
