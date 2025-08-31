@@ -1396,47 +1396,60 @@ model.build(config.params)
 
 ### **Complete End-to-End Pipeline**
 
-```python
-from omegaconf import OmegaConf
-from mlpipe.core.registry import get_block
-from mlpipe.blocks.preprocessing.data_split import split_data
-from mlpipe.blocks.evaluation.classification import ClassificationEvaluator
+The hep-ml-templates library now provides complete pre-configured pipeline types that include all necessary components (data, preprocessing, model, training, and evaluation) with automatic data file management. Each pipeline type is ready to run out-of-the-box:
 
-# 1. Load configurations
-model_config = OmegaConf.load("configs/model/xgb_classifier.yaml")
-data_config = OmegaConf.load("configs/data/higgs_uci.yaml")
+**Available Pipeline Types:**
+- `pipeline-decision-tree` - Complete Decision Tree workflow
+- `pipeline-xgb` - XGBoost pipeline with preprocessing and metrics  
+- `pipeline-ensemble` - Ensemble methods pipeline
+- `pipeline-torch` - PyTorch neural network pipeline
+- `pipeline-gnn` - Graph neural network pipeline
 
-# 2. Load data
-data_block_class = get_block(data_config.block)
-data_loader = data_block_class()
-data_loader.build(data_config)
-X, y = data_loader.load()
+**Quick Start - Any Pipeline in 3 Commands:**
 
-# 3. Split data
-splits = split_data(X, y, train_size=0.8, stratify=True, random_state=42)
-X_train, y_train = splits['train']
-X_test, y_test = splits['test']
+```bash
+# 1. Install a complete pipeline (includes data files automatically)
+mlpipe install-local pipeline-xgb --target-dir ./my-project
 
-# 4. Train model
-model_block_class = get_block(model_config.block)
-model = model_block_class()
-model.build(model_config)
-model.fit(X_train, y_train)
+# 2. Navigate to project
+cd my-project
 
-# 5. Make predictions
-y_pred = model.predict(X_test)
-y_pred_proba = model.predict_proba(X_test)
-
-# 6. Evaluate
-evaluator = ClassificationEvaluator()
-evaluator.build({'metrics': ['accuracy', 'roc_auc', 'f1']})
-results = evaluator.evaluate(y_test, y_pred, y_pred_proba[:, 1])
-
-print(f"Model: {model_config.block}")
-print(f"Accuracy: {results['accuracy']:.4f}")
-print(f"AUC: {results['roc_auc']:.4f}")
-print(f"F1: {results['f1']:.4f}")
+# 3. Run the pipeline
+mlpipe run
 ```
+
+**Examples for Different Pipeline Types:**
+
+```bash
+# Decision Tree Pipeline
+mlpipe install-local pipeline-decision-tree --target-dir ./dt-project
+cd dt-project && mlpipe run
+
+# XGBoost Pipeline  
+mlpipe install-local pipeline-xgb --target-dir ./xgb-project
+cd xgb-project && mlpipe run
+
+# Neural Network Pipeline
+mlpipe install-local pipeline-torch --target-dir ./nn-project  
+cd nn-project && mlpipe run
+
+# Graph Neural Network Pipeline
+mlpipe install-local pipeline-gnn --target-dir ./gnn-project
+cd gnn-project && mlpipe run
+```
+
+**What You Get:**
+- ✅ Complete pipeline configuration (`pipeline.yaml`)
+- ✅ All necessary data files (`demo_tabular.csv`, specialized datasets)
+- ✅ Pre-configured preprocessing, training, and evaluation
+- ✅ Ready-to-run setup with `mlpipe run` command
+- ✅ Modular components you can customize independently
+
+**Expected Results:**
+- Decision Tree: ~100% accuracy on demo data
+- XGBoost: ~100% accuracy on demo data  
+- Neural Network: ~98% accuracy on demo data
+- All pipelines include ROC-AUC, F1-score, and confusion matrix metrics
 
 ---
 
@@ -1930,6 +1943,18 @@ mlpipe install-local model-random-forest preprocessing --target-dir .
 ```
 
 **Questions?** Check the FAQ above, explore `comprehensive_documentation/`, or open an issue on GitHub.
+
+---
+
+## 🤖 Development Acknowledgments
+
+This project leveraged advanced AI assistance during development to enhance code quality, functionality, and user experience:
+
+- **GitHub Copilot Agent Mode**: Used for comprehensive pipeline system development, modular architecture design, and end-to-end integration testing
+- **Claude Sonnet 4**: Utilized for error detection, code review, commenting standards, and block development validation
+- **Automated Testing**: AI-assisted creation of comprehensive test suites ensuring robust pipeline functionality across all model types
+
+The combination of human expertise and AI collaboration enabled rapid development of a sophisticated, modular ML framework while maintaining high code quality and comprehensive documentation standards.
 
 ---
 
