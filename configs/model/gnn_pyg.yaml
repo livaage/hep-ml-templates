@@ -1,11 +1,11 @@
-# Default GNN - use GCN
+# Graph Neural Network configuration for CSV data
 block: model.gnn_gcn
 params:
-  input_dim: 4  # 4-momentum features
+  input_dim: 3  # Match the number of features in graph_nodes_demo.csv 
   hidden_dims: [64, 32, 16]
   output_dim: 2
   dropout: 0.2
   learning_rate: 0.001
-  epochs: 100
+  epochs: 50
   batch_size: 32
-  task: "graph"
+  task: "node"  # Node classification for CSV data

@@ -27,6 +27,15 @@ PIPELINE_CONFIGS = {
         "evaluation": "classification",
         "runtime": "local_cpu"
     },
+    "ensemble": {
+        "data": "csv_demo",
+        "preprocessing": "standard",
+        "feature_eng": "all_columns",
+        "model": "ensemble_voting",
+        "training": "sklearn",
+        "evaluation": "classification",
+        "runtime": "local_cpu"
+    },
     "neural": {
         "data": "csv_demo",
         "preprocessing": "standard",
@@ -36,13 +45,22 @@ PIPELINE_CONFIGS = {
         "evaluation": "classification",
         "runtime": "local_cpu"
     },
+    "autoencoder": {
+        "data": "csv_demo",
+        "preprocessing": "standard",
+        "feature_eng": "all_columns",
+        "model": "ae_vanilla",
+        "training": "pytorch",
+        "evaluation": "reconstruction",
+        "runtime": "local_cpu"
+    },
     "torch": {
         "data": "csv_demo", 
         "preprocessing": "standard",
         "feature_eng": "all_columns",
         "model": "ae_lightning",
-        "training": "sklearn",
-        "evaluation": "classification",
+        "training": "pytorch",
+        "evaluation": "reconstruction",
         "runtime": "local_cpu"
     },
     "gnn": {

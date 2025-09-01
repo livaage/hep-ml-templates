@@ -3,6 +3,14 @@ from .ingest import csv_loader                 # registers "ingest.csv"  # noqa:
 from .preprocessing import standard_scaler     # registers "preprocessing.standard_scaler"  # noqa: F401
 from .feature_eng import column_selector       # registers "feature.column_selector"  # noqa: F401
 from .training import sklearn_trainer          # registers "train.sklearn"  # noqa: F401
+
+# Import PyTorch trainer if dependencies are available
+try:
+    from .training import pytorch_trainer      # registers "training.pytorch"  # noqa: F401
+except ImportError:
+    # PyTorch dependencies not available
+    pass
+
 from .evaluation import classification_metrics  # registers "eval.classification"  # noqa: F401
 
 # Import model blocks (they handle their own optional imports)

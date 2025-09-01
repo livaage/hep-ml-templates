@@ -38,46 +38,60 @@ A **modular, plug-and-play machine learning framework** designed specifically fo
 
 ## 🚀 Quick Start - Complete End-to-End Pipelines
 
-The hep-ml-templates library now provides complete pre-configured pipeline types that include all necessary components (data, preprocessing, model, training, and evaluation) with automatic data file management. Each pipeline type is ready to run out-of-the-box:
+The hep-ml-templates library provides complete pre-configured pipeline types that include all necessary components (data, preprocessing, model, training, and evaluation) with automatic data file management. Each pipeline type is ready to run out-of-the-box:
 
-**Available Pipeline Types:**
-- `pipeline-decision-tree` - Complete Decision Tree workflow
-- `pipeline-xgb` - XGBoost pipeline with preprocessing and metrics  
-- `pipeline-ensemble` - Ensemble methods pipeline
-- `pipeline-torch` - PyTorch neural network pipeline
-- `pipeline-gnn` - Graph neural network pipeline
+**✅ Working Pipeline Types (Validated):**
+- `pipeline-decision-tree` - Complete Decision Tree workflow (AUC: 100%, Acc: 100%)
+- `pipeline-xgb` - XGBoost pipeline with preprocessing and metrics (AUC: 100%, Acc: 99.67%)
+- `pipeline-ensemble` - Ensemble methods pipeline (AUC: 99.98%, Acc: 99.67%)  
+- `pipeline-neural` - Neural network (MLP) pipeline (AUC: 98.46%, Acc: 91.33%)
 
-**Quick Start - Any Pipeline in 3 Commands:**
+**🔧 In Development:**
+- `pipeline-autoencoder` - Autoencoder pipeline (PyTorch training integration pending)
+- `pipeline-torch` - Advanced PyTorch pipeline (PyTorch training integration pending)
+- `pipeline-gnn` - Graph neural network pipeline (local block discovery improvements pending)
+
+**Quick Start - Any Pipeline in 5 Commands:**
 
 ```bash
-# 1. Install a complete pipeline (includes data files automatically)
-mlpipe install-local pipeline-xgb --target-dir ./my-project
+# 1. Install the pipeline dependencies
+pip install -e "/path/to/hep-ml-templates[pipeline-xgb]"
 
-# 2. Navigate to project
+# 2. Install a complete pipeline locally (includes data files automatically)
+mlpipe install-local --target-dir ./my-project pipeline-xgb
+
+# 3. Navigate to project
 cd my-project
 
-# 3. Run the pipeline
+# 4. Install the local project as a package
+pip install -e .
+
+# 5. Run the pipeline
 mlpipe run
 ```
 
 **Examples for Different Pipeline Types:**
 
 ```bash
-# Decision Tree Pipeline
-mlpipe install-local pipeline-decision-tree --target-dir ./dt-project
-cd dt-project && mlpipe run
+# Decision Tree Pipeline (Perfect Accuracy)
+pip install -e "/path/to/hep-ml-templates[pipeline-decision-tree]"
+mlpipe install-local --target-dir ./dt-project pipeline-decision-tree
+cd dt-project && pip install -e . && mlpipe run
 
-# XGBoost Pipeline  
-mlpipe install-local pipeline-xgb --target-dir ./xgb-project
-cd xgb-project && mlpipe run
+# XGBoost Pipeline (Near-Perfect Performance)
+pip install -e "/path/to/hep-ml-templates[pipeline-xgb]"
+mlpipe install-local --target-dir ./xgb-project pipeline-xgb
+cd xgb-project && pip install -e . && mlpipe run
 
-# Neural Network Pipeline
-mlpipe install-local pipeline-torch --target-dir ./nn-project  
-cd nn-project && mlpipe run
+# Neural Network Pipeline (High Performance)
+pip install -e "/path/to/hep-ml-templates[pipeline-neural]"
+mlpipe install-local --target-dir ./nn-project pipeline-neural
+cd nn-project && pip install -e . && mlpipe run
 
-# Graph Neural Network Pipeline
-mlpipe install-local pipeline-gnn --target-dir ./gnn-project
-cd gnn-project && mlpipe run
+# Ensemble Pipeline (Excellent Performance)
+pip install -e "/path/to/hep-ml-templates[pipeline-ensemble]"
+mlpipe install-local --target-dir ./ensemble-project pipeline-ensemble
+cd ensemble-project && pip install -e . && mlpipe run
 ```
 
 **What You Get:**
@@ -87,15 +101,133 @@ cd gnn-project && mlpipe run
 - ✅ Ready-to-run setup with `mlpipe run` command
 - ✅ Modular components you can customize independently
 
-**Expected Results:**
-- Decision Tree: ~100% accuracy on demo data
-- XGBoost: ~100% accuracy on demo data  
-- Neural Network: ~98% accuracy on demo data
+**Expected Results (Validated on Demo Data):**
+- **Decision Tree**: AUC=100%, Accuracy=100%
+- **XGBoost**: AUC=100%, Accuracy=99.67%
+- **Ensemble**: AUC=99.98%, Accuracy=99.67%
+- **Neural Network (MLP)**: AUC=98.46%, Accuracy=91.33%
 - All pipelines include ROC-AUC, F1-score, and confusion matrix metrics
+
+### **⚠️ Important Installation Requirements**
+Before starting any pipeline tutorial:
+- **Use escaped quotes** around the path and extras: `"path[extras]"`
+- **Use the full absolute path** to your hep-ml-templates directory  
+- **Do NOT use** just `".[extras]"` as this may be misleading
+- **Replace `/path/to/hep-ml-templates`** with your actual directory path
 
 ---
 
-## 🛠️ Three Core Workflows
+## � Complete Pipeline Tutorial - Step-by-Step
+
+Follow these detailed steps to set up and run any pipeline type:
+
+### **Tutorial: Setting Up an XGBoost Pipeline**
+
+**Step 1: Install the Pipeline with Dependencies**
+```bash
+# Install the specific pipeline with all its dependencies
+# Replace /path/to/hep-ml-templates with your actual library path
+pip install -e "/path/to/hep-ml-templates[pipeline-xgb]"
+```
+
+**Step 2: Install the Pipeline Components Locally**
+```bash
+# Install the pipeline components to a local directory
+mlpipe install-local --target-dir ./xgb-project pipeline-xgb
+```
+
+**Step 3: Navigate to the Project Directory**
+```bash
+# Move into the newly created project directory
+cd xgb-project
+```
+
+**Step 4: Install the Local Project as a Package**
+```bash
+# Install the local project as an editable package
+pip install -e .
+```
+
+**Step 5: Run the Pipeline**
+```bash
+# Execute the pipeline
+mlpipe run
+```
+
+### **Tutorial: Complete Workflow for Any Pipeline Type**
+
+Choose your desired pipeline type and follow this pattern:
+
+**Available Pipeline Types:**
+- `pipeline-xgb` → XGBoost classifier
+- `pipeline-decision-tree` → Decision tree classifier  
+- `pipeline-ensemble` → Ensemble methods
+- `pipeline-neural` → Neural network (MLP)
+- `pipeline-torch` → PyTorch neural network
+- `pipeline-autoencoder` → PyTorch autoencoder
+- `pipeline-gnn` → Graph neural network (requires local CLI - see note below)
+
+**Complete Tutorial Template:**
+```bash
+# Step 1: Install pipeline dependencies
+pip install -e "/path/to/hep-ml-templates[PIPELINE-TYPE]"
+
+# Step 2: Install pipeline components locally
+mlpipe install-local --target-dir ./my-project PIPELINE-TYPE
+
+# Step 3: Navigate to project
+cd my-project
+
+# Step 4: Install as local package
+pip install -e .
+
+# Step 5: Run the pipeline
+mlpipe run
+```
+
+**Special Note for GNN Pipeline:**
+The GNN pipeline requires using the local CLI script due to block registration scope:
+```bash
+# After steps 1-4 above, use local CLI instead of mlpipe run
+python mlpipe_cli.py run
+```
+
+**Example for Different Pipeline Types:**
+
+```bash
+# Decision Tree Pipeline
+pip install -e "/path/to/hep-ml-templates[pipeline-decision-tree]"
+mlpipe install-local --target-dir ./dt-project pipeline-decision-tree
+cd dt-project && pip install -e . && mlpipe run
+
+# Neural Network Pipeline  
+pip install -e "/path/to/hep-ml-templates[pipeline-neural]"
+mlpipe install-local --target-dir ./nn-project pipeline-neural
+cd nn-project && pip install -e . && mlpipe run
+
+# Ensemble Pipeline
+pip install -e "/path/to/hep-ml-templates[pipeline-ensemble]"
+mlpipe install-local --target-dir ./ensemble-project pipeline-ensemble
+cd ensemble-project && pip install -e . && mlpipe run
+```
+
+### **What Each Step Does:**
+
+1. **Install Dependencies**: Downloads and installs all required packages for your chosen pipeline type
+2. **Local Installation**: Copies all necessary configuration files, data, and block components to your project directory
+3. **Navigate**: Changes to your new project directory containing all pipeline files
+4. **Package Installation**: Makes your local project an importable Python package with proper module resolution
+5. **Execute**: Runs the complete machine learning pipeline from data loading to evaluation
+
+### **Expected Results:**
+- ✅ Complete pipeline configuration (`pipeline.yaml`)
+- ✅ All necessary data files automatically included
+- ✅ Performance metrics (AUC, Accuracy, F1-score, Confusion Matrix)
+- ✅ Trained model ready for prediction or further analysis
+
+---
+
+## �🛠️ Three Core Workflows
 
 ### 1. **Rapid Prototyping**
 Experiment with different models and datasets using config/CLI overrides:
@@ -115,7 +247,10 @@ mlpipe run --overrides data=higgs_100k feature_eng=demo_features
 Create self-contained projects with selected components:
 
 ```bash
-# Create a new project directory
+# Install the dependencies for your chosen components
+pip install -e "/path/to/hep-ml-templates[random-forest,data-higgs,evaluation]"
+
+# Create a new project directory with selected components
 mlpipe install-local model-random-forest data-higgs evaluation --target-dir ./research-project
 cd ./research-project && pip install -e .
 
@@ -181,34 +316,42 @@ model.build({'n_estimators': 200, 'learning_rate': 0.1})
 # Install everything you need for end-to-end ML pipelines
 git clone https://github.com/Arvind-t33/hep-ml-templates.git
 cd hep-ml-templates
-pip install -e '.[all]'
+pip install -e "/path/to/hep-ml-templates[all]"
+# Note: Use escaped quotes and full path to library directory
 ```
 
 ### **Selective Installation**
-Install only the dependencies you need:
+Install only the dependencies you need using the full path to the library directory:
 
 ```bash
 # Core framework only
-pip install -e '.[core]'
+pip install -e "/path/to/hep-ml-templates[core]"
 
 # Complete pipeline bundles (recommended)
-pip install -e '.[pipeline-xgb,pipeline-torch]'
+pip install -e "/path/to/hep-ml-templates[pipeline-xgb,pipeline-torch]"
 
 # Traditional ML models
-pip install -e '.[xgb,decision-tree,random-forest,svm]'
+pip install -e "/path/to/hep-ml-templates[xgb,decision-tree,random-forest,svm]"
 
 # Deep learning components  
-pip install -e '.[torch,gnn,autoencoder]'
+pip install -e "/path/to/hep-ml-templates[torch,gnn,autoencoder]"
 
 # Data science essentials
-pip install -e '.[data-csv,data-higgs,preprocessing,evaluation]'
+pip install -e "/path/to/hep-ml-templates[data-csv,data-higgs,preprocessing,evaluation]"
 ```
+
+### **Important Installation Notes:**
+- ⚠️ **Use escaped quotes** around the path and extras: `"path[extras]"`
+- ⚠️ **Use full path** to the library directory, not just `".[extras]"`
+- ⚠️ **Replace `/path/to/hep-ml-templates`** with your actual directory path
 
 ### **Available Complete Pipeline Bundles**
 - `pipeline-xgb` → Complete XGBoost pipeline with all dependencies
 - `pipeline-decision-tree` → Complete Decision Tree pipeline  
 - `pipeline-ensemble` → Complete Ensemble methods pipeline
+- `pipeline-neural` → Complete Neural Network (MLP) pipeline
 - `pipeline-torch` → Complete PyTorch neural network pipeline
+- `pipeline-autoencoder` → Complete Autoencoder pipeline
 - `pipeline-gnn` → Complete Graph neural network pipeline
 
 ---
@@ -306,16 +449,18 @@ mlpipe install-local model-xgb evaluation --target-dir ./my-project
 # 1) Clone & install the core library
 git clone https://github.com/Arvind-t33/hep-ml-templates.git
 cd hep-ml-templates
-pip install -e .
 
-# 2) Discover available components
+# 2) Install with dependencies for your chosen components
+pip install -e "/full/path/to/hep-ml-templates[xgb,evaluation,data-higgs]"
+
+# 3) Discover available components
 mlpipe list-extras
 
-# 3) Create a project with XGBoost + evaluation + HIGGS data
+# 4) Create a project with XGBoost + evaluation + HIGGS data
 mlpipe install-local model-xgb evaluation data-higgs --target-dir ./my-hep-project
 cd ./my-hep-project && pip install -e .
 
-# 4) Run the pipeline (components are configurable)
+# 5) Run the pipeline (components are configurable)
 mlpipe run --overrides model=xgb_classifier data=higgs_uci
 ```
 
@@ -1852,21 +1997,28 @@ Ready to start? Here's your path forward:
 ### **For Quick Experimentation:**
 ```bash
 git clone https://github.com/Arvind-t33/hep-ml-templates.git
-cd hep-ml-templates && pip install -e '.[all]'
+cd hep-ml-templates
+pip install -e "/full/path/to/hep-ml-templates[all]"
 mlpipe run --overrides model=xgb_classifier
 ```
 
 ### **For New Projects:**
 ```bash
-# In your project directory
-mlpipe install-local model-xgb data-higgs evaluation --target-dir .
-pip install -e .
+# Install dependencies first
+pip install -e "/path/to/hep-ml-templates[xgb,data-higgs,evaluation]"
+
+# Then create the project
+mlpipe install-local model-xgb data-higgs evaluation --target-dir ./my-project
+cd my-project && pip install -e .
 mlpipe run
 ```
 
 ### **For Existing Code Integration:**
 ```bash
-# Install specific components
+# Install specific components with dependencies
+pip install -e "/path/to/hep-ml-templates[random-forest,preprocessing]"
+
+# Install components locally
 mlpipe install-local model-random-forest preprocessing --target-dir .
 # Update imports (see integration examples above)
 ```

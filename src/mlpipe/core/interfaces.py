@@ -5,14 +5,12 @@ import pandas as pd
 
 class DataIngestor(ABC):
     @abstractmethod
-    def load(self) -> Tuple[pd.DataFrame, pd.Series]:
+    def load(self) -> Tuple[pd.DataFrame, pd.Series, Dict[str, Any]]:
         """
-        Load data and return features and target.
+        Load data and return features, target, and metadata.
 
         Returns:
-            Tuple of (features_dataframe, target_series)
-
-        Note: Some implementations may return additional metadata as a third element.
+            Tuple of (features_dataframe, target_series, metadata_dict)
         """
         ...
 

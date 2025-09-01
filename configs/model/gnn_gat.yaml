@@ -1,11 +1,11 @@
 block: model.gnn_gat
 params:
-  input_dim: 4  # 4-momentum features
+  input_dim: 3  # 4-momentum features
   hidden_dims: [64, 32, 16]
   output_dim: 2
   dropout: 0.2
   learning_rate: 0.001
-  epochs: 100
+  epochs: 50
   batch_size: 32
   task: "graph"
   attention_heads: 4  # Number of attention heads in GAT

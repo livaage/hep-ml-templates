@@ -10,7 +10,7 @@ from typing import List, Dict, Set, Optional
 from mlpipe.core.pipeline_generator import generate_pipeline_config, PIPELINE_CONFIGS
 
 # Core modules needed by all extras
-CORE_MODULES = ['interfaces.py', 'registry.py', 'config.py', 'utils.py']
+CORE_MODULES = ['interfaces.py', 'registry.py', 'config.py', 'utils.py', 'universal_runner.py']
 
 # Helper function to create consistent model extra definitions
 def create_model_extra(block_file: str, config_files: List[str], include_data: List[str] = None) -> Dict:
@@ -154,7 +154,8 @@ EXTRAS_TO_BLOCKS = {
             'feature_eng/column_selector.py',
             'model/ae_lightning.py',
             'training/sklearn_trainer.py',
-            'evaluation/classification_metrics.py'
+            'training/pytorch_trainer.py',
+            'evaluation/reconstruction_metrics.py'
         ],
         'core': ['interfaces.py', 'registry.py', 'config.py', 'utils.py'],
         'configs': [
@@ -162,8 +163,8 @@ EXTRAS_TO_BLOCKS = {
             'preprocessing/standard.yaml',
             'feature_eng/all_columns.yaml',
             'model/ae_lightning.yaml',
-            'training/sklearn.yaml',
-            'evaluation/classification.yaml',
+            'training/pytorch.yaml',
+            'evaluation/reconstruction.yaml',
             'runtime/local_cpu.yaml'
         ],
         'data': ['demo_tabular.csv'],
@@ -213,6 +214,51 @@ EXTRAS_TO_BLOCKS = {
         ],
         'data': ['demo_tabular.csv'],
         'pipeline_type': 'neural'
+    },
+    'pipeline-ensemble': {
+        'blocks': [
+            'ingest/csv_loader.py',
+            'preprocessing/standard_scaler.py',
+            'feature_eng/column_selector.py',
+            'model/ensemble_models.py',
+            'training/sklearn_trainer.py',
+            'evaluation/classification_metrics.py'
+        ],
+        'core': ['interfaces.py', 'registry.py', 'config.py', 'utils.py'],
+        'configs': [
+            'data/csv_demo.yaml',
+            'preprocessing/standard.yaml',
+            'feature_eng/all_columns.yaml',
+            'model/ensemble_voting.yaml',
+            'training/sklearn.yaml',
+            'evaluation/classification.yaml',
+            'runtime/local_cpu.yaml'
+        ],
+        'data': ['demo_tabular.csv'],
+        'pipeline_type': 'ensemble'
+    },
+    'pipeline-autoencoder': {
+        'blocks': [
+            'ingest/csv_loader.py',
+            'preprocessing/standard_scaler.py',
+            'feature_eng/column_selector.py',
+            'model/ae_lightning.py',
+            'training/sklearn_trainer.py',
+            'training/pytorch_trainer.py',
+            'evaluation/reconstruction_metrics.py'
+        ],
+        'core': ['interfaces.py', 'registry.py', 'config.py', 'utils.py'],
+        'configs': [
+            'data/csv_demo.yaml',
+            'preprocessing/standard.yaml',
+            'feature_eng/all_columns.yaml',
+            'model/ae_vanilla.yaml',
+            'training/pytorch.yaml',
+            'evaluation/reconstruction.yaml',
+            'runtime/local_cpu.yaml'
+        ],
+        'data': ['demo_tabular.csv'],
+        'pipeline_type': 'autoencoder'
     },
 
     # Bundle everything
@@ -339,7 +385,8 @@ def get_blocks_and_configs_for_extras(extras: List[str]) -> Dict[str, Set[str]]:
     all_data = set()
 
     # Always include essential core modules needed for CLI functionality
-    essential_core = {"registry.py", "interfaces.py", "config.py", "utils.py"}
+        # Essential core modules that are always needed for local installations to work
+    essential_core = {"registry.py", "interfaces.py", "config.py", "utils.py", "universal_runner.py"}
 
     for extra in extras:
         if extra in EXTRAS_TO_BLOCKS:
@@ -611,13 +658,6 @@ def generate_pipeline_configs(pipeline_extras: List[str], target_path: Path):
                 yaml.dump(config, f, default_flow_style=False, sort_keys=False)
             
             print(f"✅ Generated {pipeline_type} pipeline config: pipeline.yaml")
-            
-            # Also create a specific pipeline config file
-            specific_file = configs_dir / f"pipeline_{pipeline_type}.yaml" 
-            with open(specific_file, 'w') as f:
-                yaml.dump(config, f, default_flow_style=False, sort_keys=False)
-            
-            print(f"✅ Generated specific config: pipeline_{pipeline_type}.yaml")
         else:
             print(f"⚠️  Warning: Unknown pipeline type '{pipeline_type}' - using default config")
             # Generate default config
@@ -736,6 +776,8 @@ def create_setup_py(target_dir: Path, extras: List[str]):
         'xgb': ['xgboost>=1.7'],
         'pipeline-xgb': ['xgboost>=1.7'],
         'pipeline-neural': ['scikit-learn>=1.2'],
+        'pipeline-ensemble': ['scikit-learn>=1.2'],
+        'pipeline-autoencoder': ['torch>=2.0', 'pytorch-lightning>=2.0'],
         'model-torch': ['torch>=2.0', 'pytorch-lightning>=2.0'],
         'torch': ['torch>=2.0', 'pytorch-lightning>=2.0'],
         'pipeline-torch': ['torch>=2.0', 'pytorch-lightning>=2.0'],
@@ -815,19 +857,32 @@ sys.path.insert(0, str(Path(__file__).parent))
 try:
     from mlpipe.core.registry import list_blocks
     from mlpipe.core.config import load_pipeline_config
+    from mlpipe.core.universal_runner import run_pipeline
     import mlpipe.blocks  # This will register available blocks
 
     def main():
         if len(sys.argv) < 2:
             print("Usage: python mlpipe_cli.py <command>")
             print("Commands:")
+            print("  run            - Run the pipeline")
             print("  list-blocks    - List available blocks")
             print("  list-configs   - List available configurations")
             return
 
         command = sys.argv[1]
 
-        if command == "list-blocks":
+        if command == "run":
+            # Run the pipeline (using local blocks)
+            print("🚀 Running pipeline with local blocks...")
+            try:
+                run_pipeline(pipeline="pipeline", config_path="configs", config_name="pipeline")
+                print("✅ Pipeline completed successfully!")
+            except Exception as e:
+                print(f"❌ Pipeline failed: {e}")
+                import traceback
+                traceback.print_exc()
+
+        elif command == "list-blocks":
             print("Available blocks:")
             for name in sorted(list_blocks()):
                 print(f"  {name}")

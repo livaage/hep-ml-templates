@@ -33,14 +33,14 @@ class GCNClassifier(ModelBlock):
 
     def __init__(self, **kwargs):
         default_params = {
-            'input_dim': 4,  # Common for 4-momentum features
+            'input_dim': 4,  # Common for 4-momentum features  
             'hidden_dims': [64, 32],
             'output_dim': 2,  # Binary classification
             'dropout': 0.2,
             'learning_rate': 0.001,
             'epochs': 100,
             'batch_size': 32,
-            'task': 'graph',  # 'node' or 'graph'
+            'task': 'node',  # 'node' or 'graph' - changed to 'node' for CSV data
             'device': 'cuda' if torch.cuda.is_available() else 'cpu'
         }
 
@@ -74,6 +74,13 @@ class GCNClassifier(ModelBlock):
     def fit(self, X, y) -> None:
         """Fit the GCN model."""
         if self.model is None:
+            # Auto-detect input dimension from data
+            if hasattr(X, 'shape') and len(X.shape) > 1:
+                self.params['input_dim'] = X.shape[1]
+            elif isinstance(X, list) and len(X) > 0:
+                self.params['input_dim'] = len(X[0]) if hasattr(X[0], '__len__') else X.shape[1]
+            
+            print(f"🔧 Auto-detected input dimension: {self.params['input_dim']}")
             self.build()
 
         # Convert data to PyG format
@@ -116,34 +123,46 @@ class GCNClassifier(ModelBlock):
         return np.array(predictions)
 
     def _prepare_graph_data(self, X, y=None):
-        """Convert tabular data to graph format for HEP use cases."""
-        # This is a simplified example - real implementation would depend on data structure
-        # For jets: each row could be a jet, columns could be constituent features
-        # For events: each row could be a particle, need to group by event
-
-        data_list = []
-        for idx, row in X.iterrows():
-            # Example: create a simple graph from tabular features
-            # In practice, you'd use domain knowledge to construct meaningful graphs
-
-            # Simple example: fully connected graph of features
-            num_nodes = len(row)
-            edge_index = torch.combinations(torch.arange(num_nodes), 2).t().contiguous()
-
-            # Add reverse edges for undirected graph
-            edge_index = torch.cat([edge_index, edge_index.flip(0)], dim=1)
-
-            node_features = torch.tensor(row.values, dtype=torch.float).view(-1, 1)
-
-            if y is not None:
-                label = torch.tensor(y.iloc[idx], dtype=torch.long)
-                data = Data(x=node_features, edge_index=edge_index, y=label)
-            else:
-                data = Data(x=node_features, edge_index=edge_index)
-
-            data_list.append(data)
-
-        return data_list
+        """Convert tabular data to graph format."""
+        # For CSV data: each row becomes a node, columns are node features
+        # Create edges based on feature similarity or use a k-NN approach
+        
+        import pandas as pd
+        from sklearn.neighbors import kneighbors_graph
+        from sklearn.preprocessing import StandardScaler
+        import numpy as np
+        
+        # Convert to numpy if needed
+        if isinstance(X, pd.DataFrame):
+            X_array = X.values.astype(np.float32)
+        else:
+            X_array = np.array(X, dtype=np.float32)
+        
+        # Standardize features for better similarity computation
+        scaler = StandardScaler()
+        X_scaled = scaler.fit_transform(X_array)
+        
+        # Create edges using k-nearest neighbors (k=8 for good connectivity)
+        k = min(8, len(X_array) - 1)  # Ensure k < num_samples
+        adjacency = kneighbors_graph(X_scaled, n_neighbors=k, mode='connectivity', include_self=False)
+        
+        # Convert sparse adjacency matrix to edge list
+        edge_indices = np.array(adjacency.nonzero()).T
+        edge_index = torch.tensor(edge_indices.T, dtype=torch.long)
+        
+        # Node features are the original features
+        node_features = torch.tensor(X_array, dtype=torch.float)
+        
+        # Create single graph with all nodes
+        if y is not None:
+            y_tensor = torch.tensor(y.values if hasattr(y, 'values') else y, dtype=torch.long)
+            data = Data(x=node_features, edge_index=edge_index, y=y_tensor)
+        else:
+            data = Data(x=node_features, edge_index=edge_index)
+        
+        print(f"🔗 Created graph: {data.num_nodes} nodes, {data.num_edges} edges, {data.num_node_features} features per node")
+        
+        return [data]  # Return single graph as list for consistency
 
     def _create_batches(self, data_list):
         """Create batches from graph data."""
