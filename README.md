@@ -12,11 +12,11 @@ A **modular, plug-and-play machine learning framework** designed specifically fo
 ## 📚 Table of Contents
 
 ### Getting Started (Start Here!)
-- [🚀 **Quick Start - Complete End-to-End Pipelines**](#-quick-start---complete-end-to-end-pipelines) 
+- [🚀 **Quick Start - Complete End-to-End Pipelines**](#-quick-start---complete-end-to-end-pipelines)
 - [💻 **Installation Options**](#-installation--dependency-management)
 - [🛠️ **Three Core Workflows**](#%EF%B8%8F-three-core-workflows)
 
-### Core Documentation  
+### Core Documentation
 - [✨ **Key Features**](#-key-features)
 - [📊 **Available Components Overview**](#-available-components-blocks)
 - [🏗️ **Core Architecture**](#%EF%B8%8F-core-architecture)
@@ -43,7 +43,7 @@ The hep-ml-templates library provides complete pre-configured pipeline types tha
 **✅ Working Pipeline Types (Fully Validated):**
 - `pipeline-decision-tree` - Complete Decision Tree workflow (AUC: 100%, Acc: 100%)
 - `pipeline-xgb` - XGBoost pipeline with preprocessing and metrics (AUC: 100%, Acc: 99.67%)
-- `pipeline-ensemble` - Ensemble methods pipeline (AUC: 99.98%, Acc: 99.67%)  
+- `pipeline-ensemble` - Ensemble methods pipeline (AUC: 99.98%, Acc: 99.67%)
 - `pipeline-neural` - Neural network (MLP) pipeline (AUC: 98.46%, Acc: 91.33%)
 - `pipeline-gnn` - Graph neural network pipeline (AUC: 98.15%, Acc: 92.67%)
 - `pipeline-autoencoder` - Autoencoder reconstruction pipeline (MSE: 0.023±0.029, MAE: 0.115±0.067, RMSE: 0.131±0.075)
@@ -113,7 +113,7 @@ cd ensemble-project && pip install -e . && mlpipe run
 ### **⚠️ Important Installation Requirements**
 Before starting any pipeline tutorial:
 - **Use escaped quotes** around the path and extras: `"path[extras]"`
-- **Use the full absolute path** to your hep-ml-templates directory  
+- **Use the full absolute path** to your hep-ml-templates directory
 - **Do NOT use** just `".[extras]"` as this may be misleading
 - **Replace `/path/to/hep-ml-templates`** with your actual directory path
 
@@ -193,9 +193,9 @@ For experienced users who prefer the most efficient workflow, use this validated
 
 ```bash
 # Template pattern that works for all pipelines:
-cd /path/to/hep-ml-templates && pip install -e ".[pipeline-{NAME}]" && 
-cd /path/to/test_modular_install && rm -rf {NAME}-demo && 
-mlpipe install-local pipeline-{NAME} --target-dir {NAME}-demo && 
+cd /path/to/hep-ml-templates && pip install -e ".[pipeline-{NAME}]" &&
+cd /path/to/test_modular_install && rm -rf {NAME}-demo &&
+mlpipe install-local pipeline-{NAME} --target-dir {NAME}-demo &&
 cd {NAME}-demo && pip install -e . && mlpipe run
 ```
 
@@ -204,7 +204,7 @@ cd {NAME}-demo && pip install -e . && mlpipe run
 # XGBoost Pipeline
 cd /path/to/hep-ml-templates && pip install -e ".[pipeline-xgb]" && cd /path/to/test_modular_install && rm -rf xgb-demo && mlpipe install-local pipeline-xgb --target-dir xgb-demo && cd xgb-demo && pip install -e . && mlpipe run
 
-# Decision Tree Pipeline  
+# Decision Tree Pipeline
 cd /path/to/hep-ml-templates && pip install -e ".[pipeline-decision-tree]" && cd /path/to/test_modular_install && rm -rf dt-demo && mlpipe install-local pipeline-decision-tree --target-dir dt-demo && cd dt-demo && pip install -e . && mlpipe run
 
 # Neural Network Pipeline
@@ -233,7 +233,7 @@ pip install -e "/path/to/hep-ml-templates[pipeline-decision-tree]"
 mlpipe install-local --target-dir ./dt-project pipeline-decision-tree
 cd dt-project && pip install -e . && mlpipe run
 
-# Neural Network Pipeline  
+# Neural Network Pipeline
 pip install -e "/path/to/hep-ml-templates[pipeline-neural]"
 mlpipe install-local --target-dir ./nn-project pipeline-neural
 cd nn-project && pip install -e . && mlpipe run
@@ -276,7 +276,7 @@ mlpipe run --overrides data=csv_demo preprocessing=time_series_split
 mlpipe run --overrides data=higgs_100k feature_eng=demo_features
 ```
 
-### 2. **Standalone Project Scaffolding** 
+### 2. **Standalone Project Scaffolding**
 Create self-contained projects with selected components:
 
 ```bash
@@ -366,7 +366,7 @@ pip install -e "/path/to/hep-ml-templates[pipeline-xgb,pipeline-torch]"
 # Traditional ML models
 pip install -e "/path/to/hep-ml-templates[xgb,decision-tree,random-forest,svm]"
 
-# Deep learning components  
+# Deep learning components
 pip install -e "/path/to/hep-ml-templates[torch,gnn,autoencoder]"
 
 # Data science essentials
@@ -380,7 +380,7 @@ pip install -e "/path/to/hep-ml-templates[data-csv,data-higgs,preprocessing,eval
 
 ### **Available Complete Pipeline Bundles**
 - `pipeline-xgb` → Complete XGBoost pipeline with all dependencies
-- `pipeline-decision-tree` → Complete Decision Tree pipeline  
+- `pipeline-decision-tree` → Complete Decision Tree pipeline
 - `pipeline-ensemble` → Complete Ensemble methods pipeline
 - `pipeline-neural` → Complete Neural Network (MLP) pipeline
 - `pipeline-torch` → Complete PyTorch neural network pipeline
@@ -513,21 +513,21 @@ mlpipe-manager install model-xgb ./my-project
 ### 🚀 **Complete Pipelines** (Ready to Run)
 End-to-end workflows with everything included:
 - `pipeline-xgb` - XGBoost pipeline with preprocessing and metrics
-- `pipeline-decision-tree` - Decision tree complete workflow 
+- `pipeline-decision-tree` - Decision tree complete workflow
 - `pipeline-torch` - PyTorch neural network pipeline
 - `pipeline-gnn` - Graph neural network pipeline
 - `pipeline-ensemble` - Ensemble methods pipeline
 
 ### 🧠 **Individual Models**
-**Traditional ML:** Decision Tree, Random Forest, XGBoost, SVM, MLP, AdaBoost, Ensemble  
+**Traditional ML:** Decision Tree, Random Forest, XGBoost, SVM, MLP, AdaBoost, Ensemble
 **Neural Networks:** PyTorch, CNN, Transformer, GNN (GCN/GAT), Autoencoders (Vanilla/Variational)
 
 ### ⚡ **Algorithm Combos** (Model + Preprocessing)
 Quick bundles: `xgb`, `decision-tree`, `random-forest`, `svm`, `mlp`, `torch`, `gnn`, `ensemble`
 
 ### 📁 **Data & Processing**
-**Data Sources:** HIGGS benchmark, CSV loader, ROOT file loader  
-**Preprocessing:** Standard scaling, advanced train/val/test splitting, feature engineering  
+**Data Sources:** HIGGS benchmark, CSV loader, ROOT file loader
+**Preprocessing:** Standard scaling, advanced train/val/test splitting, feature engineering
 **Evaluation:** Classification metrics (accuracy, ROC-AUC, F1), reconstruction metrics
 
 ### 🔍 **Discover More Components**
@@ -559,7 +559,7 @@ Advanced graph-based models for particle interaction analysis:
 ```python
 # Available configurations:
 configs/model/gnn_gcn.yaml           # Graph Convolutional Networks
-configs/model/gnn_gat.yaml           # Graph Attention Networks  
+configs/model/gnn_gat.yaml           # Graph Attention Networks
 configs/model/gnn_pyg.yaml           # PyTorch Geometric implementation
 ```
 
@@ -659,7 +659,7 @@ n_jobs: -1                     # Number of jobs to run in parallel
 
 #### **Support Vector Machine (model=svm)**
 ```yaml
-# configs/model/svm.yaml - Full parameter reference  
+# configs/model/svm.yaml - Full parameter reference
 block: model.svm
 C: 1.0                         # Regularization parameter
 kernel: "rbf"                  # Kernel type ('linear', 'poly', 'rbf', 'sigmoid')
@@ -791,7 +791,7 @@ pos_label: 1                   # Positive label for binary classification
 block: eval.reconstruction
 metrics:
   - mse                        # Mean Squared Error
-  - mae                        # Mean Absolute Error  
+  - mae                        # Mean Absolute Error
   - rmse                       # Root Mean Squared Error
   - snr                        # Signal-to-Noise Ratio
   - ssim                       # Structural Similarity (requires skimage)
@@ -811,8 +811,8 @@ Built-in splitting utilities with comprehensive support:
 ```python
 from mlpipe.blocks.preprocessing.data_split import split_data
 
-splits = split_data(X, y, 
-    train_size=0.7, val_size=0.15, test_size=0.15, 
+splits = split_data(X, y,
+    train_size=0.7, val_size=0.15, test_size=0.15,
     stratify=True, random_state=42
 )
 X_train, y_train = splits['train']
@@ -1017,7 +1017,7 @@ mlpipe run --overrides model=decision_tree data=higgs_uci preprocessing=data_spl
 **Available Override Targets:**
 - **`model=`**: xgb_classifier, decision_tree, random_forest, svm, mlp, adaboost, ensemble_voting, etc.
 - **`data=`**: higgs_uci, csv_demo, custom_hep_example, wine_quality_example, medical_example
-- **`preprocessing=`**: data_split, standard  
+- **`preprocessing=`**: data_split, standard
 - **`feature_eng=`**: column_selector, demo_features, custom_test_features
 - **`training=`**: sklearn
 - **`evaluation=`**: classification
@@ -1030,7 +1030,7 @@ Standalone interface with simpler command structure and enhanced examples:
 mlpipe-manager list                                     # List all available extras
 mlpipe-manager validate                                 # Validate extras configuration
 
-# Inspection commands  
+# Inspection commands
 mlpipe-manager details EXTRA_NAME                      # Show details for specific extra
 mlpipe-manager preview EXTRA1 [EXTRA2 ...]            # Preview installation
 
@@ -1051,7 +1051,7 @@ mlpipe-manager install model-xgb ./my-project          # Install to project dire
 - Color-coded output for easy browsing
 - Equivalent to `mlpipe list-extras`
 
-**`mlpipe-manager validate`**  
+**`mlpipe-manager validate`**
 - Comprehensive validation of extras system integrity
 - Checks file existence, registry mappings, dependency consistency
 - Reports any issues with specific extras
@@ -1111,7 +1111,7 @@ mlpipe run --overrides model=decision_tree model.params.max_depth=10 model.param
 
 #### **Data Processing Variations**
 ```bash
-# Different preprocessing strategies  
+# Different preprocessing strategies
 mlpipe run --overrides preprocessing=standard          # Standard scaling
 mlpipe run --overrides preprocessing=data_split        # Custom data splitting
 
@@ -1161,7 +1161,7 @@ hep-ml-templates/
 │       └── local_install.py        # Extras installation logic
 ├── configs/                        # Default YAML configurations
 │   ├── model/                      # Model configurations
-│   ├── data/                       # Data loader configurations  
+│   ├── data/                       # Data loader configurations
 │   ├── preprocessing/              # Preprocessing configurations
 │   └── pipeline/                   # End-to-end pipeline configurations
 ├── comprehensive_documentation/    # Complete documentation hub
@@ -1186,19 +1186,19 @@ class CustomModel(ModelBlock):
     def build(self, config: dict) -> None:
         """Initialize model with configuration parameters."""
         pass
-    
+
     def fit(self, X, y) -> 'ModelBlock':
         """Train the model on training data."""
         pass
-    
+
     def predict(self, X):
         """Make predictions on new data."""
         pass
-    
+
     def predict_proba(self, X):  # For classification models
         """Return prediction probabilities."""
         pass
-    
+
     def score(self, X, y) -> float:  # Optional
         """Return model performance score."""
         pass
@@ -1429,12 +1429,12 @@ X, y = loader.load()  # Requires: pip install uproot
 from mlpipe.blocks.preprocessing.data_split import split_data, DataSplitter
 
 # Functional interface
-splits = split_data(X, y, 
+splits = split_data(X, y,
     train_size=0.7, val_size=0.15, test_size=0.15,
     stratify=True, random_state=42
 )
 X_train, y_train = splits['train']
-X_val, y_val = splits['val'] 
+X_val, y_val = splits['val']
 X_test, y_test = splits['test']
 
 # Class-based interface
@@ -1584,7 +1584,7 @@ model.transformer_hep       # Transformer architecture
 model.xgb_classifier        # XGBoost classifier
 preprocessing.data_split    # Data splitting utilities
 preprocessing.onehot_encoder # 🆕 One-hot encoding for categorical data
-preprocessing.standard_scaler # Standard scaling preprocessing  
+preprocessing.standard_scaler # Standard scaling preprocessing
 train.sklearn               # Scikit-learn training orchestration
 ```
 
@@ -1730,15 +1730,15 @@ class MyNewModel(ModelBlock):
     def build(self, config):
         # Initialize model with config parameters
         pass
-    
+
     def fit(self, X, y):
         # Train the model
         pass
-    
+
     def predict(self, X):
         # Make predictions
         pass
-    
+
     def predict_proba(self, X):  # For classification
         # Return prediction probabilities
         pass

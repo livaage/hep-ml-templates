@@ -7,24 +7,25 @@ block: model.decision_tree
 
 # === HYPERPARAMETERS ===
 # Tree structure control
-max_depth: 10              # Maximum depth of tree (null = no limit, int = specific depth)
-min_samples_split: 2       # Minimum samples required to split an internal node
-min_samples_leaf: 1        # Minimum samples required to be at a leaf node
+max_depth: 10 # Maximum depth of tree (null = no limit, int = specific depth)
+min_samples_split: 2 # Minimum samples required to split an internal node
+min_samples_leaf: 1 # Minimum samples required to be at a leaf node
 
 # Feature selection
-max_features: null         # Number of features to consider when looking for best split
-                          # null = all features, int = specific number, float = fraction
+max_features:
+  null # Number of features to consider when looking for best split
+  # null = all features, int = specific number, float = fraction
 
-# Quality and randomness  
-criterion: "gini"          # Split quality measure: "gini" or "entropy"
-random_state: 42          # Random seed for reproducible results
-class_weight: null        # Class weights: null = uniform, "balanced" = inverse frequency
+# Quality and randomness
+criterion: "gini" # Split quality measure: "gini" or "entropy"
+random_state: 42 # Random seed for reproducible results
+class_weight: null # Class weights: null = uniform, "balanced" = inverse frequency
 
 # === CONFIGURATION EXAMPLES ===
 #
 # For deep, complex trees (may overfit):
 # max_depth: null
-# min_samples_split: 2 
+# min_samples_split: 2
 # min_samples_leaf: 1
 #
 # For shallow, simple trees (more generalizable):

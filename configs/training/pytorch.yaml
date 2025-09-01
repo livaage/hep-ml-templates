@@ -3,7 +3,7 @@ params:
   max_epochs: 100
   batch_size: 64
   validation_split: 0.2
-  accelerator: "auto"  # Let Lightning choose best available (GPU/CPU/MPS)
+  accelerator: "auto" # Let Lightning choose best available (GPU/CPU/MPS)
   devices: 1
   log_every_n_steps: 50
   enable_progress_bar: true

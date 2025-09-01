@@ -2,5 +2,5 @@ block: model.adaboost
 params:
   n_estimators: 100
   learning_rate: 1.0
-  algorithm: "SAMME.R"  # "SAMME", "SAMME.R" 
+  algorithm: "SAMME.R" # "SAMME", "SAMME.R"
   random_state: 42

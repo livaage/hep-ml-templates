@@ -65,7 +65,10 @@ class PyTorchTrainer(Trainer):
         # delegate to the model's fit method
         if hasattr(model, "model") and hasattr(model, "fit"):
             # Check if it's an autoencoder or similar model that handles its own training
-            if "autoencoder" in model.__class__.__name__.lower() or "ae_" in model.__class__.__name__.lower():
+            if (
+                "autoencoder" in model.__class__.__name__.lower()
+                or "ae_" in model.__class__.__name__.lower()
+            ):
                 print(f"Using {model.__class__.__name__} internal training...")
                 model.fit(X, y)
                 return model

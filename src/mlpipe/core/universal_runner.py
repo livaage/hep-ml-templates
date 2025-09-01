@@ -104,7 +104,7 @@ def run_pipeline(pipeline: str, config_path: str, config_name: str, overrides=No
         e_cfg = cfg["evaluation"]
         Eval = get(e_cfg["block"])
         evaluator = Eval()
-        
+
         # Check if this is a reconstruction evaluation
         if "reconstruction" in e_cfg["block"]:
             # For autoencoders, we need reconstructed data, not predictions

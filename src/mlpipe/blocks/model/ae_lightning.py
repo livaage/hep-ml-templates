@@ -113,14 +113,14 @@ class VanillaAutoencoderBlock(ModelBlock):
                 X_scaled = self.scaler.fit_transform(X)
             else:
                 # Ensure scaler is fitted
-                if not hasattr(self.scaler, 'mean_'):
+                if not hasattr(self.scaler, "mean_"):
                     # Scaler not fitted, fit it now
                     X_scaled = self.scaler.fit_transform(X)
                 else:
                     X_scaled = self.scaler.transform(X)
         else:
             X_scaled = X.values if hasattr(X, "values") else X
-        
+
         return X_scaled
 
     def predict(self, X):
@@ -173,7 +173,7 @@ class VanillaAutoencoderBlock(ModelBlock):
             # If we used scaling, inverse transform the reconstructed data
             if self.scaler and self.params["normalize_inputs"]:
                 reconstructed = self.scaler.inverse_transform(reconstructed.numpy())
-            return reconstructed.numpy() if hasattr(reconstructed, 'numpy') else reconstructed
+            return reconstructed.numpy() if hasattr(reconstructed, "numpy") else reconstructed
 
 
 class VanillaAutoencoder(pl.LightningModule):

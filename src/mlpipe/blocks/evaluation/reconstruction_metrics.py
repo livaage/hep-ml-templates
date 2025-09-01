@@ -305,18 +305,21 @@ class ReconstructionEvaluator(Evaluator):
         # Save as numpy arrays
         np.save(output_dir / "original_samples.npy", original[: self.config.get["plot_samples"]])
         np.save(
-            output_dir / "reconstructed_samples.npy", reconstructed[: self.config.get["plot_samples"]]
+            output_dir / "reconstructed_samples.npy",
+            reconstructed[: self.config.get["plot_samples"]],
         )
 
         if self.config.get["verbose"]:
             print(f"💾 Samples saved to: {output_dir}")
 
-    def evaluate(self, original: np.ndarray, reconstructed: np.ndarray, config: Dict[str, Any] = None) -> Dict[str, Any]:
+    def evaluate(
+        self, original: np.ndarray, reconstructed: np.ndarray, config: Dict[str, Any] = None
+    ) -> Dict[str, Any]:
         """Evaluate reconstruction quality.
 
         Args:
             original: Original input data
-            reconstructed: Reconstructed output data  
+            reconstructed: Reconstructed output data
             config: Additional configuration parameters (optional)
 
         Returns:
@@ -325,17 +328,17 @@ class ReconstructionEvaluator(Evaluator):
         # Update config if provided
         if config:
             self.config.update(config)
-            
+
         # Convert to numpy arrays if needed
-        if hasattr(original, 'values'):
+        if hasattr(original, "values"):
             original = original.values
-        if hasattr(reconstructed, 'values'):
+        if hasattr(reconstructed, "values"):
             reconstructed = reconstructed.values
-            
+
         # Ensure numpy arrays
         original = np.array(original)
         reconstructed = np.array(reconstructed)
-            
+
         if original.shape != reconstructed.shape:
             raise ValueError(
                 f"Shape mismatch: original {original.shape} vs reconstructed {reconstructed.shape}"
