@@ -78,15 +78,15 @@ class ReconstructionEvaluator(Evaluator):
 
         # Validate metrics
         available_metrics = ["mse", "mae", "rmse", "snr", "ssim"]
-        invalid_metrics = [m for m in self.config.get["metrics"] if m not in available_metrics]
+        invalid_metrics = [m for m in self.config.get("metrics", []) if m not in available_metrics]
         if invalid_metrics:
             raise ValueError(f"Invalid metrics: {invalid_metrics}. Available: {available_metrics}")
 
-        if "ssim" in self.config.get["metrics"] and not SSIM_AVAILABLE:
+        if "ssim" in self.config.get("metrics", []) and not SSIM_AVAILABLE:
             print(
                 "⚠️  Warning: SSIM metric requires scikit-image. Install with: pip install scikit-image"
             )
-            self.config.get["metrics"] = [m for m in self.config.get["metrics"] if m != "ssim"]
+            self.config["metrics"] = [m for m in self.config.get("metrics", []) if m != "ssim"]
 
         if self.config.get("verbose", True):
             print("🔍 Reconstruction Evaluator Configuration:")
@@ -139,10 +139,10 @@ class ReconstructionEvaluator(Evaluator):
         )
 
         # Avoid division by zero
-        noise_power = np.maximum(noise_power, self.config.get["epsilon"])
+        noise_power = np.maximum(noise_power, self.config.get("epsilon", 1e-8))
 
         snr_linear = signal_power / noise_power
-        snr_db = 10 * np.log10(snr_linear + self.config.get["epsilon"])
+        snr_db = 10 * np.log10(snr_linear + self.config.get("epsilon", 1e-8))
 
         return snr_db
 
@@ -177,10 +177,10 @@ class ReconstructionEvaluator(Evaluator):
                 # Normalize to [0, 1] if needed
                 if orig_img.max() > 1.0 or orig_img.min() < 0.0:
                     orig_img = (orig_img - orig_img.min()) / (
-                        orig_img.max() - orig_img.min() + self.config.get["epsilon"]
+                        orig_img.max() - orig_img.min() + self.config.get("epsilon", 1e-8)
                     )
                     recon_img = (recon_img - recon_img.min()) / (
-                        recon_img.max() - recon_img.min() + self.config.get["epsilon"]
+                        recon_img.max() - recon_img.min() + self.config.get("epsilon", 1e-8)
                     )
 
                 try:
@@ -206,10 +206,10 @@ class ReconstructionEvaluator(Evaluator):
 
                     if orig_img.max() > 1.0 or orig_img.min() < 0.0:
                         orig_img = (orig_img - orig_img.min()) / (
-                            orig_img.max() - orig_img.min() + self.config.get["epsilon"]
+                            orig_img.max() - orig_img.min() + self.config.get("epsilon", 1e-8)
                         )
                         recon_img = (recon_img - recon_img.min()) / (
-                            recon_img.max() - recon_img.min() + self.config.get["epsilon"]
+                            recon_img.max() - recon_img.min() + self.config.get("epsilon", 1e-8)
                         )
 
                     ssim_val = ssim(orig_img, recon_img, data_range=1.0)
@@ -226,7 +226,7 @@ class ReconstructionEvaluator(Evaluator):
         """Generate reconstruction comparison plots."""
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        n_samples = min(self.config.get["plot_samples"], original.shape[0])
+        n_samples = min(self.config.get("plot_samples", 5), original.shape[0])
 
         if original.ndim == 2:  # Tabular data or flattened images
             # For tabular data, plot feature comparisons
@@ -293,7 +293,7 @@ class ReconstructionEvaluator(Evaluator):
         plt.savefig(plot_path, dpi=150, bbox_inches="tight")
         plt.close()
 
-        if self.config.get["verbose"]:
+        if self.config.get("verbose", True):
             print(f"📊 Reconstruction plots saved to: {plot_path}")
 
     def _save_samples(
@@ -303,13 +303,13 @@ class ReconstructionEvaluator(Evaluator):
         output_dir.mkdir(parents=True, exist_ok=True)
 
         # Save as numpy arrays
-        np.save(output_dir / "original_samples.npy", original[: self.config.get["plot_samples"]])
+        np.save(output_dir / "original_samples.npy", original[: self.config.get("plot_samples", 5)])
         np.save(
             output_dir / "reconstructed_samples.npy",
-            reconstructed[: self.config.get["plot_samples"]],
+            reconstructed[: self.config.get("plot_samples", 5)],
         )
 
-        if self.config.get["verbose"]:
+        if self.config.get("verbose", True):
             print(f"💾 Samples saved to: {output_dir}")
 
     def evaluate(
