@@ -25,12 +25,55 @@ wheels/
 venv/
 env/
 ENV/
+.conda/
 
-# IDE
+# IDE & Editors
 .vscode/
 .idea/
 *.swp
 *.swo
+.vim/
+*.sublime-*
+
+# Testing & Coverage
+.coverage
+.pytest_cache/
+.cache
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Linting & Formatting
+.ruff_cache/
+
+# Documentation
+docs/_build/
+docs/build/
+site/
+
+# Security
+bandit-report.json
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+logs/
+
+# Jupyter Notebooks (checkpoints)
+.ipynb_checkpoints
 
 # Large data files (exclude large datasets but keep small demo/example data)
 data/*_large.csv
@@ -41,13 +84,61 @@ data/*.hdf5
 *.gz
 !data/demo_*.csv
 !data/custom_test_data.csv
+!data/graph_nodes_demo.csv
+!data/HIGGS_100k.csv
 
 # User-generated data files (but keep examples)
 data/user_*
 data/my_*
 data/personal_*
 
-# Large model files (but keep small demo models)
+# Model artifacts
+models/
+*.pkl
+*.joblib
+*.pt
+*.pth
+*.onnx
+
+# Experiment outputs
+experiments/
+outputs/
+runs/
+wandb/
+mlruns/
+
+# Local development
+.env
+.env.local
+local_config.*
+
+# OS-specific
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# Pipeline testing directories (created during development)
+test_runs/
+test_modular_install/
+quick-test/
+*-project/
+*-demo/
+*-test/
+
+# Cleanup folders and temporary scripts (keep main clean)
+cleanup/
+scripts/lint.py
+scripts/cleanup.py
+temp_*.py
+
+# Archive files
+*.zip
+*.tar.gz
+*.rar
 models/*.ckpt
 models/*.pth
 models/*.h5

@@ -10,5 +10,5 @@ except ImportError:
     pass
 
 # NOTE: uproot_loader is NOT imported by default to avoid dependency issues
-# It will only be imported when explicitly needed through registry.get() 
+# It will only be imported when explicitly needed through registry.get()
 # when a configuration specifies "ingest.uproot_loader"

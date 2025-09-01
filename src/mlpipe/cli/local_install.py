@@ -1,377 +1,385 @@
-"""
-Local installation utilities for hep-ml-templates.
+"""Local installation utilities for hep-ml-templates.
 Allows users to download blocks and configs to their project directory.
 """
 
 import shutil
-import yaml
 from pathlib import Path
-from typing import List, Dict, Set, Optional
-from mlpipe.core.pipeline_generator import generate_pipeline_config, PIPELINE_CONFIGS
+from typing import Dict, List, Set
+
+import yaml
+
+from mlpipe.core.pipeline_generator import PIPELINE_CONFIGS, generate_pipeline_config
 
 # Core modules needed by all extras
-CORE_MODULES = ['interfaces.py', 'registry.py', 'config.py', 'utils.py', 'universal_runner.py']
+CORE_MODULES = ["interfaces.py", "registry.py", "config.py", "utils.py", "universal_runner.py"]
+
 
 # Helper function to create consistent model extra definitions
-def create_model_extra(block_file: str, config_files: List[str], include_data: List[str] = None) -> Dict:
+def create_model_extra(
+    block_file: str, config_files: List[str], include_data: List[str] = None
+) -> Dict:
     """Create a standard model extra definition."""
     return {
-        'blocks': [f'model/{block_file}'],
-        'core': CORE_MODULES,
-        'configs': [f'model/{config}' for config in config_files],
-        'data': include_data or []
+        "blocks": [f"model/{block_file}"],
+        "core": CORE_MODULES,
+        "configs": [f"model/{config}" for config in config_files],
+        "data": include_data or [],
     }
+
 
 # Helper function to create algorithm combos (model + preprocessing)
-def create_algorithm_combo(model_file: str, model_config: str, include_preprocessing: bool = True) -> Dict:
+def create_algorithm_combo(
+    model_file: str, model_config: str, include_preprocessing: bool = True
+) -> Dict:
     """Create a complete algorithm package with model + preprocessing."""
-    blocks = [f'model/{model_file}']
-    configs = [f'model/{model_config}']
+    blocks = [f"model/{model_file}"]
+    configs = [f"model/{model_config}"]
 
     if include_preprocessing:
-        blocks.append('preprocessing/standard_scaler.py')
-        configs.append('preprocessing/standard.yaml')
+        blocks.append("preprocessing/standard_scaler.py")
+        configs.append("preprocessing/standard.yaml")
 
-    return {
-        'blocks': blocks,
-        'core': CORE_MODULES,
-        'configs': configs,
-        'data': []
-    }
+    return {"blocks": blocks, "core": CORE_MODULES, "configs": configs, "data": []}
+
 
 # Helper function to create category-based extras (preprocessing, evaluation, etc.)
-def create_category_extra(category: str, block_files: List[str], config_files: List[str], include_data: List[str] = None) -> Dict:
+def create_category_extra(
+    category: str, block_files: List[str], config_files: List[str], include_data: List[str] = None
+) -> Dict:
     """Create a standard category-based extra definition."""
     return {
-        'blocks': [f'{category}/{block}' for block in block_files],
-        'core': CORE_MODULES,
-        'configs': [f'{category}/{config}' if not config.startswith(category) else config for config in config_files],
-        'data': include_data or []
+        "blocks": [f"{category}/{block}" for block in block_files],
+        "core": CORE_MODULES,
+        "configs": [
+            f"{category}/{config}" if not config.startswith(category) else config
+            for config in config_files
+        ],
+        "data": include_data or [],
     }
+
 
 # Mapping of extras to their corresponding blocks and configs
 EXTRAS_TO_BLOCKS = {
     # Data extras
-    'data-csv': {
-        'blocks': ['ingest/csv_loader.py'],
-        'core': CORE_MODULES,
-        'configs': ['data/csv_demo.yaml'],
-        'data': []
+    "data-csv": {
+        "blocks": ["ingest/csv_loader.py"],
+        "core": CORE_MODULES,
+        "configs": ["data/csv_demo.yaml"],
+        "data": [],
     },
-    'data-higgs': {
-        'blocks': ['ingest/csv_loader.py'],
-        'core': CORE_MODULES,
-        'configs': ['data/higgs_uci.yaml'],
-        'data': ['HIGGS_100k.csv']
+    "data-higgs": {
+        "blocks": ["ingest/csv_loader.py"],
+        "core": CORE_MODULES,
+        "configs": ["data/higgs_uci.yaml"],
+        "data": ["HIGGS_100k.csv"],
     },
-
     # Model extras (individual algorithms)
-    'model-xgb': create_model_extra('xgb_classifier.py', ['xgb_classifier.yaml']),
-    'model-decision-tree': create_model_extra('decision_tree.py', ['decision_tree.yaml']),
-    'model-random-forest': create_model_extra('ensemble_models.py', ['random_forest.yaml']),
-    'model-svm': create_model_extra('svm.py', ['svm.yaml']),
-    'model-mlp': create_model_extra('mlp.py', ['mlp.yaml']),
-    'model-adaboost': create_model_extra('ensemble_models.py', ['adaboost.yaml']),
-    'model-ensemble': create_model_extra('ensemble_models.py', ['ensemble_voting.yaml']),
-
+    "model-xgb": create_model_extra("xgb_classifier.py", ["xgb_classifier.yaml"]),
+    "model-decision-tree": create_model_extra("decision_tree.py", ["decision_tree.yaml"]),
+    "model-random-forest": create_model_extra("ensemble_models.py", ["random_forest.yaml"]),
+    "model-svm": create_model_extra("svm.py", ["svm.yaml"]),
+    "model-mlp": create_model_extra("mlp.py", ["mlp.yaml"]),
+    "model-adaboost": create_model_extra("ensemble_models.py", ["adaboost.yaml"]),
+    "model-ensemble": create_model_extra("ensemble_models.py", ["ensemble_voting.yaml"]),
     # Neural network models
-    'model-torch': create_model_extra('ae_lightning.py', ['ae_lightning.yaml', 'ae_vanilla.yaml', 'ae_variational.yaml']),
-    'model-gnn': create_model_extra('gnn_pyg.py', ['gnn_gat.yaml', 'gnn_gcn.yaml', 'gnn_pyg.yaml']),
-    'model-transformer': create_model_extra('hep_neural.py', ['transformer_hep.yaml']),
-    'model-cnn': create_model_extra('hep_neural.py', ['cnn_hep.yaml']),
-
+    "model-torch": create_model_extra(
+        "ae_lightning.py", ["ae_lightning.yaml", "ae_vanilla.yaml", "ae_variational.yaml"]
+    ),
+    "model-gnn": create_model_extra("gnn_pyg.py", ["gnn_gat.yaml", "gnn_gcn.yaml", "gnn_pyg.yaml"]),
+    "model-transformer": create_model_extra("hep_neural.py", ["transformer_hep.yaml"]),
+    "model-cnn": create_model_extra("hep_neural.py", ["cnn_hep.yaml"]),
     # Category-based extras
-    'preprocessing': create_category_extra('preprocessing',
-                                         ['standard_scaler.py', 'data_split.py'],
-                                         ['standard.yaml', 'data_split.yaml']),
-    'feature-eng': create_category_extra('feature_eng', ['column_selector.py'], ['all_columns.yaml', 'column_selector.yaml']),
-    'evaluation': create_category_extra('evaluation', ['classification_metrics.py'], ['classification.yaml']),
-
+    "preprocessing": create_category_extra(
+        "preprocessing",
+        ["standard_scaler.py", "data_split.py"],
+        ["standard.yaml", "data_split.yaml"],
+    ),
+    "feature-eng": create_category_extra(
+        "feature_eng", ["column_selector.py"], ["all_columns.yaml", "column_selector.yaml"]
+    ),
+    "evaluation": create_category_extra(
+        "evaluation", ["classification_metrics.py"], ["classification.yaml"]
+    ),
     # Data splitting extra (single flexible config)
-    'data-split': create_category_extra('preprocessing', ['data_split.py'], ['data_split.yaml']),
-
-
+    "data-split": create_category_extra("preprocessing", ["data_split.py"], ["data_split.yaml"]),
     # Algorithm-specific extras (model + preprocessing combinations)
-    'xgb': create_algorithm_combo('xgb_classifier.py', 'xgb_classifier.yaml'),
-    'decision-tree': create_algorithm_combo('decision_tree.py', 'decision_tree.yaml'),
-    'random-forest': create_algorithm_combo('ensemble_models.py', 'random_forest.yaml'),
-    'svm': create_algorithm_combo('svm.py', 'svm.yaml'),
-    'mlp': create_algorithm_combo('mlp.py', 'mlp.yaml'),
-    'adaboost': create_algorithm_combo('ensemble_models.py', 'adaboost.yaml'),
-    'ensemble': create_algorithm_combo('ensemble_models.py', 'ensemble_voting.yaml'),
-    'torch': create_algorithm_combo('ae_lightning.py', 'ae_lightning.yaml'),
-    'gnn': create_algorithm_combo('gnn_pyg.py', 'gnn_pyg.yaml'),
-
+    "xgb": create_algorithm_combo("xgb_classifier.py", "xgb_classifier.yaml"),
+    "decision-tree": create_algorithm_combo("decision_tree.py", "decision_tree.yaml"),
+    "random-forest": create_algorithm_combo("ensemble_models.py", "random_forest.yaml"),
+    "svm": create_algorithm_combo("svm.py", "svm.yaml"),
+    "mlp": create_algorithm_combo("mlp.py", "mlp.yaml"),
+    "adaboost": create_algorithm_combo("ensemble_models.py", "adaboost.yaml"),
+    "ensemble": create_algorithm_combo("ensemble_models.py", "ensemble_voting.yaml"),
+    "torch": create_algorithm_combo("ae_lightning.py", "ae_lightning.yaml"),
+    "gnn": create_algorithm_combo("gnn_pyg.py", "gnn_pyg.yaml"),
     # Complete pipeline bundles - now generated dynamically
-    'pipeline-xgb': {
-        'blocks': [
-            'ingest/csv_loader.py',
-            'preprocessing/standard_scaler.py',
-            'feature_eng/column_selector.py',
-            'model/xgb_classifier.py',
-            'training/sklearn_trainer.py',
-            'evaluation/classification_metrics.py'
+    "pipeline-xgb": {
+        "blocks": [
+            "ingest/csv_loader.py",
+            "preprocessing/standard_scaler.py",
+            "feature_eng/column_selector.py",
+            "model/xgb_classifier.py",
+            "training/sklearn_trainer.py",
+            "evaluation/classification_metrics.py",
         ],
-        'core': ['interfaces.py', 'registry.py', 'config.py', 'utils.py'],
-        'configs': [
-            'data/csv_demo.yaml',
-            'preprocessing/standard.yaml',
-            'feature_eng/all_columns.yaml',
-            'model/xgb_classifier.yaml',
-            'training/sklearn.yaml',
-            'evaluation/classification.yaml',
-            'runtime/local_cpu.yaml'
+        "core": ["interfaces.py", "registry.py", "config.py", "utils.py"],
+        "configs": [
+            "data/csv_demo.yaml",
+            "preprocessing/standard.yaml",
+            "feature_eng/all_columns.yaml",
+            "model/xgb_classifier.yaml",
+            "training/sklearn.yaml",
+            "evaluation/classification.yaml",
+            "runtime/local_cpu.yaml",
         ],
-        'data': ['demo_tabular.csv'],
-        'pipeline_type': 'xgb'  # Used for dynamic pipeline.yaml generation
+        "data": ["demo_tabular.csv"],
+        "pipeline_type": "xgb",  # Used for dynamic pipeline.yaml generation
     },
-    'pipeline-decision-tree': {
-        'blocks': [
-            'ingest/csv_loader.py',
-            'preprocessing/standard_scaler.py',
-            'feature_eng/column_selector.py',
-            'model/decision_tree.py',
-            'training/sklearn_trainer.py',
-            'evaluation/classification_metrics.py'
+    "pipeline-decision-tree": {
+        "blocks": [
+            "ingest/csv_loader.py",
+            "preprocessing/standard_scaler.py",
+            "feature_eng/column_selector.py",
+            "model/decision_tree.py",
+            "training/sklearn_trainer.py",
+            "evaluation/classification_metrics.py",
         ],
-        'core': ['interfaces.py', 'registry.py', 'config.py', 'utils.py'],
-        'configs': [
-            'data/csv_demo.yaml',
-            'preprocessing/standard.yaml',
-            'feature_eng/all_columns.yaml',
-            'model/decision_tree.yaml',
-            'training/sklearn.yaml',
-            'evaluation/classification.yaml',
-            'runtime/local_cpu.yaml'
+        "core": ["interfaces.py", "registry.py", "config.py", "utils.py"],
+        "configs": [
+            "data/csv_demo.yaml",
+            "preprocessing/standard.yaml",
+            "feature_eng/all_columns.yaml",
+            "model/decision_tree.yaml",
+            "training/sklearn.yaml",
+            "evaluation/classification.yaml",
+            "runtime/local_cpu.yaml",
         ],
-        'data': ['demo_tabular.csv'],
-        'pipeline_type': 'decision-tree'
+        "data": ["demo_tabular.csv"],
+        "pipeline_type": "decision-tree",
     },
-    'pipeline-torch': {
-        'blocks': [
-            'ingest/csv_loader.py',
-            'preprocessing/standard_scaler.py',
-            'feature_eng/column_selector.py',
-            'model/ae_lightning.py',
-            'training/sklearn_trainer.py',
-            'training/pytorch_trainer.py',
-            'evaluation/reconstruction_metrics.py'
+    "pipeline-torch": {
+        "blocks": [
+            "ingest/csv_loader.py",
+            "preprocessing/standard_scaler.py",
+            "feature_eng/column_selector.py",
+            "model/ae_lightning.py",
+            "training/sklearn_trainer.py",
+            "training/pytorch_trainer.py",
+            "evaluation/reconstruction_metrics.py",
         ],
-        'core': ['interfaces.py', 'registry.py', 'config.py', 'utils.py'],
-        'configs': [
-            'data/csv_demo.yaml',
-            'preprocessing/standard.yaml',
-            'feature_eng/all_columns.yaml',
-            'model/ae_lightning.yaml',
-            'training/pytorch.yaml',
-            'evaluation/reconstruction.yaml',
-            'runtime/local_cpu.yaml'
+        "core": ["interfaces.py", "registry.py", "config.py", "utils.py"],
+        "configs": [
+            "data/csv_demo.yaml",
+            "preprocessing/standard.yaml",
+            "feature_eng/all_columns.yaml",
+            "model/ae_lightning.yaml",
+            "training/pytorch.yaml",
+            "evaluation/reconstruction.yaml",
+            "runtime/local_cpu.yaml",
         ],
-        'data': ['demo_tabular.csv'],
-        'pipeline_type': 'torch'
+        "data": ["demo_tabular.csv"],
+        "pipeline_type": "torch",
     },
-    'pipeline-gnn': {
-        'blocks': [
-            'ingest/csv_loader.py',
-            'ingest/graph_csv_loader.py',
-            'preprocessing/standard_scaler.py',
-            'feature_eng/column_selector.py',
-            'model/gnn_pyg.py',
-            'training/sklearn_trainer.py',
-            'evaluation/classification_metrics.py'
+    "pipeline-gnn": {
+        "blocks": [
+            "ingest/csv_loader.py",
+            "ingest/graph_csv_loader.py",
+            "preprocessing/standard_scaler.py",
+            "feature_eng/column_selector.py",
+            "model/gnn_pyg.py",
+            "training/sklearn_trainer.py",
+            "evaluation/classification_metrics.py",
         ],
-        'core': ['interfaces.py', 'registry.py', 'config.py', 'utils.py'],
-        'configs': [
-            'data/graph_demo.yaml',
-            'preprocessing/standard.yaml',
-            'feature_eng/all_columns.yaml',
-            'model/gnn_pyg.yaml',
-            'training/sklearn.yaml',
-            'evaluation/classification.yaml',
-            'runtime/local_cpu.yaml'
+        "core": ["interfaces.py", "registry.py", "config.py", "utils.py"],
+        "configs": [
+            "data/graph_demo.yaml",
+            "preprocessing/standard.yaml",
+            "feature_eng/all_columns.yaml",
+            "model/gnn_pyg.yaml",
+            "training/sklearn.yaml",
+            "evaluation/classification.yaml",
+            "runtime/local_cpu.yaml",
         ],
-        'data': ['graph_nodes_demo.csv'],
-        'pipeline_type': 'gnn'
+        "data": ["graph_nodes_demo.csv"],
+        "pipeline_type": "gnn",
     },
-    'pipeline-neural': {
-        'blocks': [
-            'ingest/csv_loader.py',
-            'preprocessing/standard_scaler.py',
-            'feature_eng/column_selector.py',
-            'model/mlp.py',
-            'training/sklearn_trainer.py',
-            'evaluation/classification_metrics.py'
+    "pipeline-neural": {
+        "blocks": [
+            "ingest/csv_loader.py",
+            "preprocessing/standard_scaler.py",
+            "feature_eng/column_selector.py",
+            "model/mlp.py",
+            "training/sklearn_trainer.py",
+            "evaluation/classification_metrics.py",
         ],
-        'core': ['interfaces.py', 'registry.py', 'config.py', 'utils.py'],
-        'configs': [
-            'data/csv_demo.yaml',
-            'preprocessing/standard.yaml',
-            'feature_eng/all_columns.yaml',
-            'model/mlp.yaml',
-            'training/sklearn.yaml',
-            'evaluation/classification.yaml',
-            'runtime/local_cpu.yaml'
+        "core": ["interfaces.py", "registry.py", "config.py", "utils.py"],
+        "configs": [
+            "data/csv_demo.yaml",
+            "preprocessing/standard.yaml",
+            "feature_eng/all_columns.yaml",
+            "model/mlp.yaml",
+            "training/sklearn.yaml",
+            "evaluation/classification.yaml",
+            "runtime/local_cpu.yaml",
         ],
-        'data': ['demo_tabular.csv'],
-        'pipeline_type': 'neural'
+        "data": ["demo_tabular.csv"],
+        "pipeline_type": "neural",
     },
-    'pipeline-ensemble': {
-        'blocks': [
-            'ingest/csv_loader.py',
-            'preprocessing/standard_scaler.py',
-            'feature_eng/column_selector.py',
-            'model/ensemble_models.py',
-            'training/sklearn_trainer.py',
-            'evaluation/classification_metrics.py'
+    "pipeline-ensemble": {
+        "blocks": [
+            "ingest/csv_loader.py",
+            "preprocessing/standard_scaler.py",
+            "feature_eng/column_selector.py",
+            "model/ensemble_models.py",
+            "training/sklearn_trainer.py",
+            "evaluation/classification_metrics.py",
         ],
-        'core': ['interfaces.py', 'registry.py', 'config.py', 'utils.py'],
-        'configs': [
-            'data/csv_demo.yaml',
-            'preprocessing/standard.yaml',
-            'feature_eng/all_columns.yaml',
-            'model/ensemble_voting.yaml',
-            'training/sklearn.yaml',
-            'evaluation/classification.yaml',
-            'runtime/local_cpu.yaml'
+        "core": ["interfaces.py", "registry.py", "config.py", "utils.py"],
+        "configs": [
+            "data/csv_demo.yaml",
+            "preprocessing/standard.yaml",
+            "feature_eng/all_columns.yaml",
+            "model/ensemble_voting.yaml",
+            "training/sklearn.yaml",
+            "evaluation/classification.yaml",
+            "runtime/local_cpu.yaml",
         ],
-        'data': ['demo_tabular.csv'],
-        'pipeline_type': 'ensemble'
+        "data": ["demo_tabular.csv"],
+        "pipeline_type": "ensemble",
     },
-    'pipeline-autoencoder': {
-        'blocks': [
-            'ingest/csv_loader.py',
-            'preprocessing/standard_scaler.py',
-            'feature_eng/column_selector.py',
-            'model/ae_lightning.py',
-            'training/sklearn_trainer.py',
-            'training/pytorch_trainer.py',
-            'evaluation/reconstruction_metrics.py'
+    "pipeline-autoencoder": {
+        "blocks": [
+            "ingest/csv_loader.py",
+            "preprocessing/standard_scaler.py",
+            "feature_eng/column_selector.py",
+            "model/ae_lightning.py",
+            "training/sklearn_trainer.py",
+            "training/pytorch_trainer.py",
+            "evaluation/reconstruction_metrics.py",
         ],
-        'core': ['interfaces.py', 'registry.py', 'config.py', 'utils.py'],
-        'configs': [
-            'data/csv_demo.yaml',
-            'preprocessing/standard.yaml',
-            'feature_eng/all_columns.yaml',
-            'model/ae_vanilla.yaml',
-            'training/pytorch.yaml',
-            'evaluation/reconstruction.yaml',
-            'runtime/local_cpu.yaml'
+        "core": ["interfaces.py", "registry.py", "config.py", "utils.py"],
+        "configs": [
+            "data/csv_demo.yaml",
+            "preprocessing/standard.yaml",
+            "feature_eng/all_columns.yaml",
+            "model/ae_vanilla.yaml",
+            "training/pytorch.yaml",
+            "evaluation/reconstruction.yaml",
+            "runtime/local_cpu.yaml",
         ],
-        'data': ['demo_tabular.csv'],
-        'pipeline_type': 'autoencoder'
+        "data": ["demo_tabular.csv"],
+        "pipeline_type": "autoencoder",
     },
-
     # Bundle everything
-    'all': {
-        'blocks': [
-            'ingest/csv_loader.py',
-            'preprocessing/standard_scaler.py',
-            'preprocessing/data_split.py',  # Data splitting functionality
-            'feature_eng/column_selector.py',
-            'model/xgb_classifier.py',
-            'model/decision_tree.py',
-            'model/ensemble_models.py',  # Contains Random Forest, AdaBoost, Voting Ensemble
-            'model/svm.py',
-            'model/mlp.py',
-            'model/ae_lightning.py',
-            'model/gnn_pyg.py',
-            'model/hep_neural.py',  # Contains Transformer and CNN models
-            'evaluation/classification_metrics.py'
+    "all": {
+        "blocks": [
+            "ingest/csv_loader.py",
+            "preprocessing/standard_scaler.py",
+            "preprocessing/data_split.py",  # Data splitting functionality
+            "feature_eng/column_selector.py",
+            "model/xgb_classifier.py",
+            "model/decision_tree.py",
+            "model/ensemble_models.py",  # Contains Random Forest, AdaBoost, Voting Ensemble
+            "model/svm.py",
+            "model/mlp.py",
+            "model/ae_lightning.py",
+            "model/gnn_pyg.py",
+            "model/hep_neural.py",  # Contains Transformer and CNN models
+            "evaluation/classification_metrics.py",
         ],
-        'core': ['interfaces.py', 'registry.py', 'config.py', 'utils.py'],
-        'configs': [
-            'pipeline.yaml',
-            'data/higgs_uci.yaml',
-            'data/csv_demo.yaml',
-            'data/custom_hep_example.yaml',
-            'preprocessing/standard.yaml',
-            'preprocessing/data_split.yaml',
-            'feature_eng/column_selector.yaml',
-            'feature_eng/demo_features.yaml',
-            'model/xgb_classifier.yaml',
-            'model/decision_tree.yaml',
-            'model/random_forest.yaml',
-            'model/adaboost.yaml',
-            'model/ensemble_voting.yaml',
-            'model/svm.yaml',
-            'model/mlp.yaml',
-            'model/ae_lightning.yaml',
-            'model/ae_vanilla.yaml',
-            'model/ae_variational.yaml',
-            'model/gnn_pyg.yaml',
-            'model/gnn_gat.yaml',
-            'model/gnn_gcn.yaml',
-            'model/transformer_hep.yaml',
-            'model/cnn_hep.yaml',
-            'evaluation/classification.yaml',
-            'runtime/local_cpu.yaml'
-        ]
-    }
+        "core": ["interfaces.py", "registry.py", "config.py", "utils.py"],
+        "configs": [
+            "pipeline.yaml",
+            "data/higgs_uci.yaml",
+            "data/csv_demo.yaml",
+            "data/custom_hep_example.yaml",
+            "preprocessing/standard.yaml",
+            "preprocessing/data_split.yaml",
+            "feature_eng/column_selector.yaml",
+            "feature_eng/demo_features.yaml",
+            "model/xgb_classifier.yaml",
+            "model/decision_tree.yaml",
+            "model/random_forest.yaml",
+            "model/adaboost.yaml",
+            "model/ensemble_voting.yaml",
+            "model/svm.yaml",
+            "model/mlp.yaml",
+            "model/ae_lightning.yaml",
+            "model/ae_vanilla.yaml",
+            "model/ae_variational.yaml",
+            "model/gnn_pyg.yaml",
+            "model/gnn_gat.yaml",
+            "model/gnn_gcn.yaml",
+            "model/transformer_hep.yaml",
+            "model/cnn_hep.yaml",
+            "evaluation/classification.yaml",
+            "runtime/local_cpu.yaml",
+        ],
+    },
 }
 
+
 def validate_extras_mappings() -> Dict[str, List[str]]:
-    """
-    Validate that all files referenced in EXTRAS_TO_BLOCKS actually exist.
+    """Validate that all files referenced in EXTRAS_TO_BLOCKS actually exist.
     Returns a dictionary of issues found.
     """
-    issues = {
-        'missing_blocks': [],
-        'missing_configs': [],
-        'missing_data': []
-    }
+    issues = {"missing_blocks": [], "missing_configs": [], "missing_data": []}
 
     try:
         package_path = get_package_path()
-        blocks_dir = package_path / 'blocks'
+        blocks_dir = package_path / "blocks"
         # Config files are two levels up from src/mlpipe
-        configs_dir = package_path.parent.parent / 'configs'
-        data_dir = package_path.parent.parent / 'data'
+        configs_dir = package_path.parent.parent / "configs"
+        data_dir = package_path.parent.parent / "data"
 
         for extra_name, mapping in EXTRAS_TO_BLOCKS.items():
             # Check blocks
-            for block_path in mapping.get('blocks', []):
+            for block_path in mapping.get("blocks", []):
                 full_path = blocks_dir / block_path
                 if not full_path.exists():
-                    issues['missing_blocks'].append(f"{extra_name}: {block_path}")
+                    issues["missing_blocks"].append(f"{extra_name}: {block_path}")
 
             # Check configs
-            for config_path in mapping.get('configs', []):
+            for config_path in mapping.get("configs", []):
                 full_path = configs_dir / config_path
                 if not full_path.exists():
-                    issues['missing_configs'].append(f"{extra_name}: {config_path}")
+                    issues["missing_configs"].append(f"{extra_name}: {config_path}")
 
             # Check data files
-            for data_path in mapping.get('data', []):
+            for data_path in mapping.get("data", []):
                 full_path = data_dir / data_path
                 if not full_path.exists():
-                    issues['missing_data'].append(f"{extra_name}: {data_path}")
+                    issues["missing_data"].append(f"{extra_name}: {data_path}")
 
     except Exception as e:
-        issues['validation_error'] = [f"Could not validate: {e}"]
+        issues["validation_error"] = [f"Could not validate: {e}"]
 
     return issues
+
 
 def get_package_path() -> Path:
     """Get the path to the installed hep-ml-templates package."""
     try:
         # Try to get the package path using the mlpipe module
         import mlpipe
+
         mlpipe_path = Path(mlpipe.__file__).parent  # This is src/mlpipe
         return mlpipe_path
     except ImportError:
         # Fallback: try to find it using importlib
         try:
             import importlib.util
-            spec = importlib.util.find_spec('mlpipe')
+
+            spec = importlib.util.find_spec("mlpipe")
             if spec and spec.origin:
                 return Path(spec.origin).parent
         except:
             pass
         raise FileNotFoundError("Could not locate hep-ml-templates installation")
 
+
 def get_blocks_and_configs_for_extras(extras: List[str]) -> Dict[str, Set[str]]:
-    """
-    Given a list of extras, return the blocks, core modules, configs, and data that should be downloaded.
+    """Given a list of extras, return the blocks, core modules, configs, and data that should be downloaded.
 
     Args:
         extras: List of extra names (e.g., ['model-xgb', 'data-higgs'])
@@ -385,16 +393,22 @@ def get_blocks_and_configs_for_extras(extras: List[str]) -> Dict[str, Set[str]]:
     all_data = set()
 
     # Always include essential core modules needed for CLI functionality
-        # Essential core modules that are always needed for local installations to work
-    essential_core = {"registry.py", "interfaces.py", "config.py", "utils.py", "universal_runner.py"}
+    # Essential core modules that are always needed for local installations to work
+    essential_core = {
+        "registry.py",
+        "interfaces.py",
+        "config.py",
+        "utils.py",
+        "universal_runner.py",
+    }
 
     for extra in extras:
         if extra in EXTRAS_TO_BLOCKS:
             mapping = EXTRAS_TO_BLOCKS[extra]
-            all_blocks.update(mapping.get('blocks', []))
-            all_core.update(mapping.get('core', []))
-            all_configs.update(mapping.get('configs', []))
-            all_data.update(mapping.get('data', []))
+            all_blocks.update(mapping.get("blocks", []))
+            all_core.update(mapping.get("core", []))
+            all_configs.update(mapping.get("configs", []))
+            all_data.update(mapping.get("data", []))
         else:
             print(f"⚠️  Warning: Unknown extra '{extra}' - skipping")
 
@@ -405,22 +419,18 @@ def get_blocks_and_configs_for_extras(extras: List[str]) -> Dict[str, Set[str]]:
     if "all" in extras:
         all_core.add("metrics.py")
 
-    return {
-        'blocks': all_blocks,
-        'core': all_core,
-        'configs': all_configs,
-        'data': all_data
-    }
+    return {"blocks": all_blocks, "core": all_core, "configs": all_configs, "data": all_data}
+
 
 def copy_core_modules(core_modules: Set[str], source_dir: Path, target_dir: Path):
     """Copy core modules from source to target directory."""
-    core_source = source_dir / 'core'  # This is src/mlpipe/core
+    core_source = source_dir / "core"  # This is src/mlpipe/core
 
     if not core_source.exists():
         raise FileNotFoundError(f"Core directory not found: {core_source}")
 
     # Create the target core directory
-    target_core = target_dir / 'mlpipe' / 'core'
+    target_core = target_dir / "mlpipe" / "core"
     target_core.mkdir(parents=True, exist_ok=True)
 
     for core_file in core_modules:
@@ -434,14 +444,15 @@ def copy_core_modules(core_modules: Set[str], source_dir: Path, target_dir: Path
             print(f"⚠️  Warning: Core module not found: {source_file}")
 
     # Always copy __init__.py for the core module
-    core_init = core_source / '__init__.py'
-    target_init = target_core / '__init__.py'
+    core_init = core_source / "__init__.py"
+    target_init = target_core / "__init__.py"
     if core_init.exists():
         shutil.copy2(core_init, target_init)
 
+
 def copy_blocks(blocks: Set[str], source_dir: Path, target_dir: Path):
     """Copy block files from source to target directory."""
-    blocks_source = source_dir / 'blocks'
+    blocks_source = source_dir / "blocks"
 
     if not blocks_source.exists():
         raise FileNotFoundError(f"Blocks directory not found: {blocks_source}")
@@ -451,7 +462,7 @@ def copy_blocks(blocks: Set[str], source_dir: Path, target_dir: Path):
 
     for block_path in blocks:
         source_file = blocks_source / block_path
-        target_file = target_dir / 'mlpipe' / 'blocks' / block_path
+        target_file = target_dir / "mlpipe" / "blocks" / block_path
 
         if source_file.exists():
             # Create target directory if it doesn't exist
@@ -462,15 +473,15 @@ def copy_blocks(blocks: Set[str], source_dir: Path, target_dir: Path):
             print(f"✅ Copied block: {block_path}")
 
             # Track which categories were installed for __init__.py generation
-            category = block_path.split('/')[0]  # e.g., 'ingest', 'model', 'preprocessing'
+            category = block_path.split("/")[0]  # e.g., 'ingest', 'model', 'preprocessing'
             module_name = Path(block_path).stem  # e.g., 'csv_loader', 'xgb_classifier'
             if category not in installed_modules:
                 installed_modules[category] = []
             installed_modules[category].append(module_name)
 
             # Copy category-level __init__.py files
-            category_init = blocks_source / category / '__init__.py'
-            target_category_init = target_dir / 'mlpipe' / 'blocks' / category / '__init__.py'
+            category_init = blocks_source / category / "__init__.py"
+            target_category_init = target_dir / "mlpipe" / "blocks" / category / "__init__.py"
             if category_init.exists() and not target_category_init.exists():
                 target_category_init.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(category_init, target_category_init)
@@ -478,31 +489,32 @@ def copy_blocks(blocks: Set[str], source_dir: Path, target_dir: Path):
             print(f"⚠️  Warning: Block file not found: {source_file}")
 
     # Create custom blocks/__init__.py that only imports installed blocks
-    create_custom_blocks_init(installed_modules, target_dir / 'mlpipe' / 'blocks' / '__init__.py')
+    create_custom_blocks_init(installed_modules, target_dir / "mlpipe" / "blocks" / "__init__.py")
 
     # Create main mlpipe/__init__.py
-    create_main_mlpipe_init(target_dir / 'mlpipe' / '__init__.py')
+    create_main_mlpipe_init(target_dir / "mlpipe" / "__init__.py")
+
 
 def create_custom_blocks_init(installed_modules: Dict[str, List[str]], init_file_path: Path):
     """Create a custom __init__.py file for blocks that only imports installed modules.
-    
+
     This function now supports additive installations - it merges with existing imports
     rather than overwriting them completely.
     """
-    
     # Check if an existing __init__.py already exists
     existing_imports = {}
     if init_file_path.exists():
         try:
-            with open(init_file_path, 'r') as f:
+            with open(init_file_path) as f:
                 content = f.read()
-            
+
             # Parse existing imports to preserve them
             import re
-            for line in content.split('\n'):
-                if 'from .' in line and 'import ' in line:
+
+            for line in content.split("\n"):
+                if "from ." in line and "import " in line:
                     # Extract module import: "from .category import module"
-                    match = re.search(r'from \.(\w+) import (\w+)', line)
+                    match = re.search(r"from \.(\w+) import (\w+)", line)
                     if match:
                         category, module = match.groups()
                         if category not in existing_imports:
@@ -510,100 +522,105 @@ def create_custom_blocks_init(installed_modules: Dict[str, List[str]], init_file
                         existing_imports[category].add(module)
         except Exception as e:
             print(f"⚠️  Warning: Could not parse existing __init__.py: {e}")
-    
+
     # Merge existing and new imports
     all_modules = {}
     for category, modules in existing_imports.items():
         all_modules[category] = set(modules)
-    
+
     for category, modules in installed_modules.items():
         if category not in all_modules:
             all_modules[category] = set()
         all_modules[category].update(modules)
-    
+
     # Generate the new __init__.py content
-    init_content = ['# Auto-generated __init__.py for locally installed blocks']
-    init_content.append('# Only imports the blocks that were actually installed')
-    init_content.append('')
+    init_content = ["# Auto-generated __init__.py for locally installed blocks"]
+    init_content.append("# Only imports the blocks that were actually installed")
+    init_content.append("")
 
     for category, modules in all_modules.items():
         for module in sorted(modules):
-            init_content.append(f'try:')
-            init_content.append(f'    from .{category} import {module}')
+            init_content.append("try:")
+            init_content.append(f"    from .{category} import {module}")
             # Add a comment about what this registers
-            if category == 'ingest' and module == 'csv_loader':
+            if category == "ingest" and module == "csv_loader":
                 init_content[-1] += '                 # registers "ingest.csv"'
-            elif category == 'model' and module == 'xgb_classifier':
+            elif category == "model" and module == "xgb_classifier":
                 init_content[-1] += '              # registers "model.xgb_classifier"'
-            elif category == 'model' and module == 'decision_tree':
+            elif category == "model" and module == "decision_tree":
                 init_content[-1] += '               # registers "model.decision_tree"'
-            elif category == 'model' and module == 'ensemble_models':
-                init_content[-1] += '              # registers multiple ensemble models'
-            elif category == 'model' and module == 'svm':
+            elif category == "model" and module == "ensemble_models":
+                init_content[-1] += "              # registers multiple ensemble models"
+            elif category == "model" and module == "svm":
                 init_content[-1] += '                        # registers "model.svm"'
-            elif category == 'model' and module == 'mlp':
+            elif category == "model" and module == "mlp":
                 init_content[-1] += '                        # registers "model.mlp"'
-            elif category == 'preprocessing' and module == 'standard_scaler':
+            elif category == "preprocessing" and module == "standard_scaler":
                 init_content[-1] += '     # registers "preprocessing.standard_scaler"'
-            elif category == 'feature_eng' and module == 'column_selector':
+            elif category == "feature_eng" and module == "column_selector":
                 init_content[-1] += '       # registers "feature.column_selector"'
-            elif category == 'evaluation' and module == 'classification_metrics':
+            elif category == "evaluation" and module == "classification_metrics":
                 init_content[-1] += ' # registers "eval.classification"'
-            init_content.append(f'except ImportError:')
-            init_content.append(f'    pass  # Optional dependency not available')
-            init_content.append('')
+            init_content.append("except ImportError:")
+            init_content.append("    pass  # Optional dependency not available")
+            init_content.append("")
 
     # Write the custom __init__.py file
     init_file_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(init_file_path, 'w') as f:
-        f.write('\n'.join(init_content))
+    with open(init_file_path, "w") as f:
+        f.write("\n".join(init_content))
 
     total_imports = sum(len(modules) for modules in all_modules.values())
     existing_count = sum(len(modules) for modules in existing_imports.values())
     new_count = sum(len(modules) for modules in installed_modules.values())
-    
+
     if existing_count > 0:
-        print(f"✅ Updated blocks/__init__.py: {existing_count} existing + {new_count} new = {total_imports} total imports")
+        print(
+            f"✅ Updated blocks/__init__.py: {existing_count} existing + {new_count} new = {total_imports} total imports"
+        )
     else:
         print(f"✅ Created custom blocks/__init__.py with {total_imports} imports")
 
+
 def create_main_mlpipe_init(init_file_path: Path):
     """Create the main mlpipe/__init__.py file."""
-
     init_content = [
         '"""',
-        'HEP ML Templates - Modular ML Pipeline Framework',
+        "HEP ML Templates - Modular ML Pipeline Framework",
         '"""',
-        '',
+        "",
         '__version__ = "0.1.0"',
-        '',
-        '# Import core modules',
-        'try:',
-        '    from . import core',
-        '    from . import blocks  # This will register all available blocks',
-        'except ImportError:',
-        '    pass  # Allow partial installations',
-        ''
+        "",
+        "# Import core modules",
+        "try:",
+        "    from . import core",
+        "    from . import blocks  # This will register all available blocks",
+        "except ImportError:",
+        "    pass  # Allow partial installations",
+        "",
     ]
 
     init_file_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(init_file_path, 'w') as f:
-        f.write('\n'.join(init_content))
+    with open(init_file_path, "w") as f:
+        f.write("\n".join(init_content))
 
     print("✅ Created main mlpipe/__init__.py")
+
 
 def copy_configs(configs: Set[str], source_dir: Path, target_dir: Path):
     """Copy config files from source to target directory."""
     # The config files are in the hep-ml-templates root directory
     # source_dir is src/mlpipe, so we go up two levels to get to hep-ml-templates root
-    config_source = source_dir.parent.parent / 'configs'  # src/mlpipe -> src -> hep-ml-templates -> configs
+    config_source = (
+        source_dir.parent.parent / "configs"
+    )  # src/mlpipe -> src -> hep-ml-templates -> configs
 
     if not config_source.exists():
         raise FileNotFoundError(f"Config directory not found: {config_source}")
 
     for config_path in configs:
         source_file = config_source / config_path
-        target_file = target_dir / 'configs' / config_path
+        target_file = target_dir / "configs" / config_path
 
         if source_file.exists():
             # Create target directory if it doesn't exist
@@ -615,18 +632,19 @@ def copy_configs(configs: Set[str], source_dir: Path, target_dir: Path):
         else:
             print(f"⚠️  Warning: Config file not found: {source_file}")
 
+
 def copy_data_files(data_files: Set[str], source_dir: Path, target_dir: Path):
     """Copy data files from source to target directory."""
     # The source directory for data files is typically at the same level as src
     # Look for data directory in the parent directory of src
-    data_source = source_dir.parent.parent / 'data'  # Going up from src/mlpipe to find data/
+    data_source = source_dir.parent.parent / "data"  # Going up from src/mlpipe to find data/
 
     if not data_source.exists():
         print(f"⚠️  Data directory not found: {data_source}")
         return
 
     # Create target data directory
-    target_data = target_dir / 'data'
+    target_data = target_dir / "data"
     target_data.mkdir(parents=True, exist_ok=True)
 
     for data_file in data_files:
@@ -644,19 +662,19 @@ def generate_pipeline_configs(pipeline_extras: List[str], target_path: Path):
     """Generate pipeline.yaml files for installed pipeline extras."""
     configs_dir = target_path / "configs"
     configs_dir.mkdir(exist_ok=True)
-    
+
     for extra in pipeline_extras:
         # Extract pipeline type from extra name (e.g., pipeline-xgb -> xgb)
-        pipeline_type = extra.replace('pipeline-', '')
-        
+        pipeline_type = extra.replace("pipeline-", "")
+
         if pipeline_type in PIPELINE_CONFIGS:
             config = generate_pipeline_config(pipeline_type)
             pipeline_file = configs_dir / "pipeline.yaml"
-            
+
             # Write the generated config
-            with open(pipeline_file, 'w') as f:
+            with open(pipeline_file, "w") as f:
                 yaml.dump(config, f, default_flow_style=False, sort_keys=False)
-            
+
             print(f"✅ Generated {pipeline_type} pipeline config: pipeline.yaml")
         else:
             print(f"⚠️  Warning: Unknown pipeline type '{pipeline_type}' - using default config")
@@ -668,17 +686,16 @@ def generate_pipeline_configs(pipeline_extras: List[str], target_path: Path):
                 "model": pipeline_type,  # Use the pipeline type as model name
                 "training": "sklearn",
                 "evaluation": "classification",
-                "runtime": "local_cpu"
+                "runtime": "local_cpu",
             }
             pipeline_file = configs_dir / "pipeline.yaml"
-            with open(pipeline_file, 'w') as f:
+            with open(pipeline_file, "w") as f:
                 yaml.dump(default_config, f, default_flow_style=False, sort_keys=False)
             print(f"✅ Generated default pipeline config for: {pipeline_type}")
 
 
 def install_local(extras: List[str], target_dir: str) -> bool:
-    """
-    Install blocks and configs locally based on the provided extras.
+    """Install blocks and configs locally based on the provided extras.
 
     Args:
         extras: List of extra names to install
@@ -688,7 +705,7 @@ def install_local(extras: List[str], target_dir: str) -> bool:
         True if successful, False otherwise
     """
     try:
-        print(f"🚀 Installing hep-ml-templates locally...")
+        print("🚀 Installing hep-ml-templates locally...")
         print(f"📦 Extras: {', '.join(extras)}")
 
         # Resolve target directory
@@ -704,38 +721,38 @@ def install_local(extras: List[str], target_dir: str) -> bool:
         # Get blocks and configs to download
         to_download = get_blocks_and_configs_for_extras(extras)
 
-        print(f"\n📋 Will install:")
+        print("\n📋 Will install:")
         print(f"   🧩 {len(to_download['blocks'])} blocks")
         print(f"   🔧 {len(to_download['core'])} core modules")
         print(f"   ⚙️  {len(to_download['configs'])} configs")
-        if to_download['data']:
+        if to_download["data"]:
             print(f"   📊 {len(to_download['data'])} data files")
 
         # Copy core modules first (blocks depend on them)
-        if to_download['core']:
-            print(f"\n🔧 Installing core modules...")
-            copy_core_modules(to_download['core'], package_path, target_path)
+        if to_download["core"]:
+            print("\n🔧 Installing core modules...")
+            copy_core_modules(to_download["core"], package_path, target_path)
 
         # Copy blocks
-        if to_download['blocks']:
-            print(f"\n🧩 Installing blocks...")
-            copy_blocks(to_download['blocks'], package_path, target_path)
+        if to_download["blocks"]:
+            print("\n🧩 Installing blocks...")
+            copy_blocks(to_download["blocks"], package_path, target_path)
 
         # Copy configs
-        if to_download['configs']:
-            print(f"\n⚙️  Installing configs...")
-            copy_configs(to_download['configs'], package_path, target_path)
+        if to_download["configs"]:
+            print("\n⚙️  Installing configs...")
+            copy_configs(to_download["configs"], package_path, target_path)
 
         # Generate appropriate pipeline.yaml for installed pipelines
-        pipeline_extras = [extra for extra in extras if extra.startswith('pipeline-')]
+        pipeline_extras = [extra for extra in extras if extra.startswith("pipeline-")]
         if pipeline_extras:
-            print(f"\n📄 Generating pipeline configurations...")
+            print("\n📄 Generating pipeline configurations...")
             generate_pipeline_configs(pipeline_extras, target_path)
 
         # Copy data files
-        if to_download['data']:
-            print(f"\n📊 Installing data files...")
-            copy_data_files(to_download['data'], package_path, target_path)
+        if to_download["data"]:
+            print("\n📊 Installing data files...")
+            copy_data_files(to_download["data"], package_path, target_path)
 
         # Create a simple setup.py for pip install -e
         create_setup_py(target_path, extras)
@@ -743,64 +760,72 @@ def install_local(extras: List[str], target_dir: str) -> bool:
         # Create a simple CLI script for the local installation
         create_cli_script(target_path)
 
-        print(f"\n🎉 Local installation complete!")
+        print("\n🎉 Local installation complete!")
         print(f"📁 Files installed in: {target_path}")
-        print(f"\n💡 Next steps:")
+        print("\n💡 Next steps:")
         print(f"   1. cd {target_path}")
-        print(f"   2. pip install -e .")
-        print(f"   3. Use: mlpipe run")
+        print("   2. pip install -e .")
+        print("   3. Use: mlpipe run")
 
         return True
 
     except Exception as e:
         print(f"❌ Local installation failed: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
+
 def create_setup_py(target_dir: Path, extras: List[str]):
     """Create a simple setup.py for local installation with automatic dependency resolution."""
-    
     # Base dependencies required by all installations
     base_deps = [
         "omegaconf>=2.3",
-        "pandas>=2.0", 
+        "pandas>=2.0",
         "numpy>=1.22",
         "scikit-learn>=1.2",
         "hydra-core>=1.3",
     ]
-    
+
     # Extra-specific dependencies that should be automatically installed
     extra_deps = {
-        'model-xgb': ['xgboost>=1.7'],
-        'xgb': ['xgboost>=1.7'],
-        'pipeline-xgb': ['xgboost>=1.7'],
-        'pipeline-neural': ['scikit-learn>=1.2'],
-        'pipeline-ensemble': ['scikit-learn>=1.2'],
-        'pipeline-autoencoder': ['torch>=2.0', 'pytorch-lightning>=2.0'],
-        'model-torch': ['torch>=2.0', 'pytorch-lightning>=2.0'],
-        'torch': ['torch>=2.0', 'pytorch-lightning>=2.0'],
-        'pipeline-torch': ['torch>=2.0', 'pytorch-lightning>=2.0'],
-        'model-gnn': ['torch-geometric>=2.4', 'torch>=2.0'],
-        'gnn': ['torch-geometric>=2.4', 'torch>=2.0'],
-        'pipeline-gnn': ['torch-geometric>=2.4', 'torch>=2.0'],
-        'data-uproot': ['uproot>=5.0', 'awkward>=2.0'],  # For ROOT file ingestion
-        'all': ['xgboost>=1.7', 'torch>=2.0', 'pytorch-lightning>=2.0', 'torch-geometric>=2.4', 'uproot>=5.0', 'awkward>=2.0'],
+        "model-xgb": ["xgboost>=1.7"],
+        "xgb": ["xgboost>=1.7"],
+        "pipeline-xgb": ["xgboost>=1.7"],
+        "pipeline-neural": ["scikit-learn>=1.2"],
+        "pipeline-ensemble": ["scikit-learn>=1.2"],
+        "pipeline-autoencoder": ["torch>=2.0", "pytorch-lightning>=2.0"],
+        "model-torch": ["torch>=2.0", "pytorch-lightning>=2.0"],
+        "torch": ["torch>=2.0", "pytorch-lightning>=2.0"],
+        "pipeline-torch": ["torch>=2.0", "pytorch-lightning>=2.0"],
+        "model-gnn": ["torch-geometric>=2.4", "torch>=2.0"],
+        "gnn": ["torch-geometric>=2.4", "torch>=2.0"],
+        "pipeline-gnn": ["torch-geometric>=2.4", "torch>=2.0"],
+        "data-uproot": ["uproot>=5.0", "awkward>=2.0"],  # For ROOT file ingestion
+        "all": [
+            "xgboost>=1.7",
+            "torch>=2.0",
+            "pytorch-lightning>=2.0",
+            "torch-geometric>=2.4",
+            "uproot>=5.0",
+            "awkward>=2.0",
+        ],
     }
-    
+
     # Collect all required dependencies for the installed extras
     install_requires = base_deps.copy()
     added_deps = set()
-    
+
     for extra in extras:
         if extra in extra_deps:
             for dep in extra_deps[extra]:
                 if dep not in added_deps:
                     install_requires.append(dep)
                     added_deps.add(dep)
-    
+
     # Generate install_requires string
-    install_requires_str = ',\n        '.join(f'"{dep}"' for dep in install_requires)
+    install_requires_str = ",\n        ".join(f'"{dep}"' for dep in install_requires)
 
     setup_content = f'''"""
 Setup script for locally installed hep-ml-templates components.
@@ -831,18 +856,20 @@ setup(
 )
 '''
 
-    setup_file = target_dir / 'setup.py'
-    with open(setup_file, 'w') as f:
+    setup_file = target_dir / "setup.py"
+    with open(setup_file, "w") as f:
         f.write(setup_content)
 
     if added_deps:
-        print(f"✅ Created setup.py with auto-resolved dependencies: {', '.join(sorted(added_deps))}")
+        print(
+            f"✅ Created setup.py with auto-resolved dependencies: {', '.join(sorted(added_deps))}"
+        )
     else:
         print("✅ Created setup.py for local installation")
 
+
 def create_cli_script(target_dir: Path):
     """Create a simple CLI script for the locally installed components."""
-
     cli_content = '''#!/usr/bin/env python3
 """
 Simple CLI for locally installed hep-ml-templates components.
@@ -909,12 +936,13 @@ except ImportError as e:
     print("Make sure you've installed the requirements and this directory is in PYTHONPATH")
 '''
 
-    cli_file = target_dir / 'mlpipe_cli.py'
-    with open(cli_file, 'w') as f:
+    cli_file = target_dir / "mlpipe_cli.py"
+    with open(cli_file, "w") as f:
         f.write(cli_content)
 
     # Make it executable
     import stat
+
     cli_file.chmod(cli_file.stat().st_mode | stat.S_IEXEC)
 
     print("✅ Created mlpipe_cli.py script")

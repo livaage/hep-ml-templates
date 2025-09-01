@@ -1,27 +1,27 @@
 # Always available blocks
-from .ingest import csv_loader                 # registers "ingest.csv"  # noqa: F401
-from .preprocessing import standard_scaler     # registers "preprocessing.standard_scaler"  # noqa: F401
-from .feature_eng import column_selector       # registers "feature.column_selector"  # noqa: F401
-from .training import sklearn_trainer          # registers "train.sklearn"  # noqa: F401
+from .feature_eng import column_selector  # registers "feature.column_selector"  # noqa: F401
+from .ingest import csv_loader  # registers "ingest.csv"  # noqa: F401
+from .preprocessing import (  # registers "preprocessing.standard_scaler"  # noqa: F401
+    standard_scaler,
+)
+from .training import sklearn_trainer  # registers "train.sklearn"  # noqa: F401
 
 # Import PyTorch trainer if dependencies are available
 try:
-    from .training import pytorch_trainer      # registers "training.pytorch"  # noqa: F401
+    from .training import pytorch_trainer  # registers "training.pytorch"  # noqa: F401
 except ImportError:
     # PyTorch dependencies not available
     pass
 
-from .evaluation import classification_metrics  # registers "eval.classification"  # noqa: F401
-
 # Import model blocks (they handle their own optional imports)
 # Note: This import ensures model blocks get registered
 from . import model  # noqa: F401
+from .evaluation import classification_metrics  # registers "eval.classification"  # noqa: F401
 
 
 # Function to register commonly used blocks for testing/demo purposes
 def register_all_available_blocks():
-    """
-    Register all available blocks. Use this for testing or when you want
+    """Register all available blocks. Use this for testing or when you want
     to use the registry-based block access pattern.
 
     This function only imports blocks that have their dependencies available.

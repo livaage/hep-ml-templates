@@ -1,15 +1,20 @@
 from __future__ import annotations
+
 import argparse
-import importlib.util
 import sys
 from pathlib import Path
-from mlpipe.core.registry import list_blocks
-from mlpipe.core.universal_runner import run_pipeline, validate_pipeline_config, get_pipeline_info
-from mlpipe.core.pipeline_generator import generate_pipeline_config, list_available_pipelines
+
 from mlpipe.cli.local_install import install_local
 from mlpipe.cli.manager import (
-    list_extras, validate_installation, show_extra_details, preview_installation
+    list_extras,
+    preview_installation,
+    show_extra_details,
+    validate_installation,
 )
+from mlpipe.core.pipeline_generator import generate_pipeline_config, list_available_pipelines
+from mlpipe.core.registry import list_blocks
+from mlpipe.core.universal_runner import get_pipeline_info, run_pipeline, validate_pipeline_config
+
 # Don't import global blocks here - import them AFTER local blocks in main()
 
 
@@ -17,22 +22,23 @@ def _try_import_local_blocks():
     """Try to import local blocks if they exist in current directory."""
     cwd = Path.cwd()
     local_blocks_init = cwd / "mlpipe" / "blocks" / "__init__.py"
-    
+
     if not local_blocks_init.exists():
         return
-    
+
     # Add current directory to Python path if not already there
     if str(cwd) not in sys.path:
         sys.path.insert(0, str(cwd))
-    
+
     try:
         # Try importing local blocks using normal import syntax now that cwd is in path
-        import mlpipe.blocks as local_blocks  # This should import the local version  # noqa: F401
-        
         # Force reload to make sure we get the local version
         import importlib
+
+        import mlpipe.blocks as local_blocks  # This should import the local version  # noqa: F401
+
         importlib.reload(local_blocks)
-        
+
     except Exception:
         # Silently continue with global blocks only
         pass
@@ -78,69 +84,92 @@ def list_available_configs(config_path: str = "configs"):
 def main():
     # Try to import local blocks FIRST (before any global imports)
     _try_import_local_blocks()
-    
+
     # Then import global blocks to fill in any missing ones
     # Only import global blocks if we don't have a local installation
     cwd = Path.cwd()
     if not (cwd / "mlpipe" / "blocks" / "__init__.py").exists():
         import mlpipe.blocks  # noqa: F401
-    
-    parser = argparse.ArgumentParser("mlpipe",
-                                     description="HEP ML Templates - Modular ML Pipeline Framework")
+
+    parser = argparse.ArgumentParser(
+        "mlpipe", description="HEP ML Templates - Modular ML Pipeline Framework"
+    )
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     p_run = sub.add_parser("run", help="Run a pipeline")
-    p_run.add_argument("--pipeline", default="auto",
-                       help="Pipeline implementation (default: auto - determined from config)")
-    p_run.add_argument("--config-path", default="configs",
-                       help="Path to configuration directory (default: configs)")
-    p_run.add_argument("--config-name", default="pipeline",
-                       help="Pipeline configuration file name without .yaml "
-                       "extension (default: pipeline)")
-    p_run.add_argument("--overrides", nargs="*", default=[],
-                       help="Override config values (e.g., data=csv_demo model=xgb_classifier)")
+    p_run.add_argument(
+        "--pipeline",
+        default="auto",
+        help="Pipeline implementation (default: auto - determined from config)",
+    )
+    p_run.add_argument(
+        "--config-path",
+        default="configs",
+        help="Path to configuration directory (default: configs)",
+    )
+    p_run.add_argument(
+        "--config-name",
+        default="pipeline",
+        help="Pipeline configuration file name without .yaml " "extension (default: pipeline)",
+    )
+    p_run.add_argument(
+        "--overrides",
+        nargs="*",
+        default=[],
+        help="Override config values (e.g., data=csv_demo model=xgb_classifier)",
+    )
 
     # Add subcommands
     sub.add_parser("list-blocks", help="List available blocks")
 
     p_list_configs = sub.add_parser("list-configs", help="List available configurations")
     p_list_configs.add_argument("--config-path", default="configs")
-    
+
     # Add pipeline generation command
     p_generate = sub.add_parser("generate-pipeline", help="Generate a pipeline configuration")
-    p_generate.add_argument("pipeline_type", choices=["decision-tree", "xgb", "neural", "torch", "gnn"],
-                           help="Type of pipeline to generate")
-    p_generate.add_argument("--output", default="pipeline.yaml",
-                           help="Output file path (default: pipeline.yaml)")
-    
+    p_generate.add_argument(
+        "pipeline_type",
+        choices=["decision-tree", "xgb", "neural", "torch", "gnn"],
+        help="Type of pipeline to generate",
+    )
+    p_generate.add_argument(
+        "--output", default="pipeline.yaml", help="Output file path (default: pipeline.yaml)"
+    )
+
     # Add pipeline validation
     p_validate = sub.add_parser("validate-config", help="Validate a pipeline configuration")
     p_validate.add_argument("--config-path", default="configs")
     p_validate.add_argument("--config-name", default="pipeline")
-    
+
     # Add pipeline info
     p_info = sub.add_parser("pipeline-info", help="Show information about a pipeline configuration")
     p_info.add_argument("--config-path", default="configs")
     p_info.add_argument("--config-name", default="pipeline")
-    
+
     # List available pipeline templates
     sub.add_parser("list-pipeline-templates", help="List available pipeline templates")
-    
+
     # Add local installation command
-    p_install = sub.add_parser("install-local", help="Install blocks and configs locally to your project")
-    p_install.add_argument("extras", nargs="+", 
-                          help="Extras to install locally (e.g., model-xgb data-higgs pipeline-xgb all)")
-    p_install.add_argument("--target-dir", required=True, 
-                          help="Directory where to install the local components")
+    p_install = sub.add_parser(
+        "install-local", help="Install blocks and configs locally to your project"
+    )
+    p_install.add_argument(
+        "extras",
+        nargs="+",
+        help="Extras to install locally (e.g., model-xgb data-higgs pipeline-xgb all)",
+    )
+    p_install.add_argument(
+        "--target-dir", required=True, help="Directory where to install the local components"
+    )
 
     # Add extras management commands
     p_list_extras = sub.add_parser("list-extras", help="List all available extras")
-    
+
     p_validate_extras = sub.add_parser("validate-extras", help="Validate extras configuration")
-    
+
     p_extra_details = sub.add_parser("extra-details", help="Show details for a specific extra")
     p_extra_details.add_argument("extra", help="Name of the extra to show details for")
-    
+
     p_preview_install = sub.add_parser("preview-install", help="Preview what would be installed")
     p_preview_install.add_argument("extras", nargs="+", help="Extras to preview")
 
@@ -148,8 +177,12 @@ def main():
 
     try:
         if args.cmd == "run":
-            run_pipeline(pipeline=args.pipeline, config_path=args.config_path,
-                         config_name=args.config_name, overrides=args.overrides)
+            run_pipeline(
+                pipeline=args.pipeline,
+                config_path=args.config_path,
+                config_name=args.config_name,
+                overrides=args.overrides,
+            )
         elif args.cmd == "list-blocks":
             print("Available blocks:")
             for name in sorted(list_blocks()):
@@ -175,7 +208,7 @@ def main():
             for name, info in pipelines.items():
                 print(f"  {name}: {info['description']}")
                 print(f"    Model: {info['config']['model']}")
-                deps = ", ".join(info['dependencies']['required'])
+                deps = ", ".join(info["dependencies"]["required"])
                 print(f"    Dependencies: {deps}")
                 print()
         elif args.cmd == "install-local":
@@ -195,7 +228,7 @@ def main():
             print("❌ Error: Configuration file not found")
             print(f"Looking for: {e}")
             print()
-            list_available_configs(args.config_path if hasattr(args, 'config_path') else "configs")
+            list_available_configs(args.config_path if hasattr(args, "config_path") else "configs")
         else:
             raise
     except Exception as e:

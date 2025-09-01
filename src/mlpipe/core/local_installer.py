@@ -1,5 +1,4 @@
-"""
-Core utilities for local installation functionality.
+"""Core utilities for local installation functionality.
 This module provides the core infrastructure for locally installing
 hep-ml-templates components.
 """

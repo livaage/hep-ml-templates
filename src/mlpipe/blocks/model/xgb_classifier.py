@@ -1,5 +1,7 @@
 from typing import Any, Dict, Optional
+
 from xgboost import XGBClassifier
+
 from mlpipe.core.interfaces import ModelBlock
 from mlpipe.core.registry import register
 
@@ -23,12 +25,12 @@ class XGBClassifierBlock(ModelBlock):
         """Initialize with optional parameters."""
         # Default parameters for HEP use cases
         default_params = {
-            'n_estimators': 100,
-            'max_depth': 6,
-            'learning_rate': 0.1,
-            'random_state': 42,
-            'n_jobs': -1,  # Use all cores
-            'eval_metric': 'logloss'
+            "n_estimators": 100,
+            "max_depth": 6,
+            "learning_rate": 0.1,
+            "random_state": 42,
+            "n_jobs": -1,  # Use all cores
+            "eval_metric": "logloss",
         }
 
         # Merge with any provided kwargs

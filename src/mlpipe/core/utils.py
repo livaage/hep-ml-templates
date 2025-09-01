@@ -1,7 +1,9 @@
 from __future__ import annotations
+
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-from pathlib import Path
 
 
 def ensure_path(p: str | Path) -> Path:

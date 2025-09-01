@@ -1,18 +1,17 @@
-"""
-Universal pipeline runner for hep-ml-templates.
+"""Universal pipeline runner for hep-ml-templates.
 Dynamically executes pipelines based on configuration without hardcoded implementations.
 """
 
 from pathlib import Path
+
 from mlpipe.core.config import load_pipeline_config
 from mlpipe.core.registry import get
 from mlpipe.core.utils import maybe_make_demo_csv
 
 
 def run_pipeline(pipeline: str, config_path: str, config_name: str, overrides=None):
-    """
-    Run any pipeline configuration dynamically.
-    
+    """Run any pipeline configuration dynamically.
+
     Args:
         pipeline: Pipeline identifier (for future use/backwards compatibility)
         config_path: Path to configuration directory
@@ -20,7 +19,8 @@ def run_pipeline(pipeline: str, config_path: str, config_name: str, overrides=No
         overrides: List of override strings for configuration
     """
     cfg = load_pipeline_config(
-        Path(config_path), pipeline_name=config_name, overrides=overrides or [])
+        Path(config_path), pipeline_name=config_name, overrides=overrides or []
+    )
 
     print(f"🚀 Running pipeline with configuration: {config_name}")
     print(f"📁 Config path: {config_path}")
@@ -31,7 +31,7 @@ def run_pipeline(pipeline: str, config_path: str, config_name: str, overrides=No
     # 1) Data Ingestion
     print("📊 Loading data...")
     data_cfg = cfg["data"]
-    
+
     # Handle both old and new config formats for backward compatibility
     path = data_cfg.get("path") or data_cfg.get("file_path")
     label = data_cfg.get("label") or data_cfg.get("target_column")
@@ -106,7 +106,7 @@ def run_pipeline(pipeline: str, config_path: str, config_name: str, overrides=No
         evaluator = Eval()
         y_pred = model.predict(Xp)
         metrics = evaluator.evaluate(y, y_pred, e_cfg.get("params", {}))
-        
+
         print("✅ Model evaluation completed")
         print("\n=== 📊 Results ===")
         for k, v in metrics.items():
@@ -123,54 +123,52 @@ def run_pipeline(pipeline: str, config_path: str, config_name: str, overrides=No
 
 
 def validate_pipeline_config(config_path: Path, config_name: str) -> bool:
-    """
-    Validate that a pipeline configuration has all required components.
-    
+    """Validate that a pipeline configuration has all required components.
+
     Args:
         config_path: Path to configuration directory
         config_name: Name of pipeline config file
-        
+
     Returns:
         True if valid, False otherwise
     """
     try:
         cfg = load_pipeline_config(config_path, config_name)
-        
+
         required_sections = ["data", "preprocessing", "model", "training", "evaluation"]
         missing_sections = []
-        
+
         for section in required_sections:
             if section not in cfg:
                 missing_sections.append(section)
             elif not cfg[section].get("block"):
                 missing_sections.append(f"{section}.block")
-        
+
         if missing_sections:
             print(f"❌ Invalid pipeline config. Missing: {', '.join(missing_sections)}")
             return False
-            
+
         print("✅ Pipeline configuration is valid")
         return True
-        
+
     except Exception as e:
         print(f"❌ Error validating config: {e}")
         return False
 
 
 def get_pipeline_info(config_path: Path, config_name: str) -> dict:
-    """
-    Get information about a pipeline configuration.
-    
+    """Get information about a pipeline configuration.
+
     Args:
         config_path: Path to configuration directory
         config_name: Name of pipeline config file
-        
+
     Returns:
         Dictionary with pipeline information
     """
     try:
         cfg = load_pipeline_config(config_path, config_name)
-        
+
         info = {
             "data_source": cfg.get("data", {}).get("block", "unknown"),
             "model": cfg.get("model", {}).get("block", "unknown"),
@@ -178,10 +176,10 @@ def get_pipeline_info(config_path: Path, config_name: str) -> dict:
             "feature_engineering": cfg.get("feature_eng", {}).get("block", "none"),
             "training": cfg.get("training", {}).get("block", "unknown"),
             "evaluation": cfg.get("evaluation", {}).get("block", "unknown"),
-            "runtime": cfg.get("runtime", {}).get("block", "unknown")
+            "runtime": cfg.get("runtime", {}).get("block", "unknown"),
         }
-        
+
         return info
-        
+
     except Exception as e:
         return {"error": str(e)}

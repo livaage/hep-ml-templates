@@ -1,13 +1,12 @@
 from __future__ import annotations
-from typing import Callable, Dict, Type
+
 import importlib
+from typing import Callable, Dict, Type
 
 _REGISTRY: Dict[str, object] = {}
 
 # Lazy loading mappings for optional blocks
-_LAZY_IMPORTS = {
-    "ingest.uproot_loader": "mlpipe.blocks.ingest.uproot_loader"
-}
+_LAZY_IMPORTS = {"ingest.uproot_loader": "mlpipe.blocks.ingest.uproot_loader"}
 
 
 def register(name: str) -> Callable[[Type], Type]:
@@ -16,6 +15,7 @@ def register(name: str) -> Callable[[Type], Type]:
             raise ValueError(f"Block name already registered: {name}")
         _REGISTRY[name] = cls
         return cls
+
     return deco
 
 
@@ -30,12 +30,16 @@ def get(name: str):
                 if name in _REGISTRY:
                     return _REGISTRY[name]
                 else:
-                    raise ImportError(f"Block {name} could not be registered (likely missing dependencies)")
+                    raise ImportError(
+                        f"Block {name} could not be registered (likely missing dependencies)"
+                    )
             except ImportError as e:
-                raise ImportError(f"Block {name} requires additional dependencies. "
-                                f"Try: pip install hep-ml-templates[data-uproot]. "
-                                f"Error: {e}")
-        
+                raise ImportError(
+                    f"Block {name} requires additional dependencies. "
+                    f"Try: pip install hep-ml-templates[data-uproot]. "
+                    f"Error: {e}"
+                )
+
         raise KeyError(f"Unknown block: {name}. Known: {list(_REGISTRY)}")
     return _REGISTRY[name]
 

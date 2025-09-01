@@ -1,5 +1,4 @@
-"""
-Ensemble machine learning models for High Energy Physics data analysis.
+"""Ensemble machine learning models for High Energy Physics data analysis.
 
 This module contains ensemble methods that combine multiple base estimators
 to improve generalizability and robustness.
@@ -11,8 +10,9 @@ Includes:
 """
 
 from typing import Any, Dict, Optional
+
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
+from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
 
 from mlpipe.core.interfaces import ModelBlock
 from mlpipe.core.registry import register
@@ -20,8 +20,7 @@ from mlpipe.core.registry import register
 
 @register("model.random_forest")
 class RandomForestBlock(ModelBlock):
-    """
-    Random Forest classifier - excellent baseline for HEP.
+    """Random Forest classifier - excellent baseline for HEP.
 
     Advantages:
     - Handles mixed data types well
@@ -39,16 +38,16 @@ class RandomForestBlock(ModelBlock):
 
     def __init__(self, **kwargs):
         default_params = {
-            'n_estimators': 100,
-            'max_depth': None,
-            'min_samples_split': 2,
-            'min_samples_leaf': 1,
-            'max_features': 'sqrt',
-            'bootstrap': True,
-            'random_state': 42,
-            'n_jobs': -1,
-            'class_weight': None,  # or 'balanced' for imbalanced datasets
-            'criterion': 'gini'
+            "n_estimators": 100,
+            "max_depth": None,
+            "min_samples_split": 2,
+            "min_samples_leaf": 1,
+            "max_features": "sqrt",
+            "bootstrap": True,
+            "random_state": 42,
+            "n_jobs": -1,
+            "class_weight": None,  # or 'balanced' for imbalanced datasets
+            "criterion": "gini",
         }
 
         self.params = {**default_params, **kwargs}
@@ -62,13 +61,16 @@ class RandomForestBlock(ModelBlock):
             params = self.params
 
         # Filter sklearn parameters
-        sklearn_params = {k: v for k, v in params.items()
-                         if k not in ['block', '_target_', 'name', 'description']}
+        sklearn_params = {
+            k: v for k, v in params.items() if k not in ["block", "_target_", "name", "description"]
+        }
 
         self.model = RandomForestClassifier(**sklearn_params)
 
-        print(f"✅ Random Forest built with {params['n_estimators']} trees, "
-              f"max_depth={params['max_depth']}")
+        print(
+            f"✅ Random Forest built with {params['n_estimators']} trees, "
+            f"max_depth={params['max_depth']}"
+        )
 
     def fit(self, X, y) -> None:
         """Fit Random Forest model."""
@@ -77,17 +79,16 @@ class RandomForestBlock(ModelBlock):
 
         print(f"🌲 Training Random Forest on {X.shape[0]} samples, {X.shape[1]} features...")
 
-        X_values = X.values if hasattr(X, 'values') else X
-        y_values = y.values if hasattr(y, 'values') else y
+        X_values = X.values if hasattr(X, "values") else X
+        y_values = y.values if hasattr(y, "values") else y
 
         self.model.fit(X_values, y_values)
 
         # Print feature importances
-        if hasattr(X, 'columns'):
-            feature_importance = pd.DataFrame({
-                'feature': X.columns,
-                'importance': self.model.feature_importances_
-            }).sort_values('importance', ascending=False)
+        if hasattr(X, "columns"):
+            feature_importance = pd.DataFrame(
+                {"feature": X.columns, "importance": self.model.feature_importances_}
+            ).sort_values("importance", ascending=False)
 
             print("✅ Random Forest training completed!")
             print("📊 Top 5 most important features:")
@@ -100,7 +101,7 @@ class RandomForestBlock(ModelBlock):
         if self.model is None:
             raise ValueError("Model not fitted. Call fit(X, y) first.")
 
-        X_values = X.values if hasattr(X, 'values') else X
+        X_values = X.values if hasattr(X, "values") else X
 
         if hasattr(self.model, "predict_proba"):
             return self.model.predict_proba(X_values)[:, 1]
@@ -111,7 +112,7 @@ class RandomForestBlock(ModelBlock):
         if self.model is None:
             raise ValueError("Model not fitted. Call fit(X, y) first.")
 
-        X_values = X.values if hasattr(X, 'values') else X
+        X_values = X.values if hasattr(X, "values") else X
         return self.model.predict_proba(X_values)
 
     def get_feature_importance(self):
@@ -123,8 +124,7 @@ class RandomForestBlock(ModelBlock):
 
 @register("model.adaboost")
 class AdaBoostBlock(ModelBlock):
-    """
-    AdaBoost classifier - adaptive boosting ensemble.
+    """AdaBoost classifier - adaptive boosting ensemble.
 
     Good for:
     - Weak learner combination
@@ -141,10 +141,10 @@ class AdaBoostBlock(ModelBlock):
 
     def __init__(self, **kwargs):
         default_params = {
-            'n_estimators': 50,
-            'learning_rate': 1.0,
+            "n_estimators": 50,
+            "learning_rate": 1.0,
             # 'algorithm': 'SAMME.R',  # Deprecated in sklearn 1.6+
-            'random_state': 42
+            "random_state": 42,
         }
 
         self.params = {**default_params, **kwargs}
@@ -157,13 +157,16 @@ class AdaBoostBlock(ModelBlock):
         else:
             params = self.params
 
-        sklearn_params = {k: v for k, v in params.items()
-                         if k not in ['block', '_target_', 'name', 'description']}
+        sklearn_params = {
+            k: v for k, v in params.items() if k not in ["block", "_target_", "name", "description"]
+        }
 
         self.model = AdaBoostClassifier(**sklearn_params)
 
-        print(f"✅ AdaBoost built with {params['n_estimators']} estimators, "
-              f"learning_rate={params['learning_rate']}")
+        print(
+            f"✅ AdaBoost built with {params['n_estimators']} estimators, "
+            f"learning_rate={params['learning_rate']}"
+        )
 
     def fit(self, X, y) -> None:
         """Fit AdaBoost model."""
@@ -172,8 +175,8 @@ class AdaBoostBlock(ModelBlock):
 
         print(f"🚀 Training AdaBoost on {X.shape[0]} samples, {X.shape[1]} features...")
 
-        X_values = X.values if hasattr(X, 'values') else X
-        y_values = y.values if hasattr(y, 'values') else y
+        X_values = X.values if hasattr(X, "values") else X
+        y_values = y.values if hasattr(y, "values") else y
 
         self.model.fit(X_values, y_values)
 
@@ -185,7 +188,7 @@ class AdaBoostBlock(ModelBlock):
         if self.model is None:
             raise ValueError("Model not fitted. Call fit(X, y) first.")
 
-        X_values = X.values if hasattr(X, 'values') else X
+        X_values = X.values if hasattr(X, "values") else X
 
         if hasattr(self.model, "predict_proba"):
             return self.model.predict_proba(X_values)[:, 1]
@@ -196,14 +199,13 @@ class AdaBoostBlock(ModelBlock):
         if self.model is None:
             raise ValueError("Model not fitted. Call fit(X, y) first.")
 
-        X_values = X.values if hasattr(X, 'values') else X
+        X_values = X.values if hasattr(X, "values") else X
         return self.model.predict_proba(X_values)
 
 
 @register("model.ensemble_voting")
 class VotingEnsembleBlock(ModelBlock):
-    """
-    Voting ensemble combining multiple models.
+    """Voting ensemble combining multiple models.
 
     Combines predictions from different algorithms to improve robustness.
     Available models include XGBoost, Random Forest, SVM, and MLP.
@@ -222,13 +224,13 @@ class VotingEnsembleBlock(ModelBlock):
 
     def __init__(self, **kwargs):
         default_params = {
-            'voting': 'soft',  # 'hard' or 'soft'
-            'weights': None,  # Equal weights by default
-            'use_xgb': True,
-            'use_rf': True,
-            'use_svm': False,  # Requires SVM module
-            'use_mlp': False,  # Requires MLP module
-            'random_state': 42
+            "voting": "soft",  # 'hard' or 'soft'
+            "weights": None,  # Equal weights by default
+            "use_xgb": True,
+            "use_rf": True,
+            "use_svm": False,  # Requires SVM module
+            "use_mlp": False,  # Requires MLP module
+            "random_state": 42,
         }
 
         self.params = {**default_params, **kwargs}
@@ -248,43 +250,46 @@ class VotingEnsembleBlock(ModelBlock):
         # Initialize base models
         estimators = []
 
-        if params['use_xgb']:
+        if params["use_xgb"]:
             try:
                 from xgboost import XGBClassifier
-                xgb = XGBClassifier(random_state=params['random_state'], eval_metric='logloss')
-                estimators.append(('xgb', xgb))
+
+                xgb = XGBClassifier(random_state=params["random_state"], eval_metric="logloss")
+                estimators.append(("xgb", xgb))
             except ImportError:
                 print("Warning: XGBoost not available, skipping from ensemble")
 
-        if params['use_rf']:
+        if params["use_rf"]:
             rf = RandomForestClassifier(
-                n_estimators=100,
-                random_state=params['random_state'],
-                n_jobs=-1
+                n_estimators=100, random_state=params["random_state"], n_jobs=-1
             )
-            estimators.append(('rf', rf))
+            estimators.append(("rf", rf))
 
-        if params['use_svm']:
+        if params["use_svm"]:
             try:
                 from mlpipe.blocks.model.svm import SVMBlock
-                svm_block = SVMBlock(probability=True, random_state=params['random_state'])
+
+                svm_block = SVMBlock(probability=True, random_state=params["random_state"])
                 svm_block.build()
-                estimators.append(('svm', svm_block.model))
+                estimators.append(("svm", svm_block.model))
                 # Initialize scaler for SVM
                 from sklearn.preprocessing import StandardScaler
+
                 self.scaler = StandardScaler()
             except ImportError:
                 print("Warning: SVM model not available, skipping from ensemble")
 
-        if params['use_mlp']:
+        if params["use_mlp"]:
             try:
                 from mlpipe.blocks.model.mlp import MLPBlock
-                mlp_block = MLPBlock(random_state=params['random_state'])
+
+                mlp_block = MLPBlock(random_state=params["random_state"])
                 mlp_block.build()
-                estimators.append(('mlp', mlp_block.model))
+                estimators.append(("mlp", mlp_block.model))
                 # Initialize scaler for MLP
                 if self.scaler is None:
                     from sklearn.preprocessing import StandardScaler
+
                     self.scaler = StandardScaler()
             except ImportError:
                 print("Warning: MLP model not available, skipping from ensemble")
@@ -293,13 +298,13 @@ class VotingEnsembleBlock(ModelBlock):
             raise ValueError("No base models available for ensemble")
 
         self.model = VotingClassifier(
-            estimators=estimators,
-            voting=params['voting'],
-            weights=params['weights']
+            estimators=estimators, voting=params["voting"], weights=params["weights"]
         )
 
-        print(f"✅ Voting Ensemble built with {len(estimators)} models: "
-              f"{[name for name, _ in estimators]}")
+        print(
+            f"✅ Voting Ensemble built with {len(estimators)} models: "
+            f"{[name for name, _ in estimators]}"
+        )
 
     def fit(self, X, y) -> None:
         """Fit ensemble model."""
@@ -308,8 +313,8 @@ class VotingEnsembleBlock(ModelBlock):
 
         print(f"🗳️  Training Ensemble on {X.shape[0]} samples, {X.shape[1]} features...")
 
-        X_values = X.values if hasattr(X, 'values') else X
-        y_values = y.values if hasattr(y, 'values') else y
+        X_values = X.values if hasattr(X, "values") else X
+        y_values = y.values if hasattr(y, "values") else y
 
         # Scale features if needed (for SVM/MLP components)
         if self.scaler is not None:
@@ -327,7 +332,7 @@ class VotingEnsembleBlock(ModelBlock):
         if not self.fitted:
             raise ValueError("Model not fitted. Call fit(X, y) first.")
 
-        X_values = X.values if hasattr(X, 'values') else X
+        X_values = X.values if hasattr(X, "values") else X
 
         # Scale features if needed
         if self.scaler is not None:
@@ -344,7 +349,7 @@ class VotingEnsembleBlock(ModelBlock):
         if not self.fitted:
             raise ValueError("Model not fitted. Call fit(X, y) first.")
 
-        X_values = X.values if hasattr(X, 'values') else X
+        X_values = X.values if hasattr(X, "values") else X
 
         # Scale features if needed
         if self.scaler is not None:

@@ -1,8 +1,10 @@
-from typing import Dict, Any
-from sklearn.metrics import roc_auc_score, accuracy_score
+from typing import Any, Dict
+
+import numpy as np
+from sklearn.metrics import accuracy_score, roc_auc_score
+
 from mlpipe.core.interfaces import Evaluator
 from mlpipe.core.registry import register
-import numpy as np
 
 
 @register("eval.classification")

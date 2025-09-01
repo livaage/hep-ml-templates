@@ -1,5 +1,7 @@
 from pathlib import Path
+
 from mlpipe.pipelines.xgb_basic.run import run_pipeline
+
 
 def test_xgb_pipeline(tmp_path: Path, capsys):
     # use default configs; demo data will be created
