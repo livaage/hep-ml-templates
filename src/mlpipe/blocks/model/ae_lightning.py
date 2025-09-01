@@ -368,6 +368,28 @@ class VariationalAutoencoderBlock(ModelBlock):
             mse = torch.mean((X_tensor - reconstructed) ** 2, dim=1)
             return mse.numpy()
 
+    def reconstruct(self, X):
+        """Return reconstructed data."""
+        if self.model is None:
+            raise ValueError("Model not fitted. Call fit(X) first.")
+
+        if self.scaler and self.params["normalize_inputs"]:
+            X_scaled = self.scaler.transform(X)
+        else:
+            X_scaled = X.values if hasattr(X, "values") else X
+
+        X_tensor = torch.tensor(X_scaled, dtype=torch.float32)
+
+        self.model.eval()
+        with torch.no_grad():
+            reconstructed, _, _ = self.model(X_tensor)
+            
+            # Scale back if normalization was applied
+            if self.scaler and self.params["normalize_inputs"]:
+                return self.scaler.inverse_transform(reconstructed.numpy())
+            else:
+                return reconstructed.numpy()
+
 
 class VariationalAutoencoder(pl.LightningModule):
     """Variational Autoencoder with reparameterization trick."""
