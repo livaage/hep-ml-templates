@@ -74,7 +74,7 @@ Our CI pipeline automatically:
 ```
 tests/
 ├── unit/           # Fast unit tests
-├── integration/    # Integration tests  
+├── integration/    # Integration tests
 └── conftest.py     # Shared test fixtures
 ```
 
@@ -114,12 +114,12 @@ make test-cov       # Tests with coverage report
    # src/mlpipe/blocks/{category}/{block_name}.py
    from mlpipe.core.interfaces import {Interface}
    from mlpipe.core.registry import register
-   
+
    @register("{category}.{block_name}")
    class {BlockName}({Interface}):
        def __init__(self, config=None):
            # Implementation
-       
+
        def {required_methods}(self):
            # Implementation
    ```
@@ -145,16 +145,16 @@ make test-cov       # Tests with coverage report
 ```python
 def function(param1: str, param2: int) -> bool:
     """Brief description.
-    
+
     Longer description if needed.
-    
+
     Args:
         param1: Description of param1.
         param2: Description of param2.
-        
+
     Returns:
         Description of return value.
-        
+
     Raises:
         ValueError: When something goes wrong.
     """
@@ -165,7 +165,7 @@ def function(param1: str, param2: int) -> bool:
 from typing import Dict, List, Optional, Any
 
 def process_data(
-    data: pd.DataFrame, 
+    data: pd.DataFrame,
     config: Dict[str, Any],
     target_col: Optional[str] = None
 ) -> List[str]:
@@ -196,7 +196,7 @@ except SpecificError as e:
 4. **Commit with clear message**:
    ```
    Add new XYZ feature: brief description
-   
+
    - Detailed change 1
    - Detailed change 2
    - Fixes #issue_number
@@ -240,7 +240,7 @@ make quick-check   # Fast checks
 make format        # Format code
 make test-fast     # Run unit tests
 
-# Before committing  
+# Before committing
 make dev-check     # Full validation
 make pre-commit    # Run all hooks
 

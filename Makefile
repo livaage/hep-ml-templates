@@ -61,7 +61,7 @@ pre-commit-update:  ## Update pre-commit hooks
 ci-local:  ## Run CI pipeline locally
 	@echo "🔍 Running local CI simulation..."
 	make lint
-	make type-check  
+	make type-check
 	make security
 	make test-cov
 	@echo "✅ Local CI simulation complete!"

@@ -1,10 +1,11 @@
 """Data splitting utilities for train/test/validation splits.
-Provides flexible and configurable data splitting for ML pipelines.
+
+Provides flexible and configurable data splitting for ML pipelines
 """
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -35,7 +36,7 @@ class DataSplitter(Preprocessor):
         splits = splitter.fit_transform(X, y)
     """
 
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
+    def __init__(self, config: dict[str, Any] | None = None):
         """Initialize data splitter with configuration."""
         if config is None:
             config = {}
@@ -87,32 +88,25 @@ class DataSplitter(Preprocessor):
         # Time series validation
         if self.time_series and self.shuffle:
             if self.verbose:
-                print("⚠️  Warning: time_series=True overrides shuffle=False")
+                pass
             self.shuffle = False
 
-    def _print_split_info(self, X: pd.DataFrame, y: pd.Series, splits: Dict[str, Tuple]):
+    def _print_split_info(self, X: pd.DataFrame, y: pd.Series, splits: dict[str, tuple]):
         """Print information about the data splits."""
         if not self.verbose:
             return
 
-        print("📊 Data Split Summary:")
-        print("=" * 40)
-        print(f"Total samples: {len(X):,}")
-        print(f"Total features: {X.shape[1]:,}")
-
-        for split_name, (X_split, y_split) in splits.items():
+        for _split_name, (X_split, y_split) in splits.items():
             size = len(X_split)
-            percentage = (size / len(X)) * 100
-            print(f"{split_name.title():<12}: {size:,} samples ({percentage:.1f}%)")
+            (size / len(X)) * 100
 
             # Show target distribution for classification
             if y_split is not None and hasattr(y_split, "value_counts"):
                 unique_vals = y_split.nunique()
                 if unique_vals <= 10:  # Show distribution for <= 10 classes
-                    print(f"{'':>14} Target dist: {dict(y_split.value_counts())}")
-        print()
+                    pass
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> DataSplitter:
+    def fit(self, X: pd.DataFrame, y: pd.Series | None = None) -> DataSplitter:
         """Fit the splitter (mainly for storing data info).
 
         Args:
@@ -135,15 +129,14 @@ class DataSplitter(Preprocessor):
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        """For consistency with Preprocessor interface, but splitting is done in fit_transform.
-        """
+        """For consistency with Preprocessor interface, but splitting is done in fit_transform."""
         raise NotImplementedError(
             "DataSplitter doesn't support transform(). Use fit_transform() or split() instead."
         )
 
     def fit_transform(
-        self, X: pd.DataFrame, y: Optional[pd.Series] = None
-    ) -> Dict[str, Tuple[pd.DataFrame, pd.Series]]:
+        self, X: pd.DataFrame, y: pd.Series | None = None
+    ) -> dict[str, tuple[pd.DataFrame, pd.Series]]:
         """Fit and split the data in one step.
 
         Args:
@@ -157,8 +150,8 @@ class DataSplitter(Preprocessor):
         return self.split(X, y)
 
     def split(
-        self, X: pd.DataFrame, y: Optional[pd.Series] = None
-    ) -> Dict[str, Tuple[pd.DataFrame, pd.Series]]:
+        self, X: pd.DataFrame, y: pd.Series | None = None
+    ) -> dict[str, tuple[pd.DataFrame, pd.Series]]:
         """Split the data into train/test/validation sets.
 
         Args:
@@ -184,9 +177,7 @@ class DataSplitter(Preprocessor):
             if hasattr(y, "nunique") and y.nunique() <= 100:  # Reasonable class limit
                 stratify_target = y
             elif self.verbose:
-                print(
-                    "⚠️  Warning: stratify=True but target appears continuous. Using random split."
-                )
+                pass
 
         # Perform splits
         if self.val_size > 0:
@@ -206,8 +197,8 @@ class DataSplitter(Preprocessor):
         return splits
 
     def _two_way_split(
-        self, X: pd.DataFrame, y: Optional[pd.Series], stratify_target
-    ) -> Dict[str, Tuple]:
+        self, X: pd.DataFrame, y: pd.Series | None, stratify_target
+    ) -> dict[str, tuple]:
         """Perform a two-way train/test split."""
         # Adjust test size to account for no validation set
         actual_test_size = self.test_size + self.val_size
@@ -224,8 +215,8 @@ class DataSplitter(Preprocessor):
         return {"train": (X_train, y_train), "test": (X_test, y_test)}
 
     def _three_way_split(
-        self, X: pd.DataFrame, y: Optional[pd.Series], stratify_target
-    ) -> Dict[str, Tuple]:
+        self, X: pd.DataFrame, y: pd.Series | None, stratify_target
+    ) -> dict[str, tuple]:
         """Perform a three-way train/val/test split."""
         # First split: separate train+val from test
         temp_size = self.train_size + self.val_size  # Size of train+val combined
@@ -259,7 +250,7 @@ class DataSplitter(Preprocessor):
 
         return {"train": (X_train, y_train), "val": (X_val, y_val), "test": (X_test, y_test)}
 
-    def _time_series_split(self, X: pd.DataFrame, y: Optional[pd.Series]) -> Dict[str, Tuple]:
+    def _time_series_split(self, X: pd.DataFrame, y: pd.Series | None) -> dict[str, tuple]:
         """Perform ordered splits for time series data."""
         # Sort by time column if specified
         if self.time_column and self.time_column in X.columns:
@@ -303,11 +294,11 @@ class DataSplitter(Preprocessor):
                 splits = {"train": (X_train, y_train), "test": (X_test, y_test)}
 
         if self.verbose:
-            print("⏰ Time series split: maintaining temporal order")
+            pass
 
         return splits
 
-    def _validate_splits(self, splits: Dict[str, Tuple]):
+    def _validate_splits(self, splits: dict[str, tuple]):
         """Validate that splits don't have overlapping indices."""
         all_indices = set()
 
@@ -324,20 +315,20 @@ class DataSplitter(Preprocessor):
             all_indices.update(split_indices)
 
         if self.verbose:
-            print("✅ Split validation passed: no overlapping indices")
+            pass
 
 
 # Convenience function for easy splitting
 def split_data(
     X: pd.DataFrame,
-    y: Optional[pd.Series] = None,
+    y: pd.Series | None = None,
     train_size: float = 0.8,
     val_size: float = 0.0,
     test_size: float = 0.2,
     stratify: bool = False,
     random_state: int = 42,
     **kwargs,
-) -> Dict[str, Tuple[pd.DataFrame, pd.Series]]:
+) -> dict[str, tuple[pd.DataFrame, pd.Series]]:
     """Convenience function for quick data splitting.
 
     Args:

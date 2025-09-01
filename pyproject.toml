@@ -54,10 +54,10 @@ cnn = ["torch>=2.2", "lightning>=2.2"]
 
 # Development
 dev = [
-  "pytest>=7.3", 
-  "pytest-cov>=4.1", 
-  "ruff>=0.5", 
-  "black>=24.1", 
+  "pytest>=7.3",
+  "pytest-cov>=4.1",
+  "ruff>=0.5",
+  "black>=24.1",
   "pre-commit>=3.6",
   "mypy>=1.8",
   "isort>=5.13",
@@ -88,7 +88,7 @@ pipeline-autoencoder = [
   "omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0", "scikit-learn>=1.2", "torch>=2.2", "lightning>=2.2"
 ]
 all = [
-  "omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0", "scikit-learn>=1.2", 
+  "omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0", "scikit-learn>=1.2",
   "xgboost>=1.7", "torch>=2.2", "lightning>=2.2", "torch-geometric>=2.5", "uproot>=5.0", "awkward>=2.0"
 ]
 
@@ -121,7 +121,7 @@ target-version = "py39"
 [tool.ruff.lint]
 select = [
     "E",   # pycodestyle errors
-    "W",   # pycodestyle warnings  
+    "W",   # pycodestyle warnings
     "F",   # pyflakes
     "I",   # isort
     "N",   # pep8-naming
