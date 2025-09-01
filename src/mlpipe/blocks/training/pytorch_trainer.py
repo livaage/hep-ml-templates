@@ -61,6 +61,15 @@ class PyTorchTrainer(Trainer):
         # Convert DataFrames/Series to numpy arrays first
         X_np = X.values if hasattr(X, "values") else X
 
+        # For ModelBlocks with their own training logic (like autoencoders),
+        # delegate to the model's fit method
+        if hasattr(model, "model") and hasattr(model, "fit"):
+            # Check if it's an autoencoder or similar model that handles its own training
+            if "autoencoder" in model.__class__.__name__.lower() or "ae_" in model.__class__.__name__.lower():
+                print(f"Using {model.__class__.__name__} internal training...")
+                model.fit(X, y)
+                return model
+
         # Extract PyTorch Lightning model from ModelBlock wrapper
         if hasattr(model, "model") and model.model is not None:
             # If it's a ModelBlock with a Lightning model inside

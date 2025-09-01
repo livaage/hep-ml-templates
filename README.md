@@ -40,16 +40,14 @@ A **modular, plug-and-play machine learning framework** designed specifically fo
 
 The hep-ml-templates library provides complete pre-configured pipeline types that include all necessary components (data, preprocessing, model, training, and evaluation) with automatic data file management. Each pipeline type is ready to run out-of-the-box:
 
-**✅ Working Pipeline Types (Validated):**
+**✅ Working Pipeline Types (Fully Validated):**
 - `pipeline-decision-tree` - Complete Decision Tree workflow (AUC: 100%, Acc: 100%)
 - `pipeline-xgb` - XGBoost pipeline with preprocessing and metrics (AUC: 100%, Acc: 99.67%)
 - `pipeline-ensemble` - Ensemble methods pipeline (AUC: 99.98%, Acc: 99.67%)  
 - `pipeline-neural` - Neural network (MLP) pipeline (AUC: 98.46%, Acc: 91.33%)
-
-**🔧 In Development:**
-- `pipeline-autoencoder` - Autoencoder pipeline (PyTorch training integration pending)
-- `pipeline-torch` - Advanced PyTorch pipeline (PyTorch training integration pending)
-- `pipeline-gnn` - Graph neural network pipeline (local block discovery improvements pending)
+- `pipeline-gnn` - Graph neural network pipeline (AUC: 98.15%, Acc: 92.67%)
+- `pipeline-autoencoder` - Autoencoder reconstruction pipeline (MSE: 0.023±0.029, MAE: 0.115±0.067, RMSE: 0.131±0.075)
+- `pipeline-torch` - PyTorch autoencoder pipeline (MSE: 0.022±0.025, MAE: 0.114±0.062, RMSE: 0.132±0.070)
 
 **Quick Start - Any Pipeline in 5 Commands:**
 
@@ -106,7 +104,11 @@ cd ensemble-project && pip install -e . && mlpipe run
 - **XGBoost**: AUC=100%, Accuracy=99.67%
 - **Ensemble**: AUC=99.98%, Accuracy=99.67%
 - **Neural Network (MLP)**: AUC=98.46%, Accuracy=91.33%
-- All pipelines include ROC-AUC, F1-score, and confusion matrix metrics
+- **GNN**: AUC=98.15%, Accuracy=92.67%
+- **Autoencoder**: MSE=0.023±0.029, MAE=0.115±0.067, RMSE=0.131±0.075
+- **PyTorch (Autoencoder)**: MSE=0.022±0.025, MAE=0.114±0.062, RMSE=0.132±0.070
+- All classification pipelines include ROC-AUC, F1-score, and confusion matrix metrics
+- Reconstruction pipelines provide MSE, MAE, and RMSE with statistical confidence intervals
 
 ### **⚠️ Important Installation Requirements**
 Before starting any pipeline tutorial:
@@ -158,14 +160,14 @@ mlpipe run
 
 Choose your desired pipeline type and follow this pattern:
 
-**Available Pipeline Types:**
-- `pipeline-xgb` → XGBoost classifier
-- `pipeline-decision-tree` → Decision tree classifier  
-- `pipeline-ensemble` → Ensemble methods
-- `pipeline-neural` → Neural network (MLP)
-- `pipeline-torch` → PyTorch neural network
-- `pipeline-autoencoder` → PyTorch autoencoder
-- `pipeline-gnn` → Graph neural network (requires local CLI - see note below)
+**Available Pipeline Types (All Fully Working):**
+- `pipeline-xgb` → XGBoost classifier (AUC: 100%, Acc: 99.67%)
+- `pipeline-decision-tree` → Decision tree classifier (AUC: 100%, Acc: 100%)
+- `pipeline-ensemble` → Ensemble methods (AUC: 99.98%, Acc: 99.67%)
+- `pipeline-neural` → Neural network (MLP) (AUC: 98.46%, Acc: 91.33%)
+- `pipeline-gnn` → Graph neural network (AUC: 98.15%, Acc: 92.67%)
+- `pipeline-autoencoder` → PyTorch autoencoder (MSE: 0.023±0.029)
+- `pipeline-torch` → PyTorch autoencoder (MSE: 0.022±0.025)
 
 **Complete Tutorial Template:**
 ```bash
@@ -185,12 +187,43 @@ pip install -e .
 mlpipe run
 ```
 
-**Special Note for GNN Pipeline:**
-The GNN pipeline requires using the local CLI script due to block registration scope:
+### **⚡ One-Liner Template Pattern (Power Users)**
+
+For experienced users who prefer the most efficient workflow, use this validated template pattern:
+
 ```bash
-# After steps 1-4 above, use local CLI instead of mlpipe run
-python mlpipe_cli.py run
+# Template pattern that works for all pipelines:
+cd /path/to/hep-ml-templates && pip install -e ".[pipeline-{NAME}]" && 
+cd /path/to/test_modular_install && rm -rf {NAME}-demo && 
+mlpipe install-local pipeline-{NAME} --target-dir {NAME}-demo && 
+cd {NAME}-demo && pip install -e . && mlpipe run
 ```
+
+**Examples:**
+```bash
+# XGBoost Pipeline
+cd /path/to/hep-ml-templates && pip install -e ".[pipeline-xgb]" && cd /path/to/test_modular_install && rm -rf xgb-demo && mlpipe install-local pipeline-xgb --target-dir xgb-demo && cd xgb-demo && pip install -e . && mlpipe run
+
+# Decision Tree Pipeline  
+cd /path/to/hep-ml-templates && pip install -e ".[pipeline-decision-tree]" && cd /path/to/test_modular_install && rm -rf dt-demo && mlpipe install-local pipeline-decision-tree --target-dir dt-demo && cd dt-demo && pip install -e . && mlpipe run
+
+# Neural Network Pipeline
+cd /path/to/hep-ml-templates && pip install -e ".[pipeline-neural]" && cd /path/to/test_modular_install && rm -rf neural-demo && mlpipe install-local pipeline-neural --target-dir neural-demo && cd neural-demo && pip install -e . && mlpipe run
+
+# Ensemble Pipeline
+cd /path/to/hep-ml-templates && pip install -e ".[pipeline-ensemble]" && cd /path/to/test_modular_install && rm -rf ensemble-demo && mlpipe install-local pipeline-ensemble --target-dir ensemble-demo && cd ensemble-demo && pip install -e . && mlpipe run
+
+# GNN Pipeline
+cd /path/to/hep-ml-templates && pip install -e ".[pipeline-gnn]" && cd /path/to/test_modular_install && rm -rf gnn-demo && mlpipe install-local pipeline-gnn --target-dir gnn-demo && cd gnn-demo && pip install -e . && mlpipe run
+
+# Autoencoder Pipeline
+cd /path/to/hep-ml-templates && pip install -e ".[pipeline-autoencoder]" && cd /path/to/test_modular_install && rm -rf ae-demo && mlpipe install-local pipeline-autoencoder --target-dir ae-demo && cd ae-demo && pip install -e . && mlpipe run
+```
+
+**Replace placeholders:**
+- `/path/to/hep-ml-templates` → Your actual hep-ml-templates directory
+- `/path/to/test_modular_install` → Your desired working directory
+- `{NAME}` → Pipeline name (xgb, decision-tree, neural, ensemble, gnn, autoencoder)
 
 **Example for Different Pipeline Types:**
 

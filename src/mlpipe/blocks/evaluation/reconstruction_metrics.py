@@ -78,28 +78,28 @@ class ReconstructionEvaluator(Evaluator):
 
         # Validate metrics
         available_metrics = ["mse", "mae", "rmse", "snr", "ssim"]
-        invalid_metrics = [m for m in self.config["metrics"] if m not in available_metrics]
+        invalid_metrics = [m for m in self.config.get["metrics"] if m not in available_metrics]
         if invalid_metrics:
             raise ValueError(f"Invalid metrics: {invalid_metrics}. Available: {available_metrics}")
 
-        if "ssim" in self.config["metrics"] and not SSIM_AVAILABLE:
+        if "ssim" in self.config.get["metrics"] and not SSIM_AVAILABLE:
             print(
                 "⚠️  Warning: SSIM metric requires scikit-image. Install with: pip install scikit-image"
             )
-            self.config["metrics"] = [m for m in self.config["metrics"] if m != "ssim"]
+            self.config.get["metrics"] = [m for m in self.config.get["metrics"] if m != "ssim"]
 
-        if self.config["verbose"]:
+        if self.config.get("verbose", True):
             print("🔍 Reconstruction Evaluator Configuration:")
-            print(f"   Metrics: {self.config['metrics']}")
-            print(f"   Per-sample analysis: {self.config['per_sample']}")
-            print(f"   Generate plots: {self.config['plot_reconstruction']}")
+            print(f"   Metrics: {self.config.get('metrics', ['mse', 'mae', 'rmse'])}")
+            print(f"   Per-sample analysis: {self.config.get('per_sample', True)}")
+            print(f"   Generate plots: {self.config.get('plot_reconstruction', True)}")
 
     def _compute_mse(
         self, original: np.ndarray, reconstructed: np.ndarray
     ) -> Union[float, np.ndarray]:
         """Compute Mean Squared Error."""
         error = (original - reconstructed) ** 2
-        if self.config["per_sample"]:
+        if self.config.get("per_sample", True):
             return np.mean(
                 error, axis=tuple(range(1, error.ndim))
             )  # Mean over all dims except batch
@@ -111,7 +111,7 @@ class ReconstructionEvaluator(Evaluator):
     ) -> Union[float, np.ndarray]:
         """Compute Mean Absolute Error."""
         error = np.abs(original - reconstructed)
-        if self.config["per_sample"]:
+        if self.config.get("per_sample", True):
             return np.mean(error, axis=tuple(range(1, error.ndim)))
         else:
             return np.mean(error)
@@ -129,20 +129,20 @@ class ReconstructionEvaluator(Evaluator):
         """Compute Signal-to-Noise Ratio in dB."""
         signal_power = (
             np.mean(original**2, axis=tuple(range(1, original.ndim)))
-            if self.config["per_sample"]
+            if self.config.get("per_sample", True)
             else np.mean(original**2)
         )
         noise_power = (
             np.mean((original - reconstructed) ** 2, axis=tuple(range(1, original.ndim)))
-            if self.config["per_sample"]
+            if self.config.get("per_sample", True)
             else np.mean((original - reconstructed) ** 2)
         )
 
         # Avoid division by zero
-        noise_power = np.maximum(noise_power, self.config["epsilon"])
+        noise_power = np.maximum(noise_power, self.config.get["epsilon"])
 
         snr_linear = signal_power / noise_power
-        snr_db = 10 * np.log10(snr_linear + self.config["epsilon"])
+        snr_db = 10 * np.log10(snr_linear + self.config.get["epsilon"])
 
         return snr_db
 
@@ -167,7 +167,7 @@ class ReconstructionEvaluator(Evaluator):
             original_2d = original
             reconstructed_2d = reconstructed
 
-        if self.config["per_sample"]:
+        if self.config.get("per_sample", True):
             ssim_values = []
             for i in range(original_2d.shape[0]):
                 # Ensure data is in proper range for SSIM
@@ -177,10 +177,10 @@ class ReconstructionEvaluator(Evaluator):
                 # Normalize to [0, 1] if needed
                 if orig_img.max() > 1.0 or orig_img.min() < 0.0:
                     orig_img = (orig_img - orig_img.min()) / (
-                        orig_img.max() - orig_img.min() + self.config["epsilon"]
+                        orig_img.max() - orig_img.min() + self.config.get["epsilon"]
                     )
                     recon_img = (recon_img - recon_img.min()) / (
-                        recon_img.max() - recon_img.min() + self.config["epsilon"]
+                        recon_img.max() - recon_img.min() + self.config.get["epsilon"]
                     )
 
                 try:
@@ -206,10 +206,10 @@ class ReconstructionEvaluator(Evaluator):
 
                     if orig_img.max() > 1.0 or orig_img.min() < 0.0:
                         orig_img = (orig_img - orig_img.min()) / (
-                            orig_img.max() - orig_img.min() + self.config["epsilon"]
+                            orig_img.max() - orig_img.min() + self.config.get["epsilon"]
                         )
                         recon_img = (recon_img - recon_img.min()) / (
-                            recon_img.max() - recon_img.min() + self.config["epsilon"]
+                            recon_img.max() - recon_img.min() + self.config.get["epsilon"]
                         )
 
                     ssim_val = ssim(orig_img, recon_img, data_range=1.0)
@@ -226,7 +226,7 @@ class ReconstructionEvaluator(Evaluator):
         """Generate reconstruction comparison plots."""
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        n_samples = min(self.config["plot_samples"], original.shape[0])
+        n_samples = min(self.config.get["plot_samples"], original.shape[0])
 
         if original.ndim == 2:  # Tabular data or flattened images
             # For tabular data, plot feature comparisons
@@ -293,7 +293,7 @@ class ReconstructionEvaluator(Evaluator):
         plt.savefig(plot_path, dpi=150, bbox_inches="tight")
         plt.close()
 
-        if self.config["verbose"]:
+        if self.config.get["verbose"]:
             print(f"📊 Reconstruction plots saved to: {plot_path}")
 
     def _save_samples(
@@ -303,38 +303,54 @@ class ReconstructionEvaluator(Evaluator):
         output_dir.mkdir(parents=True, exist_ok=True)
 
         # Save as numpy arrays
-        np.save(output_dir / "original_samples.npy", original[: self.config["plot_samples"]])
+        np.save(output_dir / "original_samples.npy", original[: self.config.get["plot_samples"]])
         np.save(
-            output_dir / "reconstructed_samples.npy", reconstructed[: self.config["plot_samples"]]
+            output_dir / "reconstructed_samples.npy", reconstructed[: self.config.get["plot_samples"]]
         )
 
-        if self.config["verbose"]:
+        if self.config.get["verbose"]:
             print(f"💾 Samples saved to: {output_dir}")
 
-    def evaluate(self, original: np.ndarray, reconstructed: np.ndarray) -> Dict[str, Any]:
+    def evaluate(self, original: np.ndarray, reconstructed: np.ndarray, config: Dict[str, Any] = None) -> Dict[str, Any]:
         """Evaluate reconstruction quality.
 
         Args:
             original: Original input data
-            reconstructed: Reconstructed output data
+            reconstructed: Reconstructed output data  
+            config: Additional configuration parameters (optional)
 
         Returns:
             Dictionary containing computed metrics
         """
+        # Update config if provided
+        if config:
+            self.config.update(config)
+            
+        # Convert to numpy arrays if needed
+        if hasattr(original, 'values'):
+            original = original.values
+        if hasattr(reconstructed, 'values'):
+            reconstructed = reconstructed.values
+            
+        # Ensure numpy arrays
+        original = np.array(original)
+        reconstructed = np.array(reconstructed)
+            
         if original.shape != reconstructed.shape:
             raise ValueError(
                 f"Shape mismatch: original {original.shape} vs reconstructed {reconstructed.shape}"
             )
 
-        if self.config["verbose"]:
+        if self.config.get("verbose", True):
             print("🔍 Evaluating reconstruction quality:")
             print(f"   Data shape: {original.shape}")
-            print(f"   Computing metrics: {self.config['metrics']}")
+            print(f"   Computing metrics: {self.config.get('metrics', ['mse', 'mae', 'rmse'])}")
 
         results = {}
 
         # Compute requested metrics
-        for metric in self.config["metrics"]:
+        metrics = self.config.get("metrics", ["mse", "mae", "rmse"])
+        for metric in metrics:
             if metric == "mse":
                 results["mse"] = self._compute_mse(original, reconstructed)
             elif metric == "mae":
@@ -347,7 +363,7 @@ class ReconstructionEvaluator(Evaluator):
                 results["ssim"] = self._compute_ssim(original, reconstructed)
 
         # Compute summary statistics if per_sample is True
-        if self.config["per_sample"]:
+        if self.config.get("per_sample", False):
             summary_results = {}
             for metric, values in results.items():
                 if isinstance(values, np.ndarray) and values.size > 1:
@@ -362,16 +378,16 @@ class ReconstructionEvaluator(Evaluator):
             results.update(summary_results)
 
         # Generate visualizations if requested
-        if self.config["plot_reconstruction"]:
-            output_dir = Path(self.config["output_dir"])
+        if self.config.get("plot_reconstruction", False):
+            output_dir = Path(self.config.get("output_dir", "."))
             self._plot_reconstructions(original, reconstructed, output_dir)
 
         # Save samples if requested
-        if self.config["save_outputs"]:
-            output_dir = Path(self.config["output_dir"])
+        if self.config.get("save_outputs", False):
+            output_dir = Path(self.config.get("output_dir", "."))
             self._save_samples(original, reconstructed, output_dir)
 
-        if self.config["verbose"]:
+        if self.config.get("verbose", True):
             print("✅ Reconstruction evaluation complete:")
             for metric, value in results.items():
                 if isinstance(value, np.ndarray) and value.size > 1:

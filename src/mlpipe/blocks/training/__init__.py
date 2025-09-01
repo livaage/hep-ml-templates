@@ -1,9 +1,12 @@
 # Training block imports
-from .sklearn_trainer import *  # noqa: F401, F403
+try:
+    from . import sklearn_trainer  # noqa: F401
+except ImportError:
+    pass  # scikit-learn not available
 
 # Import PyTorch trainer if dependencies are available
 try:
-    from .pytorch_trainer import *  # noqa: F401, F403
+    from . import pytorch_trainer  # noqa: F401
 except ImportError:
     # PyTorch dependencies not available, skip import
     pass

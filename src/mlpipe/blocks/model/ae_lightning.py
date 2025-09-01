@@ -81,11 +81,8 @@ class VanillaAutoencoderBlock(ModelBlock):
 
     def fit(self, X, y=None) -> None:
         """Fit the autoencoder (unsupervised learning)."""
-        # Prepare data
-        if self.scaler and self.params["normalize_inputs"]:
-            X_scaled = self.scaler.fit_transform(X)
-        else:
-            X_scaled = X.values if hasattr(X, "values") else X
+        # Prepare data and fit scaler
+        X_scaled = self._prepare_data(X, fit_scaler=True)
 
         # Update input dimension if not set
         input_dim = X_scaled.shape[1]
@@ -109,16 +106,30 @@ class VanillaAutoencoderBlock(ModelBlock):
 
         print("✅ Autoencoder training completed!")
 
+    def _prepare_data(self, X, fit_scaler=False):
+        """Prepare data for training or prediction."""
+        if self.scaler and self.params["normalize_inputs"]:
+            if fit_scaler:
+                X_scaled = self.scaler.fit_transform(X)
+            else:
+                # Ensure scaler is fitted
+                if not hasattr(self.scaler, 'mean_'):
+                    # Scaler not fitted, fit it now
+                    X_scaled = self.scaler.fit_transform(X)
+                else:
+                    X_scaled = self.scaler.transform(X)
+        else:
+            X_scaled = X.values if hasattr(X, "values") else X
+        
+        return X_scaled
+
     def predict(self, X):
         """Return reconstruction error for anomaly detection."""
         if self.model is None:
             raise ValueError("Model not fitted. Call fit(X) first.")
 
-        # Prepare data
-        if self.scaler and self.params["normalize_inputs"]:
-            X_scaled = self.scaler.transform(X)
-        else:
-            X_scaled = X.values if hasattr(X, "values") else X
+        # Prepare data (will fit scaler if not already fitted)
+        X_scaled = self._prepare_data(X, fit_scaler=False)
 
         X_tensor = torch.tensor(X_scaled, dtype=torch.float32)
 
@@ -151,19 +162,18 @@ class VanillaAutoencoderBlock(ModelBlock):
         if self.model is None:
             raise ValueError("Model not fitted. Call fit(X) first.")
 
-        if self.scaler and self.params["normalize_inputs"]:
-            X_scaled = self.scaler.transform(X)
-        else:
-            X_scaled = X.values if hasattr(X, "values") else X
+        # Use the helper method to prepare data
+        X_scaled = self._prepare_data(X, fit_scaler=False)
 
         X_tensor = torch.tensor(X_scaled, dtype=torch.float32)
 
         self.model.eval()
         with torch.no_grad():
             reconstructed = self.model(X_tensor)
+            # If we used scaling, inverse transform the reconstructed data
             if self.scaler and self.params["normalize_inputs"]:
                 reconstructed = self.scaler.inverse_transform(reconstructed.numpy())
-            return reconstructed.numpy()
+            return reconstructed.numpy() if hasattr(reconstructed, 'numpy') else reconstructed
 
 
 class VanillaAutoencoder(pl.LightningModule):

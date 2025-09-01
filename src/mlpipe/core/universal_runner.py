@@ -104,8 +104,21 @@ def run_pipeline(pipeline: str, config_path: str, config_name: str, overrides=No
         e_cfg = cfg["evaluation"]
         Eval = get(e_cfg["block"])
         evaluator = Eval()
-        y_pred = model.predict(Xp)
-        metrics = evaluator.evaluate(y, y_pred, e_cfg.get("params", {}))
+        
+        # Check if this is a reconstruction evaluation
+        if "reconstruction" in e_cfg["block"]:
+            # For autoencoders, we need reconstructed data, not predictions
+            if hasattr(model, "reconstruct"):
+                y_pred = model.reconstruct(Xp)
+                metrics = evaluator.evaluate(Xp, y_pred, e_cfg.get("params", {}))
+            else:
+                # Fallback: use predict method and assume it returns reconstructions
+                y_pred = model.predict(Xp)
+                metrics = evaluator.evaluate(Xp, y_pred, e_cfg.get("params", {}))
+        else:
+            # Standard classification/regression evaluation
+            y_pred = model.predict(Xp)
+            metrics = evaluator.evaluate(y, y_pred, e_cfg.get("params", {}))
 
         print("✅ Model evaluation completed")
         print("\n=== 📊 Results ===")

@@ -85,7 +85,7 @@ pipeline-gnn = [
   "omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0", "scikit-learn>=1.2", "torch>=2.2", "torch-geometric>=2.5"
 ]
 pipeline-autoencoder = [
-  "omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0", "scikit-learn>=1.2", "torch>=2.2", "lightning>=2.2"
+  "omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0", "scikit-learn>=1.2", "torch>=2.2", "lightning>=2.2", "matplotlib>=3.5"
 ]
 all = [
   "omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0", "scikit-learn>=1.2",
