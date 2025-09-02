@@ -1,0 +1,23 @@
+# Core dependencies
+omegaconf>=2.3
+numpy>=1.22
+pandas>=2.0
+scikit-learn>=1.2
+
+# For GNN models (Graph Neural Networks)
+torch>=2.2
+torch-geometric>=2.5
+
+# For other ML models
+xgboost>=1.7
+
+# For PyTorch Lightning models
+lightning>=2.2
+
+# For data loading
+uproot>=5.0
+awkward>=2.0
+
+# For development and testing
+pytest>=7.3
+pytest-cov>=4.1

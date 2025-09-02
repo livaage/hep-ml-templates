@@ -200,12 +200,14 @@ class GCNNet(nn.Module):
             x = F.relu(x)
             x = F.dropout(x, p=self.dropout, training=self.training)
 
-        # Graph-level prediction (pool node features)
-        if self.task == "graph":
+        # Node-level prediction (each node gets its own prediction)
+        if self.task == "node":
+            x = self.classifier(x)
+        else:
+            # Graph-level prediction (pool node features)
             x = global_mean_pool(x, batch.batch)
-
-        # Final classification
-        x = self.classifier(x)
+            x = self.classifier(x)
+        
         return x
 
 
@@ -246,7 +248,7 @@ class GATClassifier(GCNClassifier):
 class GATNet(nn.Module):
     """Graph Attention Network architecture."""
 
-    def __init__(self, input_dim, hidden_dims, output_dim, dropout=0.2, task="graph", heads=4):
+    def __init__(self, input_dim, hidden_dims, output_dim, dropout=0.2, task="node", heads=4):
         super().__init__()
         self.task = task
 
@@ -277,9 +279,12 @@ class GATNet(nn.Module):
                 x = F.relu(x)
             x = F.dropout(x, p=self.dropout, training=self.training)
 
-        # Graph-level prediction
-        if self.task == "graph":
+        # Node-level prediction (each node gets its own prediction)
+        if self.task == "node":
+            x = self.classifier(x)
+        else:
+            # Graph-level prediction (pool node features)
             x = global_mean_pool(x, batch.batch)
-
-        x = self.classifier(x)
+            x = self.classifier(x)
+        
         return x

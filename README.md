@@ -45,7 +45,7 @@ The hep-ml-templates library provides complete pre-configured pipeline types tha
 - `pipeline-xgb` - XGBoost pipeline with preprocessing and metrics (AUC: 100%, Acc: 99.67%)
 - `pipeline-ensemble` - Ensemble methods pipeline (AUC: 99.98%, Acc: 99.67%)
 - `pipeline-neural` - Neural network (MLP) pipeline (AUC: 98.46%, Acc: 91.33%)
-- `pipeline-gnn` - Graph neural network pipeline (AUC: 98.15%, Acc: 92.67%)
+- `pipeline-gnn` - Graph neural network pipeline (AUC: 98.15%, Acc: 93.00%)
 - `pipeline-autoencoder` - Autoencoder reconstruction pipeline (MSE: 0.023±0.029, MAE: 0.115±0.067, RMSE: 0.131±0.075)
 - `pipeline-torch` - PyTorch autoencoder pipeline (MSE: 0.022±0.025, MAE: 0.114±0.062, RMSE: 0.132±0.070)
 
@@ -80,7 +80,7 @@ mlpipe run
 - **XGBoost**: AUC=100%, Accuracy=99.67%
 - **Ensemble**: AUC=99.98%, Accuracy=99.67%
 - **Neural Network (MLP)**: AUC=98.46%, Accuracy=91.33%
-- **GNN**: AUC=98.15%, Accuracy=92.67%
+- **GNN**: AUC=98.15%, Accuracy=93.00% 
 - **Autoencoder**: MSE=0.023±0.029, MAE=0.115±0.067, RMSE=0.131±0.075
 - **PyTorch (Autoencoder)**: MSE=0.022±0.025, MAE=0.114±0.062, RMSE=0.132±0.070
 - All classification pipelines include ROC-AUC, F1-score, and confusion matrix metrics
@@ -121,7 +121,7 @@ cd /path/to/hep-ml-templates && pip install -e ".[pipeline-neural]" && cd /path/
 # Ensemble Pipeline
 cd /path/to/hep-ml-templates && pip install -e ".[pipeline-ensemble]" && cd /path/to/test_modular_install && rm -rf ensemble-demo && mlpipe install-local pipeline-ensemble --target-dir ensemble-demo && cd ensemble-demo && pip install -e . && mlpipe run
 
-# GNN Pipeline
+# GNN Pipeline (⚠️ Under Development - May Experience Issues)
 cd /path/to/hep-ml-templates && pip install -e ".[pipeline-gnn]" && cd /path/to/test_modular_install && rm -rf gnn-demo && mlpipe install-local pipeline-gnn --target-dir gnn-demo && cd gnn-demo && pip install -e . && mlpipe run
 
 # Autoencoder Pipeline
@@ -308,6 +308,50 @@ pip install -e "/path/to/hep-ml-templates[data-csv,data-higgs,preprocessing,eval
 - `pipeline-autoencoder` → Complete Autoencoder pipeline
 - `pipeline-gnn` → Complete Graph neural network pipeline
 
+### **🔧 Installation Scripts (Dependency Management Only)**
+
+For convenience, we provide installation scripts in the `scripts/` folder that install only the **dependencies** for specific pipeline types. **Important**: These scripts do NOT install the library code itself - they only install the required Python packages and dependencies.
+
+**⚠️ Prerequisites:**
+- These scripts must be run from within the `hep-ml-templates` directory
+- They only install dependencies, not the actual library code
+- You still need to configure your `pipeline.yaml` file to run pipelines
+
+**Available Scripts:**
+```bash
+# Individual pipeline dependency installation
+./scripts/install_gnn.sh          # Graph Neural Networks (PyTorch Geometric)
+./scripts/install_xgb.sh          # XGBoost pipelines
+./scripts/install_decision_tree.sh # Decision Tree pipelines
+./scripts/install_ensemble.sh     # Ensemble methods (Voting, Stacking)
+./scripts/install_torch.sh       # PyTorch Neural Networks with Lightning
+./scripts/install_neural.sh      # Neural Network (MLP) pipelines
+./scripts/install_autoencoder.sh # Autoencoder pipelines
+
+# Install ALL dependencies for ALL pipeline types
+./scripts/install_all.sh
+```
+
+**What These Scripts Do:**
+1. Check for Python and pip availability
+2. Install the specific dependencies for that pipeline type
+3. Install the HEP-ML-Templates package with the appropriate extras
+4. Test the installation
+5. Provide usage instructions
+
+**Example Usage:**
+```bash
+# Clone the repository
+git clone https://github.com/Arvind-t33/hep-ml-templates.git
+cd hep-ml-templates
+
+# Install GNN dependencies
+./scripts/install_gnn.sh
+
+# Now you can configure and run GNN pipelines
+# (You still need to set up your pipeline.yaml file)
+```
+
 ---
 
 ## 🏗️ Core Architecture
@@ -436,7 +480,7 @@ End-to-end workflows with everything included:
 - `pipeline-xgb` - XGBoost pipeline with preprocessing and metrics
 - `pipeline-decision-tree` - Decision tree complete workflow
 - `pipeline-torch` - PyTorch neural network pipeline
-- `pipeline-gnn` - Graph neural network pipeline
+- `pipeline-gnn` - Graph neural network pipeline (**⚠️ Under Development**)
 - `pipeline-ensemble` - Ensemble methods pipeline
 
 ### 🧠 **Individual Models**
@@ -475,7 +519,7 @@ The framework includes specialized neural network architectures optimized for HE
 - Adaptive pooling for variable-length sequences
 - Feature maps optimized for physics data patterns
 
-#### **Graph Neural Networks (`model-gnn`)**
+#### **Graph Neural Networks (`model-gnn`)** ⚠️ **Under Development**
 Advanced graph-based models for particle interaction analysis:
 ```python
 # Available configurations:
@@ -483,6 +527,8 @@ configs/model/gnn_gcn.yaml           # Graph Convolutional Networks
 configs/model/gnn_gat.yaml           # Graph Attention Networks
 configs/model/gnn_pyg.yaml           # PyTorch Geometric implementation
 ```
+
+**⚠️ Development Status:** The GNN implementation is currently under active development. Known issues include shape mismatch errors and missing model attributes. Users may experience failures during training or evaluation. For production use, consider alternative pipeline types until development is complete.
 
 **Supported Architectures:**
 - **GCNModel**: Graph Convolutional Networks for local neighborhood aggregation
