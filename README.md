@@ -9,6 +9,8 @@ A **modular, plug-and-play machine learning framework** designed specifically fo
 
 > Quick Note: This library is currently not compatible with Python <3.10 due to the use of the ```|``` operand, which is not supported in earlier versions of Python.
 
+> Regarding the long Readme, we are currently working to create a "Read the Docs" for the library, after which the readme will only contain basic installation and ethos descriptions. 
+
 ---
 
 ## 📚 Table of Contents
