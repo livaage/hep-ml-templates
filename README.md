@@ -7,9 +7,9 @@ A **modular, plug-and-play machine learning framework** designed specifically fo
 
 > **Status:** Production-ready with comprehensive validation, beginner-tested setup (100% success rate, <10s per model), and real-world integration case studies demonstrating 3-line dataset swaps.
 
-> Quick Note: This library is currently not compatible with Python <3.10 due to the use of the ```|``` operand, which is not supported in earlier versions of Python.
+> **Quick Note**: This library is currently not compatible with Python <3.10 due to the use of the ```|``` operand, which is not supported in earlier versions of Python.
 
-> Regarding the long Readme, we are currently working to create a "Read the Docs" for the library, after which the readme will only contain basic installation and ethos descriptions. 
+> **Regarding the long Readme**: we are currently working to create a "Read the Docs" for the library, after which the readme will only contain basic installation and ethos descriptions. 
 
 ---
 
