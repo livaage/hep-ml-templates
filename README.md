@@ -45,13 +45,13 @@ A **modular, plug-and-play machine learning framework** designed specifically fo
 The hep-ml-templates library provides complete pre-configured pipeline types that include all necessary components (data, preprocessing, model, training, and evaluation) with automatic data file management. Each pipeline type is ready to run out-of-the-box:
 
 **✅ Working Pipeline Types (Fully Validated):**
-- `pipeline-decision-tree` - Complete Decision Tree workflow (AUC: 100%, Acc: 100%)
-- `pipeline-xgb` - XGBoost pipeline with preprocessing and metrics (AUC: 100%, Acc: 99.67%)
-- `pipeline-ensemble` - Ensemble methods pipeline (AUC: 99.98%, Acc: 99.67%)
-- `pipeline-neural` - Neural network (MLP) pipeline (AUC: 98.46%, Acc: 91.33%)
-- `pipeline-gnn` - Graph neural network pipeline (AUC: 98.15%, Acc: 93.00%)
-- `pipeline-autoencoder` - Autoencoder reconstruction pipeline (MSE: 0.023±0.029, MAE: 0.115±0.067, RMSE: 0.131±0.075)
-- `pipeline-torch` - PyTorch autoencoder pipeline (MSE: 0.022±0.025, MAE: 0.114±0.062, RMSE: 0.132±0.070)
+- `pipeline-decision-tree` - Complete Decision Tree workflow 
+- `pipeline-xgb` - XGBoost pipeline with preprocessing and metrics 
+- `pipeline-ensemble` - Ensemble methods pipeline 
+- `pipeline-neural` - Neural network (MLP) pipeline 
+- `pipeline-gnn` - Graph neural network pipeline
+- `pipeline-autoencoder` - Autoencoder reconstruction pipeline 
+- `pipeline-torch` - PyTorch autoencoder pipeline
 
 **Quick Start - Any Pipeline in 5 Commands:**
 
