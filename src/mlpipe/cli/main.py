@@ -129,7 +129,7 @@ def main():
     p_generate = sub.add_parser("generate-pipeline", help="Generate a pipeline configuration")
     p_generate.add_argument(
         "pipeline_type",
-        choices=["decision-tree", "xgb", "neural", "torch", "gnn"],
+        choices=["decision-tree", "xgb", "neural", "autoencoder-lightning", "gnn"],
         help="Type of pipeline to generate",
     )
     p_generate.add_argument(
