@@ -80,6 +80,18 @@ def run_pipeline(pipeline: str, config_path: str, config_name: str, overrides=No
         m_cfg = cfg["model"]
         Model = get(m_cfg["block"])
         model = Model()
+        # Friendly pre-check for optional GNN dependency
+        if m_cfg["block"].startswith("model.gnn_"):
+            try:
+                import torch_geometric  # type: ignore
+            except Exception:
+                raise RuntimeError(
+                    "Torch Geometric (torch_geometric) is required for GNN models. "
+                    "Install the extra dependencies, e.g.:\n\n"
+                    "  pip install -e '.[model-gnn]'\n\n"
+                    "Or install PyTorch Geometric following official wheels instructions: "
+                    "https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html"
+                )
         model.build(m_cfg.get("params", {}))
         print(f"✅ Model built: {m_cfg['block']}")
     except Exception as e:

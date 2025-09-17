@@ -70,7 +70,7 @@ ci-local:  ## Run CI pipeline locally
 test-pipelines:  ## Test all pipeline types
 	@echo "🧪 Testing all pipelines..."
 	cd test_runs && \
-	for pipeline in xgb decision-tree ensemble neural torch autoencoder gnn; do \
+	for pipeline in xgb decision-tree ensemble neural autoencoder-lightning autoencoder gnn; do \
 		echo "Testing $$pipeline pipeline..."; \
 		mlpipe install-local --target-dir ./test-$$pipeline pipeline-$$pipeline && \
 		cd test-$$pipeline && pip install -e . && mlpipe run && cd ..; \

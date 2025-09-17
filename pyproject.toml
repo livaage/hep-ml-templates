@@ -75,7 +75,7 @@ pipeline-decision-tree = [
 pipeline-ensemble = [
   "omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0", "scikit-learn>=1.2", "xgboost>=1.7"
 ]
-pipeline-torch = [
+pipeline-autoencoder-lightning = [
   "omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0", "scikit-learn>=1.2", "torch>=2.2", "lightning>=2.2"
 ]
 pipeline-neural = [

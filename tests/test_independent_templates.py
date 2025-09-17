@@ -13,6 +13,7 @@ Each test is completely isolated and uses its own environment.
 """
 
 import os
+import pytest
 import shutil
 import subprocess
 import sys
@@ -170,56 +171,77 @@ runtime: local_cpu
 
 def test_xgb_independent():
     """Independent test for XGBoost classifier."""
-    return create_template_test(
+    assert create_template_test(
         "XGBoost", "model.xgb_classifier", "train.sklearn", "eval.classification"
     )
 
 
 def test_decision_tree_independent():
     """Independent test for Decision Tree classifier."""
-    return create_template_test(
+    assert create_template_test(
         "Decision Tree", "model.decision_tree", "train.sklearn", "eval.classification"
     )
 
 
 def test_ensemble_independent():
     """Independent test for Ensemble classifier."""
-    return create_template_test(
+    assert create_template_test(
         "Ensemble", "model.ensemble_voting", "train.sklearn", "eval.classification"
     )
 
 
 def test_neural_independent():
     """Independent test for Neural Network (MLP) classifier."""
-    return create_template_test(
+    assert create_template_test(
         "Neural Network", "model.mlp", "train.sklearn", "eval.classification"
     )
 
 
 def test_vanilla_autoencoder_independent():
     """Independent test for Vanilla Autoencoder."""
-    return create_template_test(
+    assert create_template_test(
         "Vanilla Autoencoder", "model.ae_vanilla", "train.pytorch", "eval.reconstruction"
     )
 
 
 def test_variational_autoencoder_independent():
     """Independent test for Variational Autoencoder."""
-    return create_template_test(
+    assert create_template_test(
         "Variational Autoencoder", "model.ae_variational", "train.pytorch", "eval.reconstruction"
     )
 
 
 def test_gnn_independent():
-    """Independent test for Graph Neural Network (experimental)."""
-    return create_template_test(
-        "GNN",
-        "model.gnn_gcn",
-        "train.sklearn",
-        "eval.classification",
-        data_config="graph_nodes_demo.csv",
-        data_block="ingest.graph_csv",
-    )
+    """Independent test for Graph Neural Network (experimental).
+
+    If torch_geometric is missing, ensure we emit a clear message rather than crash.
+    """
+    try:
+        import torch_geometric  # type: ignore
+        has_tg = True
+    except Exception:
+        has_tg = False
+
+    if has_tg:
+        assert create_template_test(
+            "GNN",
+            "model.gnn_gcn",
+            "train.sklearn",
+            "eval.classification",
+            data_config="graph_nodes_demo.csv",
+            data_block="ingest.graph_csv",
+        )
+    else:
+        # Run expecting failure with meaningful message
+        ok = create_template_test(
+            "GNN",
+            "model.gnn_gcn",
+            "train.sklearn",
+            "eval.classification",
+            data_config="graph_nodes_demo.csv",
+            data_block="ingest.graph_csv",
+        )
+        assert ok is False
 
 
 def main():

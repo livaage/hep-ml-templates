@@ -1,178 +1,127 @@
 # HEP-ML-Templates
 
-A **modular, plug-and-play machine learning framework** designed specifically for **High Energy Physics (HEP)** research. Build, test, and deploy ML models with true modularity - swap datasets, models, and preprocessing components with minimal code changes and zero vendor lock-in.
+A modular machine learning framework for High Energy Physics research. This library provides interchangeable components for data loading, preprocessing, modeling, and evaluation, allowing researchers to quickly experiment with different approaches while maintaining reproducible workflows.
 
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> **Status:** Production-ready with comprehensive validation, beginner-tested setup (100% success rate, <10s per model), and real-world integration case studies demonstrating 3-line dataset swaps.
+**Requirements:** Python 3.10+ (uses the `|` operator for type hints)
 
-> **Quick Note**: This library is currently not compatible with Python <3.10 due to the use of the ```|``` operand, which is not supported in earlier versions of Python.
-
-> **Regarding the long Readme**: we are currently working to create a "Read the Docs" for the library, after which the readme will only contain basic installation and ethos descriptions. 
+**Documentation Status:** We're working on comprehensive documentation. This README contains complete usage information until our docs site is ready. 
 
 ---
 
-## 📚 Table of Contents
+## Table of Contents
 
-### Getting Started (Start Here!)
-- [🚀 **Quick Start - Complete End-to-End Pipelines**](#-quick-start---complete-end-to-end-pipelines)
-- [💻 **Installation Options**](#-installation--dependency-management)
-- [🛠️ **Three Core Workflows**](#%EF%B8%8F-three-core-workflows)
+### Getting Started
+- [Quick Start](#quick-start)
+- [Installation](#installation)
+- [Core Workflows](#core-workflows)
 
-### Core Documentation
-- [✨ **Key Features**](#-key-features)
-- [📊 **Available Components Overview**](#-available-components-blocks)
-- [🏗️ **Core Architecture**](#%EF%B8%8F-core-architecture)
+### Documentation
+- [Key Features](#key-features)
+- [Available Components](#available-components)
+- [Architecture](#architecture)
 
-### For Power Users
-- [💻 **Complete CLI Reference**](#-complete-cli-reference)
-- [🧬 **Advanced Model Configuration**](#-advanced-model-configuration-reference)
-- [🔄 **Advanced Data Splitting**](#-advanced-data-splitting)
-- [🐍 **Complete Python API Reference**](#-complete-python-api-reference)
-- [📁 **Project Structure**](#-project-structure)
+### Advanced Usage
+- [CLI Reference](#cli-reference)
+- [Python API](#python-api)
+- [Configuration](#configuration)
 
-### Reference & Support
-- [🗂️ **Complete Component Reference**](#%EF%B8%8F-complete-component-reference)
-- [❓ **FAQ**](#-faq)
-- [🎯 **Latest Updates & New Features**](#-latest-updates--new-features)
-- [🤖 **Development Acknowledgments**](#-development-acknowledgments)
+### Reference
+- [Component Reference](#component-reference)
+- [FAQ](#faq)
+- [Contributing](#contributing)
 
 ---
 
-## 🚀 Quick Start - Complete End-to-End Pipelines
+> Before you start: install the base package once
+>
+> pip install -e "/path/to/hep-ml-templates[core]"
+>
+> Then install a specific pipeline extra (e.g., [pipeline-xgb]) as shown below.
 
-The hep-ml-templates library provides complete pre-configured pipeline types that include all necessary components (data, preprocessing, model, training, and evaluation) with automatic data file management. Each pipeline type is ready to run out-of-the-box:
+## Install from source (until PyPI)
 
-**✅ Working Pipeline Types (Fully Validated):**
-- `pipeline-decision-tree` - Complete Decision Tree workflow 
-- `pipeline-xgb` - XGBoost pipeline with preprocessing and metrics 
-- `pipeline-ensemble` - Ensemble methods pipeline 
-- `pipeline-neural` - Neural network (MLP) pipeline 
-- `pipeline-gnn` - Graph neural network pipeline
-- `pipeline-autoencoder` - Autoencoder reconstruction pipeline 
-- `pipeline-torch` - PyTorch autoencoder pipeline
-
-**Quick Start - Any Pipeline in 5 Commands:**
+If you're not installing from PyPI yet, clone and install locally:
 
 ```bash
-# 1. Install the pipeline dependencies
+# 1) Clone the repo
+git clone https://github.com/livaage/hep-ml-templates.git
+cd hep-ml-templates
+
+# 2) Create a virtual environment (recommended)
+python3 -m venv .venv
+source .venv/bin/activate
+
+# 3) Install the base framework first
+pip install -e ".[core]"
+
+# 4) Then add a pipeline extra (example: XGBoost pipeline)
+pip install -e ".[pipeline-xgb]"
+```
+
+Note: When you see a path like "/path/to/hep-ml-templates[extras]", it assumes you have the repository cloned locally and you're inside it (or pointing pip at that path). If unsure, navigate into the repo directory first and use the relative path `.[extras]` as shown above.
+
+## Quick Start
+
+The framework provides complete, pre-configured pipelines that you can run immediately. Each pipeline includes data loading, preprocessing, model training, and evaluation.
+
+**Available Pipelines:**
+- `pipeline-decision-tree` - Decision Tree classifier
+- `pipeline-xgb` - XGBoost with preprocessing and metrics
+- `pipeline-ensemble` - Ensemble methods
+- `pipeline-neural` - Neural network (MLP)
+- `pipeline-gnn` - Graph neural networks
+- `pipeline-autoencoder` - Autoencoder for reconstruction tasks
+- `pipeline-autoencoder-lightning` - PyTorch Lightning autoencoder (formerly `pipeline-torch`)
+
+**Run Any Pipeline in 5 Steps:**
+
+```bash
+# 1. Install pipeline dependencies
 pip install -e "/path/to/hep-ml-templates[pipeline-xgb]"
 
-# 2. Install a complete pipeline locally (includes data files automatically)
+# 2. Create a local project with all necessary files
 mlpipe install-local --target-dir ./my-project pipeline-xgb
 
-# 3. Navigate to project
+# 3. Set up the project
 cd my-project
-
-# 4. Install the local project as a package
 pip install -e .
 
-# 5. Run the pipeline
+# 4. Run the pipeline
 mlpipe run
 ```
 
-**What You Get:**
-- ✅ Complete pipeline configuration (`pipeline.yaml`)
-- ✅ All necessary data files (`demo_tabular.csv`, specialized datasets)
-- ✅ Pre-configured preprocessing, training, and evaluation
-- ✅ Ready-to-run setup with `mlpipe run` command
-- ✅ Modular components you can customize independently
+This gives you a complete ML pipeline with data, trained model, and evaluation metrics.
 
-**Expected Results (Validated on Demo Data):**
-- **Decision Tree**: AUC=100%, Accuracy=100%
-- **XGBoost**: AUC=100%, Accuracy=99.67%
-- **Ensemble**: AUC=99.98%, Accuracy=99.67%
-- **Neural Network (MLP)**: AUC=98.46%, Accuracy=91.33%
-- **GNN**: AUC=98.15%, Accuracy=93.00% 
-- **Autoencoder**: MSE=0.023±0.029, MAE=0.115±0.067, RMSE=0.131±0.075
-- **PyTorch (Autoencoder)**: MSE=0.022±0.025, MAE=0.114±0.062, RMSE=0.132±0.070
-- All classification pipelines include ROC-AUC, F1-score, and confusion matrix metrics
-- Reconstruction pipelines provide MSE, MAE, and RMSE with statistical confidence intervals
+**Important Installation Notes:**
+- If you're inside the repo folder, you can use `.[extras]` instead of an absolute path.
+- If you're outside, use an absolute path to the cloned repo: `"/absolute/path/to/hep-ml-templates[extras]"`.
+- Keep the quotes around the path so the shell doesn't interpret the brackets.
 
-### **⚠️ Important Installation Requirements**
-Before starting any pipeline tutorial:
-- **Use escaped quotes** around the path and extras: `"path[extras]"`
-- **Use the full absolute path** to your hep-ml-templates directory
-- **Do NOT use** just `".[extras]"` as this may be misleading
-- **Replace `/path/to/hep-ml-templates`** with your actual directory path
-
----
-
-### **⚡ One-Liner Template Pattern (Power Users)**
-
-For experienced users who prefer the most efficient workflow, use this validated template pattern:
-
+**Try Different Pipelines:**
 ```bash
-# Template pattern that works for all pipelines:
-cd /path/to/hep-ml-templates && pip install -e ".[pipeline-{NAME}]" &&
-cd /path/to/test_modular_install && rm -rf {NAME}-demo &&
-mlpipe install-local pipeline-{NAME} --target-dir {NAME}-demo &&
-cd {NAME}-demo && pip install -e . && mlpipe run
-```
-
-**Examples:**
-```bash
-# XGBoost Pipeline
-cd /path/to/hep-ml-templates && pip install -e ".[pipeline-xgb]" && cd /path/to/test_modular_install && rm -rf xgb-demo && mlpipe install-local pipeline-xgb --target-dir xgb-demo && cd xgb-demo && pip install -e . && mlpipe run
-
-# Decision Tree Pipeline
-cd /path/to/hep-ml-templates && pip install -e ".[pipeline-decision-tree]" && cd /path/to/test_modular_install && rm -rf dt-demo && mlpipe install-local pipeline-decision-tree --target-dir dt-demo && cd dt-demo && pip install -e . && mlpipe run
-
-# Neural Network Pipeline
-cd /path/to/hep-ml-templates && pip install -e ".[pipeline-neural]" && cd /path/to/test_modular_install && rm -rf neural-demo && mlpipe install-local pipeline-neural --target-dir neural-demo && cd neural-demo && pip install -e . && mlpipe run
-
-# Ensemble Pipeline
-cd /path/to/hep-ml-templates && pip install -e ".[pipeline-ensemble]" && cd /path/to/test_modular_install && rm -rf ensemble-demo && mlpipe install-local pipeline-ensemble --target-dir ensemble-demo && cd ensemble-demo && pip install -e . && mlpipe run
-
-# GNN Pipeline (⚠️ Under Development - May Experience Issues)
-cd /path/to/hep-ml-templates && pip install -e ".[pipeline-gnn]" && cd /path/to/test_modular_install && rm -rf gnn-demo && mlpipe install-local pipeline-gnn --target-dir gnn-demo && cd gnn-demo && pip install -e . && mlpipe run
-
-# Autoencoder Pipeline
-cd /path/to/hep-ml-templates && pip install -e ".[pipeline-autoencoder]" && cd /path/to/test_modular_install && rm -rf ae-demo && mlpipe install-local pipeline-autoencoder --target-dir ae-demo && cd ae-demo && pip install -e . && mlpipe run
-```
-
-**Replace placeholders:**
-- `/path/to/hep-ml-templates` → Your actual hep-ml-templates directory
-- `/path/to/test_modular_install` → Your desired working directory
-- `{NAME}` → Pipeline name (xgb, decision-tree, neural, ensemble, gnn, autoencoder)
-
-**Example for Different Pipeline Types:**
-
-```bash
-# Decision Tree Pipeline
+# Decision Tree
 pip install -e "/path/to/hep-ml-templates[pipeline-decision-tree]"
 mlpipe install-local --target-dir ./dt-project pipeline-decision-tree
-cd dt-project && pip install -e . && mlpipe run
 
-# Neural Network Pipeline
+# Neural Network
 pip install -e "/path/to/hep-ml-templates[pipeline-neural]"
 mlpipe install-local --target-dir ./nn-project pipeline-neural
-cd nn-project && pip install -e . && mlpipe run
 
-# Ensemble Pipeline
-pip install -e "/path/to/hep-ml-templates[pipeline-ensemble]"
-mlpipe install-local --target-dir ./ensemble-project pipeline-ensemble
-cd ensemble-project && pip install -e . && mlpipe run
+# XGBoost (recommended for beginners)
+pip install -e "/path/to/hep-ml-templates[pipeline-xgb]"
+mlpipe install-local --target-dir ./xgb-project pipeline-xgb
 ```
 
-### **What Each Step Does:**
-
-1. **Install Dependencies**: Downloads and installs all required packages for your chosen pipeline type
-2. **Local Installation**: Copies all necessary configuration files, data, and block components to your project directory
-3. **Navigate**: Changes to your new project directory containing all pipeline files
-4. **Package Installation**: Makes your local project an importable Python package with proper module resolution
-5. **Execute**: Runs the complete machine learning pipeline from data loading to evaluation
-
-### **Expected Results:**
-- ✅ Complete pipeline configuration (`pipeline.yaml`)
-- ✅ All necessary data files automatically included
-- ✅ Performance metrics (AUC, Accuracy, F1-score, Confusion Matrix)
-- ✅ Trained model ready for prediction or further analysis
+### Demo data and metrics
+- Demo CSVs like `demo_tabular.csv`, `HIGGS_100k.csv`, and `graph_nodes_demo.csv` are included under `data/`.
+- Example runs compute metrics on held-out test splits where applicable. We’ve removed fixed accuracy numbers from the README to avoid misleading expectations; results vary by environment and seed.
 
 ---
 
-## �🛠️ Three Core Workflows
+## Core Workflows
 
 ### 1. **Rapid Prototyping**
 Experiment with different models and datasets using config/CLI overrides:
@@ -254,116 +203,82 @@ model.build({'n_estimators': 200, 'learning_rate': 0.1})
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-- 🧩 **True Modularity**: Mix and match components - datasets, models, preprocessing - independently with consistent APIs
-- 🎯 **HEP-Optimized**: Built specifically for particle physics data and workflows, including HIGGS benchmark integration
-- ⚡ **Rapid Prototyping**: Swap models/datasets with single CLI commands; beginner-tested setup averaging under 10 seconds per model
-- 🔧 **Selective Installation**: Install only the components you need via curated "extras" system with preview and validation
-- 🚀 **Dual CLI Interface**: Embedded `mlpipe` commands + optional standalone `mlpipe-manager` for flexibility
-- 📊 **Standalone Projects**: Export templates to create self-contained, editable ML projects with no repository dependency
-- 🤖 **Multi-Algorithm Support**: Traditional ML (XGBoost, Decision Trees, SVM) + Neural Networks (PyTorch, GNNs, Autoencoders)
-- 📈 **Advanced Data Splitting**: Train/val/test splits with stratification, time-series support, and reproducible seeding
+- Modular components for data, preprocessing, models, evaluation
+- HEP-optimized: integrates HIGGS benchmark and ROOT support
+- Rapid prototyping via CLI overrides and YAML configs
+- Selective installation (extras) and standalone project export
+- Python API and CLI; easy integration into existing code
+- Support for traditional ML and neural networks (PyTorch, GNNs, AEs)
 
 ---
 
-## 💻 Installation & Dependency Management
+## Installation
 
-### **Quick Install - Complete Pipelines**
+### Basic Installation
+
 ```bash
-# Install everything you need for end-to-end ML pipelines
-git clone https://github.com/Arvind-t33/hep-ml-templates.git
+# Clone the repository
+git clone https://github.com/livaage/hep-ml-templates.git
 cd hep-ml-templates
-pip install -e "/path/to/hep-ml-templates[all]"
-# Note: Use escaped quotes and full path to library directory
+
+# Install everything
+pip install -e "/full/path/to/hep-ml-templates[all]"
 ```
 
-### **Selective Installation**
-Install only the dependencies you need using the full path to the library directory:
+### Selective Installation
+
+Install only what you need:
 
 ```bash
 # Core framework only
 pip install -e "/path/to/hep-ml-templates[core]"
 
-# Complete pipeline bundles (recommended)
-pip install -e "/path/to/hep-ml-templates[pipeline-xgb,pipeline-torch]"
+# Complete pipelines (recommended for getting started)
+pip install -e "/path/to/hep-ml-templates[pipeline-xgb,pipeline-neural]"
 
-# Traditional ML models
-pip install -e "/path/to/hep-ml-templates[xgb,decision-tree,random-forest,svm]"
-
-# Deep learning components
-pip install -e "/path/to/hep-ml-templates[torch,gnn,autoencoder]"
-
-# Data science essentials
-pip install -e "/path/to/hep-ml-templates[data-csv,data-higgs,preprocessing,evaluation]"
+# Individual components
+pip install -e "/path/to/hep-ml-templates[xgb,decision-tree,random-forest]"
+pip install -e "/path/to/hep-ml-templates[data-csv,data-higgs,evaluation]"
 ```
 
-### **Important Installation Notes:**
-- ⚠️ **Use escaped quotes** around the path and extras: `"path[extras]"`
-- ⚠️ **Use full path** to the library directory, not just `".[extras]"`
-- ⚠️ **Replace `/path/to/hep-ml-templates`** with your actual directory path
+**Important Notes:**
+- Use escaped quotes around the path: `"path[extras]"`
+- Replace `/path/to/hep-ml-templates` with your actual directory path
+- Use the full absolute path to avoid issues
 
-### **Available Complete Pipeline Bundles**
-- `pipeline-xgb` → Complete XGBoost pipeline with all dependencies
-- `pipeline-decision-tree` → Complete Decision Tree pipeline
-- `pipeline-ensemble` → Complete Ensemble methods pipeline
-- `pipeline-neural` → Complete Neural Network (MLP) pipeline
-- `pipeline-torch` → Complete PyTorch neural network pipeline
-- `pipeline-autoencoder` → Complete Autoencoder pipeline
-- `pipeline-gnn` → Complete Graph neural network pipeline
+### Available Pipeline Bundles
+- `pipeline-xgb` - XGBoost pipeline with all dependencies
+- `pipeline-decision-tree` - Decision Tree pipeline
+- `pipeline-ensemble` - Ensemble methods pipeline
+- `pipeline-neural` - Neural Network (MLP) pipeline
+- `pipeline-autoencoder-lightning` - PyTorch Lightning autoencoder pipeline
+- `pipeline-autoencoder` - Autoencoder pipeline
+- `pipeline-gnn` - Graph neural network pipeline
 
-### **🔧 Installation Scripts (Dependency Management Only)**
+### Installation Scripts (Optional)
 
-For convenience, we provide installation scripts in the `scripts/` folder that install only the **dependencies** for specific pipeline types. **Important**: These scripts do NOT install the library code itself - they only install the required Python packages and dependencies.
+For convenience, installation scripts are available in the `scripts/` folder:
 
-**⚠️ Prerequisites:**
-- These scripts must be run from within the `hep-ml-templates` directory
-- They only install dependencies, not the actual library code
-- You still need to configure your `pipeline.yaml` file to run pipelines
-
-**Available Scripts:**
 ```bash
-# Individual pipeline dependency installation
-./scripts/install_gnn.sh          # Graph Neural Networks (PyTorch Geometric)
-./scripts/install_xgb.sh          # XGBoost pipelines
-./scripts/install_decision_tree.sh # Decision Tree pipelines
-./scripts/install_ensemble.sh     # Ensemble methods (Voting, Stacking)
-./scripts/install_torch.sh       # PyTorch Neural Networks with Lightning
-./scripts/install_neural.sh      # Neural Network (MLP) pipelines
-./scripts/install_autoencoder.sh # Autoencoder pipelines
-
-# Install ALL dependencies for ALL pipeline types
-./scripts/install_all.sh
+# Install dependencies for specific pipeline types
+./scripts/install_xgb.sh
+./scripts/install_decision_tree.sh
+./scripts/install_neural.sh
+./scripts/install_all.sh  # Install everything
 ```
 
-**What These Scripts Do:**
-1. Check for Python and pip availability
-2. Install the specific dependencies for that pipeline type
-3. Install the HEP-ML-Templates package with the appropriate extras
-4. Test the installation
-5. Provide usage instructions
-
-**Example Usage:**
-```bash
-# Clone the repository
-git clone https://github.com/Arvind-t33/hep-ml-templates.git
-cd hep-ml-templates
-
-# Install GNN dependencies
-./scripts/install_gnn.sh
-
-# Now you can configure and run GNN pipelines
-# (You still need to set up your pipeline.yaml file)
-```
+Note: These scripts only install dependencies, not the library code itself.
 
 ---
 
-## 🏗️ Core Architecture
+## Architecture
 
-HEP-ML-Templates is built around four fundamental concepts:
+The framework is built around four core concepts:
 
-### 1. **Blocks** - Modular Components
-Self-contained Python classes with consistent APIs that hide library-specific details:
+### 1. Blocks - Modular Components
+Self-contained Python classes with consistent APIs:
 
 ```python
 from mlpipe.core.registry import register
@@ -376,8 +291,8 @@ class DecisionTreeModel(ModelBlock):
     def predict(self, X): ...
 ```
 
-### 2. **Registry** - Discovery System
-Unified discovery mechanism allowing code and configs to refer to blocks by name:
+### 2. Registry - Discovery System
+Unified mechanism for finding and using components:
 
 ```yaml
 # configs/model/decision_tree.yaml
@@ -387,20 +302,19 @@ criterion: gini
 random_state: 42
 ```
 
-### 3. **Configuration-First** - Reproducible Experiments
-YAML-driven workflows with CLI overrides keep code stable while you iterate:
+### 3. Configuration-First Design
+YAML-driven workflows with CLI overrides:
 
 ```bash
-# Swap components at runtime
 mlpipe run --overrides model=xgb_classifier data=higgs_uci
-mlpipe run --overrides model.params.max_depth=8 preprocessing=data_split
+mlpipe run --overrides model.params.max_depth=8
 ```
 
-### 4. **Extras System** - Selective Installation
-Curated package sets map to concrete file collections with discovery, validation, and preview:
+### 4. Extras System - Selective Installation
+Install only what you need:
 
 ```bash
-mlpipe list-extras                    # Discover available components
+mlpipe list-extras                    # See available components
 mlpipe extra-details model-xgb        # Inspect what's included
 mlpipe preview-install model-xgb evaluation  # Preview before installing
 mlpipe install-local model-xgb evaluation --target-dir ./my-project
@@ -408,136 +322,63 @@ mlpipe install-local model-xgb evaluation --target-dir ./my-project
 
 ---
 
-## 🎯 Latest Updates & New Features
+## Available Components
 
-### **🆕 New in v0.1.0 - Production Ready Release**
+### Complete Pipelines
+Ready-to-run workflows with everything included:
+- `pipeline-xgb` - XGBoost with preprocessing and metrics
+- `pipeline-decision-tree` - Decision tree workflow
+- `pipeline-neural` - Neural network (MLP) pipeline
+- `pipeline-ensemble` - Ensemble methods
+- `pipeline-autoencoder` - Autoencoder for reconstruction
+- `pipeline-autoencoder-lightning` - PyTorch Lightning autoencoder
+- `pipeline-gnn` - Graph neural networks
 
-**New Blocks & Functionality:**
+### Individual Models
+**Traditional ML:** Decision Tree, Random Forest, XGBoost, SVM, MLP, AdaBoost
+**Neural Networks:** PyTorch models, CNNs, Transformers, GNNs, Autoencoders
 
-� **One-Hot Encoder (`preprocessing.onehot_encoder`)**
-- Advanced categorical data preprocessing
-- Auto-detection of categorical columns
-- Configurable handling of unknown categories
-- Support for pandas DataFrames and numpy arrays
-
-🔹 **Reconstruction Metrics (`eval.reconstruction`)**
-- MSE, MAE, RMSE, SNR metrics for autoencoder evaluation
-- Per-sample reconstruction error analysis
-- SSIM support for image-like data (optional)
-- Latent space statistics for VAEs
-
-🔹 **ROOT File Loader (`ingest.uproot_loader`)**
-- Native support for High Energy Physics ROOT files
-- Handles jagged arrays and complex HEP data structures
-- Configurable branch selection and filtering
-- Integration with uproot library (optional dependency)
-
-**Enhanced Configurations:**
-- GPU runtime configuration (`runtime/local_gpu.yaml`)
-- Reconstruction evaluation settings (`evaluation/reconstruction.yaml`)
-- Demo feature engineering configuration (`feature_eng/demo_features.yaml`)
-- Verbose logging system across all components
-
-**Production Readiness:**
-- ✅ 100% validation success across all 29 extras
-- ✅ Comprehensive test suite with 7/7 tests passing
-- ✅ All CLI commands fully functional
-- ✅ Multiple dataset compatibility (CSV demo + HIGGS benchmark)
-- ✅ Complete documentation coverage
-
---- (30 seconds)
-
-```bash
-# 1) Clone & install the core library
-git clone https://github.com/Arvind-t33/hep-ml-templates.git
-cd hep-ml-templates
-
-# 2) Install with dependencies for your chosen components and at least one pipeline (to get the pipeline.yaml)
-pip install -e "/full/path/to/hep-ml-templates[pipeline-xgb,evaluation,data-higgs]"
-
-# 3) Discover available components
-mlpipe list-extras
-
-# 4) Create a project with XGBoost + evaluation + HIGGS data
-mlpipe install-local model-xgb evaluation data-higgs --target-dir ./my-hep-project
-cd ./my-hep-project && pip install -e .
-
-# 5) Run the pipeline (components are configurable)
-mlpipe run --overrides model=xgb_classifier data=higgs_uci
-```
-
-**Alternative manager-style interface:**
-```bash
-mlpipe-manager list
-mlpipe-manager details model-xgb
-mlpipe-manager install model-xgb ./my-project
-```
-
----
-
-## 📊 Available Components Overview
-
-> 💡 **Tip**: Use `mlpipe list-extras` to see all available components, or `mlpipe extra-details <name>` for installation details.
-
-### 🚀 **Complete Pipelines** (Ready to Run)
-End-to-end workflows with everything included:
-- `pipeline-xgb` - XGBoost pipeline with preprocessing and metrics
-- `pipeline-decision-tree` - Decision tree complete workflow
-- `pipeline-torch` - PyTorch neural network pipeline
-- `pipeline-gnn` - Graph neural network pipeline (**⚠️ Under Development**)
-- `pipeline-ensemble` - Ensemble methods pipeline
-
-### 🧠 **Individual Models**
-**Traditional ML:** Decision Tree, Random Forest, XGBoost, SVM, MLP, AdaBoost, Ensemble
-**Neural Networks:** PyTorch, CNN, Transformer, GNN (GCN/GAT), Autoencoders (Vanilla/Variational)
-
-### ⚡ **Algorithm Combos** (Model + Preprocessing)
-Quick bundles: `xgb`, `decision-tree`, `random-forest`, `svm`, `mlp`, `torch`, `gnn`, `ensemble`
-
-### 📁 **Data & Processing**
+### Data & Processing
 **Data Sources:** HIGGS benchmark, CSV loader, ROOT file loader
-**Preprocessing:** Standard scaling, advanced train/val/test splitting, feature engineering
-**Evaluation:** Classification metrics (accuracy, ROC-AUC, F1), reconstruction metrics
+**Preprocessing:** Standard scaling, data splitting, feature engineering
+**Evaluation:** Classification metrics, reconstruction metrics
 
-### 🔍 **Discover More Components**
+### Discover Components
 ```bash
-# See all available components
-mlpipe list-extras
-
-# Get details about a specific component
-mlpipe extra-details pipeline-xgb
-
-# Preview what will be installed
-mlpipe preview-install model-xgb evaluation
+mlpipe list-extras              # See all available components
+mlpipe extra-details model-xgb  # Get details about specific components
+mlpipe preview-install model-xgb evaluation  # Preview installation
 ```
 
 ---
 
-The framework includes specialized neural network architectures optimized for HEP data:
+## CLI Reference
 
-## 🧬 Advanced Model Configuration Reference
+### Basic Commands
 
-**Key Features:**
-- 1D and 2D convolutions for different data types
-- Batch normalization and dropout for regularization
-- Adaptive pooling for variable-length sequences
-- Feature maps optimized for physics data patterns
+```bash
+# Run pipelines
+mlpipe run                                    # Use default configuration
+mlpipe run --overrides model=xgb_classifier  # Override model
+mlpipe run --overrides data=higgs_uci        # Override data source
 
-#### **Graph Neural Networks (`model-gnn`)** ⚠️ **Under Development**
-Advanced graph-based models for particle interaction analysis:
-```python
-# Available configurations:
-configs/model/gnn_gcn.yaml           # Graph Convolutional Networks
-configs/model/gnn_gat.yaml           # Graph Attention Networks
-configs/model/gnn_pyg.yaml           # PyTorch Geometric implementation
+# Discover components
+mlpipe list-extras                            # See all available components
+mlpipe extra-details model-xgb               # Get component details
+mlpipe preview-install model-xgb evaluation  # Preview installation
+
+# Install components locally
+mlpipe install-local model-xgb --target-dir ./my-project
+mlpipe install-local model-xgb evaluation data-higgs --target-dir ./research
 ```
 
-**⚠️ Development Status:** The GNN implementation is currently under active development. Known issues include shape mismatch errors and missing model attributes. Users may experience failures during training or evaluation. For production use, consider alternative pipeline types until development is complete.
+### Alternative Manager Interface
 
-**Supported Architectures:**
-- **GCNModel**: Graph Convolutional Networks for local neighborhood aggregation
-- **GATModel**: Graph Attention Networks with learned attention weights
-- **Flexible node/edge feature handling** for particle physics graphs
+```bash
+mlpipe-manager list                           # List all extras
+mlpipe-manager details model-xgb             # Show component details
+mlpipe-manager install model-xgb ./my-project # Install to directory
+```
 
 #### **Autoencoder Architectures**
 Unsupervised learning models for dimensionality reduction and anomaly detection:
@@ -575,102 +416,20 @@ configs/model/ae_lightning.yaml      # Lightning-based training pipeline
 
 ---
 
-## 🧬 Advanced Model Configuration Reference
+## Advanced Model Configuration
 
-### **Hyperparameter Configuration Examples**
+Full YAML examples for all models live under `configs/model/*.yaml`. Common patterns:
 
-#### **XGBoost Classifier (model=xgb_classifier)**
-```yaml
-# configs/model/xgb_classifier.yaml - Full parameter reference
-block: model.xgb_classifier
-n_estimators: 100              # Number of boosting rounds
-max_depth: 6                   # Maximum tree depth
-learning_rate: 0.3             # Step size shrinkage
-subsample: 1.0                 # Subsample ratio of training instances
-colsample_bytree: 1.0          # Subsample ratio of columns when constructing trees
-random_state: 42               # Random seed for reproducibility
-objective: "binary:logistic"    # Learning objective
-eval_metric: "logloss"         # Evaluation metric
-n_jobs: -1                     # Number of parallel threads
-```
+- XGBoost (`model=xgb_classifier`): set `n_estimators`, `max_depth`, `learning_rate`, etc. See `configs/model/xgb_classifier.yaml`.
+- Decision Tree (`model=decision_tree`): set `max_depth`, `criterion`, etc. See `configs/model/decision_tree.yaml`.
+- Random Forest (`model=random_forest`): set `n_estimators`, `max_features`, etc. See `configs/model/random_forest.yaml`.
+- SVM (`model=svm`): configure `kernel`, `C`, `gamma`. See `configs/model/svm.yaml`.
+- MLP (`model=mlp`): control hidden sizes and training params. See `configs/model/mlp.yaml`.
 
-**CLI Overrides:**
+CLI overrides work for any parameter, for example:
+
 ```bash
 mlpipe run --overrides model=xgb_classifier model.params.max_depth=8 model.params.n_estimators=200
-mlpipe run --overrides model=xgb_classifier model.params.learning_rate=0.1 model.params.subsample=0.8
-```
-
-#### **Decision Tree (model=decision_tree)**
-```yaml
-# configs/model/decision_tree.yaml - Full parameter reference
-block: model.decision_tree
-max_depth: 10                  # Maximum depth of the tree
-criterion: "gini"              # Function to measure the quality of a split
-min_samples_split: 2           # Minimum number of samples required to split
-min_samples_leaf: 1            # Minimum number of samples required to be at a leaf node
-max_features: null             # Number of features to consider when looking for the best split
-class_weight: null             # Weights associated with classes
-random_state: 42               # Random seed for reproducibility
-```
-
-#### **Random Forest (model=random_forest)**
-```yaml
-# configs/model/random_forest.yaml - Full parameter reference
-block: model.random_forest
-n_estimators: 100              # Number of trees in the forest
-max_depth: null                # Maximum depth of the tree
-min_samples_split: 2           # Minimum number of samples required to split
-min_samples_leaf: 1            # Minimum number of samples required to be at a leaf node
-max_features: "sqrt"           # Number of features to consider at every split
-bootstrap: true                # Whether bootstrap samples are used when building trees
-class_weight: null             # Weights associated with classes
-random_state: 42               # Random seed for reproducibility
-n_jobs: -1                     # Number of jobs to run in parallel
-```
-
-#### **Support Vector Machine (model=svm)**
-```yaml
-# configs/model/svm.yaml - Full parameter reference
-block: model.svm
-C: 1.0                         # Regularization parameter
-kernel: "rbf"                  # Kernel type ('linear', 'poly', 'rbf', 'sigmoid')
-degree: 3                      # Degree of the polynomial kernel function
-gamma: "scale"                 # Kernel coefficient for 'rbf', 'poly' and 'sigmoid'
-coef0: 0.0                     # Independent term in kernel function
-shrinking: true                # Whether to use the shrinking heuristic
-probability: true              # Whether to enable probability estimates
-tol: 1e-3                      # Tolerance for stopping criterion
-cache_size: 200                # Kernel cache size (in MB)
-class_weight: null             # Weights associated with classes
-max_iter: -1                   # Hard limit on iterations
-random_state: 42               # Random seed for reproducibility
-```
-
-#### **Neural Networks (model=mlp)**
-```yaml
-# configs/model/mlp.yaml - Full parameter reference
-block: model.mlp
-hidden_layer_sizes: [100]      # The ith element represents the number of neurons in the ith hidden layer
-activation: "relu"             # Activation function for the hidden layer
-solver: "adam"                 # The solver for weight optimization
-alpha: 0.0001                  # L2 penalty (regularization term) parameter
-batch_size: "auto"             # Size of minibatches for stochastic optimizers
-learning_rate: "constant"      # Learning rate schedule for weight updates
-learning_rate_init: 0.001      # Initial learning rate
-power_t: 0.5                   # Exponent for inverse scaling learning rate
-max_iter: 200                  # Maximum number of iterations
-shuffle: true                  # Whether to shuffle samples in each iteration
-random_state: 42               # Random seed for reproducibility
-tol: 1e-4                      # Tolerance for the optimization
-warm_start: false              # When set to True, reuse the solution of the previous call
-momentum: 0.9                  # Momentum for gradient descent update
-nesterovs_momentum: true       # Whether to use Nesterov's momentum
-early_stopping: false          # Whether to use early stopping to terminate training
-validation_fraction: 0.1       # Proportion of training data to set aside as validation set
-beta_1: 0.9                    # Exponential decay rate for estimates of first moment vector
-beta_2: 0.999                  # Exponential decay rate for estimates of second moment vector
-epsilon: 1e-8                  # Value for numerical stability
-n_iter_no_change: 10           # Maximum number of epochs to not meet tol improvement
 ```
 
 ### **Advanced Data Configuration**
@@ -833,165 +592,23 @@ copy: true
 
 ---
 
-## 💻 Complete CLI Reference
+## CLI Reference
 
-### **Embedded CLI (`mlpipe`)**
+Essentials you’ll use most:
 
-#### **Discovery & Configuration Commands**
 ```bash
-# List all available blocks (registered components)
-mlpipe list-blocks
+# Discover components
+mlpipe list-extras
+mlpipe extra-details pipeline-xgb
+mlpipe preview-install model-xgb evaluation
 
-# List all available configurations with usage examples
-mlpipe list-configs [--config-path CONFIGS_DIR]    # Optional custom config directory path
+# Create a project
+mlpipe install-local pipeline-xgb --target-dir ./my-project
+cd ./my-project && pip install -e .
 
-# Discover available extras and their contents
-mlpipe list-extras                                  # Show all available extras by category
-
-# Inspect specific extras before installing
-mlpipe extra-details EXTRA_NAME                    # Show detailed breakdown of blocks/configs
-mlpipe extra-details model-xgb                     # Example: inspect XGBoost extra
-
-# Preview installations before committing
-mlpipe preview-install EXTRA1 [EXTRA2 ...]        # Preview what would be installed
-mlpipe preview-install model-xgb evaluation        # Example: preview installation
-
-# Validate the extras system integrity
-mlpipe validate-extras                              # Check all extras mappings are valid
+# Run with overrides
+mlpipe run --overrides model=xgb_classifier data=higgs_uci preprocessing=data_split
 ```
-
-**Detailed Command Options:**
-
-**`mlpipe list-blocks`**
-- Lists all 17 registered block components with their registry names
-- Shows available model, data, preprocessing, evaluation, and training blocks
-- No additional flags required
-
-**`mlpipe list-configs [--config-path PATH]`**
-- `--config-path`: Specify custom configuration directory (default: ./configs)
-- Lists configurations by category: data, model, preprocessing, feature_eng, training, evaluation
-- Shows example usage for each configuration
-
-**`mlpipe list-extras`**
-- Shows 29 available extras grouped by category
-- Displays block and config counts for each extra
-- No additional parameters required
-
-**`mlpipe extra-details EXTRA_NAME`**
-- Detailed breakdown showing specific blocks and configurations included
-- Example: `mlpipe extra-details pipeline-xgb` shows all 5 blocks and 8 configs
-- Lists all files that would be copied during installation
-
-**`mlpipe preview-install EXTRA1 [EXTRA2 ...]`**
-- Shows complete file tree of what would be installed
-- Displays dependencies and conflicts
-- Can preview multiple extras simultaneously
-- No actual installation performed
-
-**`mlpipe validate-extras`**
-- Validates all 29 extras against available blocks and configurations
-- Checks for missing files, invalid references, and mapping consistency
-- Returns detailed report of any validation issues
-
-#### **Installation & Setup Commands**
-```bash
-# Install extras locally to create standalone projects
-mlpipe install-local EXTRA1 [EXTRA2 ...] --target-dir TARGET_DIR
-
-# Examples:
-mlpipe install-local model-xgb --target-dir ./my-xgb-project
-mlpipe install-local model-decision-tree data-higgs evaluation --target-dir ./research-project
-mlpipe install-local all --target-dir ./complete-ml-suite
-```
-
-**Detailed Installation Options:**
-
-**`mlpipe install-local EXTRAS --target-dir PATH`**
-- **Required `--target-dir PATH`**: Absolute or relative path to target directory
-- **EXTRAS**: Space-separated list of extra names (e.g., `model-xgb data-higgs evaluation`)
-- Creates complete project structure with setup.py, configs/, and src/
-- Automatically handles dependencies and file conflicts
-- Installs in additive mode (can add more components later)
-
-**Installation Behavior:**
-```bash
-# Creates this structure in target directory:
-my-project/
-├── setup.py                  # Auto-generated with selected dependencies
-├── src/mlpipe/              # Copied blocks and core functionality
-├── configs/                 # Relevant configuration files
-├── README.md               # Auto-generated documentation
-└── pyproject.toml          # Project metadata
-```
-
-**Additive Installation:**
-```bash
-# Initial install
-mlpipe install-local model-xgb --target-dir ./project
-cd ./project && pip install -e .
-
-# Add more components later (additive)
-mlpipe install-local data-higgs evaluation --target-dir .
-mlpipe install-local model-decision-tree --target-dir .
-```
-
-#### **Execution & Pipeline Commands**
-```bash
-# Run pipelines with full configuration control
-mlpipe run [OPTIONS]
-
-# Pipeline options:
-mlpipe run                                              # Use defaults (xgb_basic pipeline)
-mlpipe run --pipeline PIPELINE_NAME                    # Specify pipeline implementation
-mlpipe run --config-path CONFIGS_DIR                   # Custom config directory
-mlpipe run --config-name CONFIG_FILE                   # Specific pipeline config file
-
-# Override any configuration values:
-mlpipe run --overrides OVERRIDE1 [OVERRIDE2 ...]
-mlpipe run --overrides model=xgb_classifier            # Swap model component
-mlpipe run --overrides data=higgs_uci                  # Swap data component
-mlpipe run --overrides model=decision_tree data=csv_demo  # Multiple overrides
-
-# Parameter-level overrides (dot notation):
-mlpipe run --overrides model.params.max_depth=8        # Model hyperparameters
-mlpipe run --overrides model.params.n_estimators=200 model.params.learning_rate=0.1
-mlpipe run --overrides data.params.test_size=0.2       # Data splitting parameters
-```
-
-**Detailed Run Options:**
-
-**`mlpipe run [OPTIONS]`**
-- **`--pipeline PIPELINE`**: Pipeline implementation to use (default: xgb_basic)
-  - Available pipelines: `xgb_basic`, `decision_tree_basic`, `gnn_basic`, `torch_basic`
-- **`--config-path PATH`**: Path to configuration directory (default: ./configs)
-- **`--config-name NAME`**: Pipeline configuration file name without .yaml extension (default: pipeline)
-- **`--overrides [OVERRIDES ...]`**: Override config values using dot notation
-
-**Override Syntax Examples:**
-```bash
-# Component-level overrides
-mlpipe run --overrides model=xgb_classifier            # Change model component
-mlpipe run --overrides data=higgs_uci                  # Change data source
-mlpipe run --overrides preprocessing=data_split        # Change preprocessing
-mlpipe run --overrides evaluation=classification       # Change evaluation metrics
-
-# Parameter-level overrides
-mlpipe run --overrides model.params.max_depth=8        # Single parameter
-mlpipe run --overrides model.params.n_estimators=200 model.params.learning_rate=0.1  # Multiple parameters
-mlpipe run --overrides data.params.sample_size=50000   # Data loading parameters
-mlpipe run --overrides preprocessing.params.train_size=0.8  # Preprocessing parameters
-
-# Complex combinations
-mlpipe run --overrides model=decision_tree data=higgs_uci preprocessing=data_split model.params.max_depth=15
-```
-
-**Available Override Targets:**
-- **`model=`**: xgb_classifier, decision_tree, random_forest, svm, mlp, adaboost, ensemble_voting, etc.
-- **`data=`**: higgs_uci, csv_demo, custom_hep_example, wine_quality_example, medical_example
-- **`preprocessing=`**: data_split, standard
-- **`feature_eng=`**: column_selector, demo_features, custom_test_features
-- **`training=`**: sklearn
-- **`evaluation=`**: classification
 
 ### **Manager CLI (`mlpipe-manager`)**
 Standalone interface with simpler command structure and enhanced examples:
@@ -1032,7 +649,7 @@ mlpipe-manager install model-xgb ./my-project          # Install to project dire
 - Detailed breakdown of specific extra components
 - Lists all blocks, configurations, and files included
 - Shows dependency requirements
-- Example: `mlpipe-manager details pipeline-torch` shows PyTorch pipeline components
+- Example: `mlpipe-manager details pipeline-autoencoder-lightning` shows Lightning AE components
 
 **`mlpipe-manager preview EXTRA1 [EXTRA2 ...]`**
 - Preview complete installation without executing
@@ -1143,55 +760,22 @@ hep-ml-templates/
 
 ---
 
-## 🐍 Complete Python API Reference
+## Python API
 
-### **Core Interfaces**
-
-#### **ModelBlock Interface**
-All model classes inherit from `ModelBlock` and implement these methods:
+Core patterns for extending and using the framework:
 
 ```python
 from mlpipe.core.interfaces import ModelBlock
+from mlpipe.core.registry import register, get_block
 
-class CustomModel(ModelBlock):
-    def build(self, config: dict) -> None:
-        """Initialize model with configuration parameters."""
-        pass
-
-    def fit(self, X, y) -> 'ModelBlock':
-        """Train the model on training data."""
-        pass
-
-    def predict(self, X):
-        """Make predictions on new data."""
-        pass
-
-    def predict_proba(self, X):  # For classification models
-        """Return prediction probabilities."""
-        pass
-
-    def score(self, X, y) -> float:  # Optional
-        """Return model performance score."""
-        pass
-```
-
-#### **Registry System**
-Use the registry to discover and instantiate components:
-
-```python
-from mlpipe.core.registry import register, get_block, list_blocks
-
-# Register a new block
 @register("model.my_model")
 class MyModel(ModelBlock):
-    pass
+    def build(self, config): ...
+    def fit(self, X, y): ...
+    def predict(self, X): ...
 
-# Get registered block
-block_class = get_block("model.xgb_classifier")
-model = block_class()
-
-# List all registered blocks
-all_blocks = list_blocks()
+Block = get_block("model.xgb_classifier")
+model = Block(); model.build({...}); model.fit(X_train, y_train)
 ```
 
 ### **Available Model Classes**
@@ -1359,154 +943,26 @@ gat_model.build({
 })
 ```
 
-### **Data Loading & Processing**
+### Data Loading & Processing
 
-#### **CSV Data Loading**
+Use blocks to load and preprocess data; see configs under `configs/data/*` and `configs/preprocessing/*`.
+
 ```python
 from mlpipe.blocks.ingest.csv import CSVDataBlock
+loader = CSVDataBlock(); loader.build({...}); X, y = loader.load()
 
-loader = CSVDataBlock()
-loader.build({
-    'file_path': 'data/my_data.csv',
-    'target_column': 'label',
-    'header': True,
-    'delimiter': ',',
-    'sample_size': 10000
-})
-X, y = loader.load()
+from mlpipe.blocks.preprocessing.data_split import split_data
+splits = split_data(X, y, train_size=0.7, val_size=0.15, test_size=0.15, stratify=True)
 ```
 
-#### **🆕 ROOT File Loading**
-```python
-from mlpipe.blocks.ingest.uproot_loader import UprootDataBlock
+### Evaluation & Metrics
 
-# For High Energy Physics ROOT files
-loader = UprootDataBlock()
-loader.build({
-    'file_path': 'data/higgs_events.root',
-    'tree_name': 'Events',  # or None for auto-detection
-    'branches': ['pt', 'eta', 'phi', 'mass'],  # or None for all branches
-    'target_branch': 'label',
-    'selection_cuts': 'pt > 20',  # ROOT-style cuts
-    'max_entries': 100000,
-    'flatten_arrays': True,  # Handle jagged arrays
-    'verbose': True
-})
-X, y = loader.load()  # Requires: pip install uproot
-```
+Classification and reconstruction evaluators are available under `mlpipe.blocks.evaluation.*`.
 
-#### **Data Splitting**
-```python
-from mlpipe.blocks.preprocessing.data_split import split_data, DataSplitter
-
-# Functional interface
-splits = split_data(X, y,
-    train_size=0.7, val_size=0.15, test_size=0.15,
-    stratify=True, random_state=42
-)
-X_train, y_train = splits['train']
-X_val, y_val = splits['val']
-X_test, y_test = splits['test']
-
-# Class-based interface
-splitter = DataSplitter({
-    'train_size': 0.8,
-    'test_size': 0.2,
-    'stratify': True,
-    'random_state': 42
-})
-splits = splitter.fit_transform(X, y)
-```
-
-#### **Standard Scaling**
-```python
-from mlpipe.blocks.preprocessing.standard_scaler import StandardScalerBlock
-
-scaler = StandardScalerBlock()
-scaler.build({
-    'with_mean': True,
-    'with_std': True,
-    'copy': True
-})
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
-```
-
-#### **🆕 One-Hot Encoding**
-```python
-from mlpipe.blocks.preprocessing.onehot_encoder import OneHotEncoderBlock
-
-# Automatic categorical column detection
-encoder = OneHotEncoderBlock()
-encoder.build({
-    'categorical_columns': 'auto',  # or ['col1', 'col2']
-    'drop_first': True,  # Avoid multicollinearity
-    'handle_unknown': 'ignore',
-    'sparse_output': False,
-    'verbose': True
-})
-
-# Fit and transform
-encoder.fit(X_train)  # Learns categories from training data
-X_encoded = encoder.transform(X)  # Generate one-hot features
-print(f"Original features: {X.shape[1]}, Encoded features: {X_encoded.shape[1]}")
-```
-
-encoder = OneHotEncoderBlock()
-encoder.build({
-    'categorical_columns': ['category_A', 'category_B'],  # or None for auto-detection
-    'drop_first': False,
-    'handle_unknown': 'ignore',
-    'verbose': True
-})
-
-# Fit and transform
-encoder.fit(X_train)
-X_train_encoded = encoder.transform(X_train)
-X_test_encoded = encoder.transform(X_test)
-```
-
-### **Evaluation & Metrics**
-
-#### **Classification Evaluation**
 ```python
 from mlpipe.blocks.evaluation.classification import ClassificationEvaluator
-
-evaluator = ClassificationEvaluator()
-evaluator.build({
-    'metrics': ['accuracy', 'precision', 'recall', 'f1', 'roc_auc'],
-    'average': 'binary',
-    'pos_label': 1
-})
-
-# Get comprehensive evaluation results
-results = evaluator.evaluate(y_true, y_pred, y_pred_proba)
-print(f"Accuracy: {results['accuracy']:.4f}")
-print(f"AUC: {results['roc_auc']:.4f}")
-```
-
-#### **🆕 Reconstruction Evaluation**
-```python
-from mlpipe.blocks.evaluation.reconstruction_metrics import ReconstructionEvaluator
-
-# For autoencoder/generative model evaluation
-evaluator = ReconstructionEvaluator()
-evaluator.build({
-    'metrics': ['mse', 'mae', 'rmse', 'snr', 'ssim'],  # Available metrics
-    'per_sample': True,       # Compute per-sample errors
-    'plot_reconstruction': True,  # Generate visualizations
-    'save_outputs': True,     # Save reconstructed samples
-    'output_dir': 'reconstruction_outputs'
-})
-
-# Evaluate reconstruction quality
-original_data = X_test  # Original input data
-reconstructed_data = autoencoder.predict(X_test)  # Reconstructed output
-
-results = evaluator.evaluate(original_data, reconstructed_data)
-print(f"MSE: {results['mse']:.6f}")
-print(f"SNR: {results['snr']:.2f} dB")
-print(f"SSIM: {results.get('ssim', 'N/A')}")  # Optional metric
+evaluator = ClassificationEvaluator(); evaluator.build({'metrics': ['accuracy', 'roc_auc']})
+results = evaluator.evaluate(y_true, y_pred, y_proba)
 ```
 
 ### **Configuration Management**
@@ -1786,6 +1242,15 @@ pip install -e '.[data-higgs]'
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
 # Then install HEP-ML-Templates
 pip install -e '.[model-torch,model-gnn]'
+```
+
+**Q: GNN blocks complain about missing torch_geometric**
+```bash
+# Install GNN extra dependencies (includes torch-geometric)
+pip install -e '.[model-gnn]'
+
+# If you need custom wheels (CUDA/OS-specific), follow PyG install guide:
+# https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html
 ```
 
 ### **Configuration Questions**

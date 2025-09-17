@@ -13,11 +13,29 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch_geometric.data import Batch, Data
-from torch_geometric.nn import GATConv, GCNConv, global_mean_pool
+
+# Optional dependency: torch_geometric. Import lazily and guard usage so the
+# library doesn't crash at import time when the extra isn't installed.
+try:  # pragma: no cover - simple import guard
+    from torch_geometric.data import Batch, Data  # type: ignore
+    from torch_geometric.nn import GATConv, GCNConv, global_mean_pool  # type: ignore
+    _HAS_TORCH_GEOMETRIC = True
+except Exception:  # broad to catch runtime import issues on some platforms
+    Batch = Data = GATConv = GCNConv = global_mean_pool = None  # type: ignore
+    _HAS_TORCH_GEOMETRIC = False
 
 from mlpipe.core.interfaces import ModelBlock
 from mlpipe.core.registry import register
+
+
+def _missing_tg_error() -> RuntimeError:
+    return RuntimeError(
+        "Torch Geometric (torch_geometric) is required for GNN models. "
+        "Install the extra dependencies, e.g.:\n\n"
+        "  pip install -e '.[model-gnn]'\n\n"
+        "Or install PyTorch Geometric following official wheels instructions: "
+        "https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html"
+    )
 
 
 @register("model.gnn_gcn")
@@ -49,6 +67,9 @@ class GCNClassifier(ModelBlock):
 
     def build(self, config: Optional[Dict[str, Any]] = None) -> None:
         """Build GCN model."""
+        if not _HAS_TORCH_GEOMETRIC:
+            # Defer error until build to allow registry/discovery without hard failure
+            raise _missing_tg_error()
         if config:
             params = {**self.params, **config}
         else:
@@ -174,41 +195,42 @@ class GCNClassifier(ModelBlock):
             yield Batch.from_data_list(batch_data)
 
 
-class GCNNet(nn.Module):
-    """Graph Convolutional Network architecture."""
+if _HAS_TORCH_GEOMETRIC:
+    class GCNNet(nn.Module):
+        """Graph Convolutional Network architecture."""
 
-    def __init__(self, input_dim, hidden_dims, output_dim, dropout=0.2, task="graph"):
-        super().__init__()
-        self.task = task
+        def __init__(self, input_dim, hidden_dims, output_dim, dropout=0.2, task="graph"):
+            super().__init__()
+            self.task = task
 
-        layers = []
-        dims = [input_dim] + hidden_dims
+            layers = []
+            dims = [input_dim] + hidden_dims
 
-        for i in range(len(dims) - 1):
-            layers.append(GCNConv(dims[i], dims[i + 1]))
+            for i in range(len(dims) - 1):
+                layers.append(GCNConv(dims[i], dims[i + 1]))
 
-        self.conv_layers = nn.ModuleList(layers)
-        self.dropout = dropout
-        self.classifier = nn.Linear(hidden_dims[-1], output_dim)
+            self.conv_layers = nn.ModuleList(layers)
+            self.dropout = dropout
+            self.classifier = nn.Linear(hidden_dims[-1], output_dim)
 
-    def forward(self, batch):
-        x, edge_index = batch.x, batch.edge_index
+        def forward(self, batch):
+            x, edge_index = batch.x, batch.edge_index
 
-        # Apply GCN layers
-        for conv in self.conv_layers:
-            x = conv(x, edge_index)
-            x = F.relu(x)
-            x = F.dropout(x, p=self.dropout, training=self.training)
+            # Apply GCN layers
+            for conv in self.conv_layers:
+                x = conv(x, edge_index)
+                x = F.relu(x)
+                x = F.dropout(x, p=self.dropout, training=self.training)
 
-        # Node-level prediction (each node gets its own prediction)
-        if self.task == "node":
-            x = self.classifier(x)
-        else:
-            # Graph-level prediction (pool node features)
-            x = global_mean_pool(x, batch.batch)
-            x = self.classifier(x)
-        
-        return x
+            # Node-level prediction (each node gets its own prediction)
+            if self.task == "node":
+                x = self.classifier(x)
+            else:
+                # Graph-level prediction (pool node features)
+                x = global_mean_pool(x, batch.batch)
+                x = self.classifier(x)
+            
+            return x
 
 
 @register("model.gnn_gat")

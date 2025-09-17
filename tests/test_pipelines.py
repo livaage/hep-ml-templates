@@ -1,6 +1,7 @@
 """Comprehensive pipeline tests for all HEP ML Templates pipeline types."""
 
 import shutil
+import pytest
 import subprocess
 import sys
 import tempfile
@@ -18,6 +19,7 @@ def run_pipeline_test(
     data_block: str = "ingest.csv",
     data_file: str = "demo_tabular.csv",
     model_overrides: str = None,
+    return_output: bool = False,
 ):
     """Run a pipeline test using the modular installation method."""
     print(f"🔍 Testing {pipeline_name} Pipeline...")
@@ -121,12 +123,13 @@ if __name__ == "__main__":
 
             result = subprocess.run(cmd, cwd=tmp_path, capture_output=True, text=True, timeout=300)
 
-            if (
+            success = (
                 result.returncode == 0
                 and "Pipeline execution completed successfully" in result.stdout
-            ):
+            )
+
+            if success:
                 print(f"  ✅ {pipeline_name} pipeline completed successfully")
-                return True
             else:
                 print(f"  ❌ {pipeline_name} pipeline failed:")
                 print(f"    Return code: {result.returncode}")
@@ -134,7 +137,10 @@ if __name__ == "__main__":
                     print(f"    Error: {result.stderr[:500]}...")  # Show more error details
                 if result.stdout:
                     print(f"    Output: {result.stdout[-300:]}")  # Show end of stdout
-                return False
+
+            if return_output:
+                return success, result.stdout, result.stderr
+            return success
 
         except subprocess.TimeoutExpired:
             print(f"  ❌ {pipeline_name} pipeline timed out after 5 minutes")
@@ -146,53 +152,79 @@ if __name__ == "__main__":
 
 def test_xgb_pipeline():
     """Test XGBoost classification pipeline."""
-    return run_pipeline_test(
+    assert run_pipeline_test(
         "XGBoost", "model.xgb_classifier", "train.sklearn", "eval.classification"
     )
 
 
 def test_decision_tree_pipeline():
     """Test Decision Tree classification pipeline."""
-    return run_pipeline_test(
+    assert run_pipeline_test(
         "Decision Tree", "model.decision_tree", "train.sklearn", "eval.classification"
     )
 
 
 def test_random_forest_pipeline():
     """Test Random Forest classification pipeline."""
-    return run_pipeline_test(
+    assert run_pipeline_test(
         "Random Forest", "model.random_forest", "train.sklearn", "eval.classification"
     )
 
 
 def test_ensemble_pipeline():
     """Test Ensemble Voting pipeline."""
-    return run_pipeline_test(
+    assert run_pipeline_test(
         "Ensemble", "model.ensemble_voting", "train.sklearn", "eval.classification"
     )
 
 
 def test_neural_pipeline():
     """Test MLP Neural Network pipeline."""
-    return run_pipeline_test("Neural Network", "model.mlp", "train.sklearn", "eval.classification")
+    assert run_pipeline_test("Neural Network", "model.mlp", "train.sklearn", "eval.classification")
 
 
 def test_gnn_pipeline():
-    """Test Graph Neural Network pipeline."""
-    return run_pipeline_test(
-        "GNN",
-        "model.gnn_gcn",
-        "train.sklearn",
-        "eval.classification",
-        data_block="ingest.graph_csv",
-        data_file="graph_nodes_demo.csv",
-        model_overrides="model.params.task=node",
-    )
+    """Test Graph Neural Network pipeline.
+
+    If torch_geometric is unavailable, assert we surface a clear, actionable error message
+    instead of crashing or providing a cryptic failure.
+    """
+    tg = pytest.importorskip if False else None  # silence linter about unused importorskip
+    try:
+        import torch_geometric  # type: ignore
+        has_tg = True
+    except Exception:
+        has_tg = False
+
+    if has_tg:
+        assert run_pipeline_test(
+            "GNN",
+            "model.gnn_gcn",
+            "train.sklearn",
+            "eval.classification",
+            data_block="ingest.graph_csv",
+            data_file="graph_nodes_demo.csv",
+            model_overrides="model.params.task=node",
+        )
+    else:
+        success, out, err = run_pipeline_test(
+            "GNN",
+            "model.gnn_gcn",
+            "train.sklearn",
+            "eval.classification",
+            data_block="ingest.graph_csv",
+            data_file="graph_nodes_demo.csv",
+            model_overrides="model.params.task=node",
+            return_output=True,
+        )
+        assert success is False
+        combined = (err or "") + "\n" + (out or "")
+        assert "Torch Geometric" in combined or "torch_geometric" in combined
 
 
 def test_vanilla_autoencoder_pipeline():
     """Test Vanilla Autoencoder pipeline."""
-    return run_pipeline_test(
+    assert run_pipeline_test(
         "Vanilla Autoencoder",
         "model.ae_vanilla",
         "train.pytorch",
@@ -203,7 +235,7 @@ def test_vanilla_autoencoder_pipeline():
 
 def test_variational_autoencoder_pipeline():
     """Test Variational Autoencoder pipeline."""
-    return run_pipeline_test(
+    assert run_pipeline_test(
         "Variational Autoencoder",
         "model.ae_variational",
         "train.pytorch",

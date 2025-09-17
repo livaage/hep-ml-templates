@@ -6,7 +6,12 @@ from typing import Callable, Dict, Type
 _REGISTRY: Dict[str, object] = {}
 
 # Lazy loading mappings for optional blocks
-_LAZY_IMPORTS = {"ingest.uproot_loader": "mlpipe.blocks.ingest.uproot_loader"}
+_LAZY_IMPORTS = {
+    "ingest.uproot_loader": "mlpipe.blocks.ingest.uproot_loader",
+    # Allow lazy loading of gnn module so top-level import doesn't hard fail
+    "model.gnn_gcn": "mlpipe.blocks.model.gnn_pyg",
+    "model.gnn_gat": "mlpipe.blocks.model.gnn_pyg",
+}
 
 
 def register(name: str) -> Callable[[Type], Type]:

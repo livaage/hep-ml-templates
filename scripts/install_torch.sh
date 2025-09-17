@@ -25,7 +25,7 @@ pip3 install lightning
 
 echo "📦 Installing HEP-ML-Templates with PyTorch support..."
 # Install the package in editable mode with PyTorch extras
-pip3 install -e ".[pipeline-torch]"
+pip3 install -e ".[pipeline-autoencoder-lightning]"
 
 echo "🧪 Testing PyTorch installation..."
 python3 -c "import torch; import lightning; print('✅ PyTorch and Lightning installed successfully!')"
