@@ -74,7 +74,7 @@ The framework provides complete, pre-configured pipelines that you can run immed
 - `pipeline-neural` - Neural network (MLP)
 - `pipeline-gnn` - Graph neural networks
 - `pipeline-autoencoder` - Autoencoder for reconstruction tasks
-- `pipeline-autoencoder-lightning` - PyTorch Lightning autoencoder (formerly `pipeline-torch`)
+- `pipeline-autoencoder-lightning` - PyTorch Lightning autoencoder
 
 **Run Any Pipeline in 5 Steps:**
 

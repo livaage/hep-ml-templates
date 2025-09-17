@@ -157,7 +157,7 @@ EXTRAS_TO_BLOCKS = {
         "data": ["demo_tabular.csv"],
         "pipeline_type": "decision-tree",
     },
-    # PyTorch Lightning autoencoder pipeline (formerly pipeline-torch)
+    # PyTorch Lightning autoencoder pipeline
     "pipeline-autoencoder-lightning": {
         "blocks": [
             "ingest/csv_loader.py",
@@ -178,8 +178,8 @@ EXTRAS_TO_BLOCKS = {
             "evaluation/reconstruction.yaml",
             "runtime/local_cpu.yaml",
         ],
-        "data": ["demo_tabular.csv"],
-    "pipeline_type": "torch",  # Uses Lightning AE components
+    "data": ["demo_tabular.csv"],
+    "pipeline_type": "autoencoder-lightning",  # Uses Lightning AE components
     },
     # Backward compatibility: keep the old name available
     "pipeline-torch": {
@@ -691,9 +691,9 @@ def generate_pipeline_configs(pipeline_extras: List[str], target_path: Path):
     for extra in pipeline_extras:
         # Extract pipeline type from extra name (e.g., pipeline-xgb -> xgb)
         pipeline_type = extra.replace("pipeline-", "")
-        # Back-compat and normalization: map autoencoder-lightning -> torch
-        if pipeline_type == "autoencoder-lightning":
-            pipeline_type = "torch"
+        # Back-compat: map deprecated alias 'torch' -> 'autoencoder-lightning'
+        if pipeline_type == "torch":
+            pipeline_type = "autoencoder-lightning"
 
         if pipeline_type in PIPELINE_CONFIGS:
             config = generate_pipeline_config(pipeline_type)
