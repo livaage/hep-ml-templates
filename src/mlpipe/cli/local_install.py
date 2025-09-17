@@ -157,7 +157,7 @@ EXTRAS_TO_BLOCKS = {
         "data": ["demo_tabular.csv"],
         "pipeline_type": "decision-tree",
     },
-    # PyTorch Lightning autoencoder pipeline
+    # PyTorch Lightning autoencoder pipeline (formerly pipeline-torch)
     "pipeline-autoencoder-lightning": {
         "blocks": [
             "ingest/csv_loader.py",
@@ -178,32 +178,8 @@ EXTRAS_TO_BLOCKS = {
             "evaluation/reconstruction.yaml",
             "runtime/local_cpu.yaml",
         ],
-    "data": ["demo_tabular.csv"],
-    "pipeline_type": "autoencoder-lightning",  # Uses Lightning AE components
-    },
-    # Backward compatibility: keep the old name available
-    "pipeline-torch": {
-        "blocks": [
-            "ingest/csv_loader.py",
-            "preprocessing/standard_scaler.py",
-            "feature_eng/column_selector.py",
-            "model/ae_lightning.py",
-            "training/sklearn_trainer.py",
-            "training/pytorch_trainer.py",
-            "evaluation/reconstruction_metrics.py",
-        ],
-        "core": ["interfaces.py", "registry.py", "config.py", "utils.py"],
-        "configs": [
-            "data/csv_demo.yaml",
-            "preprocessing/standard.yaml",
-            "feature_eng/all_columns.yaml",
-            "model/ae_lightning.yaml",
-            "training/pytorch.yaml",
-            "evaluation/reconstruction.yaml",
-            "runtime/local_cpu.yaml",
-        ],
         "data": ["demo_tabular.csv"],
-        "pipeline_type": "torch",
+    "pipeline_type": "torch",  # Uses Lightning AE components
     },
     "pipeline-gnn": {
         "blocks": [
@@ -691,9 +667,9 @@ def generate_pipeline_configs(pipeline_extras: List[str], target_path: Path):
     for extra in pipeline_extras:
         # Extract pipeline type from extra name (e.g., pipeline-xgb -> xgb)
         pipeline_type = extra.replace("pipeline-", "")
-        # Back-compat: map deprecated alias 'torch' -> 'autoencoder-lightning'
-        if pipeline_type == "torch":
-            pipeline_type = "autoencoder-lightning"
+        # Back-compat and normalization: map autoencoder-lightning -> torch
+        if pipeline_type == "autoencoder-lightning":
+            pipeline_type = "torch"
 
         if pipeline_type in PIPELINE_CONFIGS:
             config = generate_pipeline_config(pipeline_type)
@@ -813,7 +789,6 @@ def create_setup_py(target_dir: Path, extras: List[str]):
         "pandas>=2.0",
         "numpy>=1.22",
         "scikit-learn>=1.2",
-        "hydra-core>=1.3",
     ]
 
     # Extra-specific dependencies that should be automatically installed
@@ -822,24 +797,22 @@ def create_setup_py(target_dir: Path, extras: List[str]):
         "xgb": ["xgboost>=1.7"],
         "pipeline-xgb": ["xgboost>=1.7"],
         "pipeline-neural": ["scikit-learn>=1.2"],
-        "pipeline-ensemble": ["scikit-learn>=1.2"],
-    "pipeline-autoencoder": ["torch>=2.0", "pytorch-lightning>=2.0"],
-    "pipeline-autoencoder-lightning": ["torch>=2.0", "pytorch-lightning>=2.0"],
-        "model-torch": ["torch>=2.0", "pytorch-lightning>=2.0"],
-        "torch": ["torch>=2.0", "pytorch-lightning>=2.0"],
-    # Back-compat alias for older docs/usage
-    "pipeline-torch": ["torch>=2.0", "pytorch-lightning>=2.0"],
-        "model-gnn": ["torch-geometric>=2.4", "torch>=2.0"],
-        "gnn": ["torch-geometric>=2.4", "torch>=2.0"],
-        "pipeline-gnn": ["torch-geometric>=2.4", "torch>=2.0"],
+        "pipeline-ensemble": ["xgboost>=1.7"],
+        "pipeline-decision-tree": ["scikit-learn>=1.2"],
+        "pipeline-autoencoder-lightning": ["torch>=2.2", "lightning>=2.2", "matplotlib>=3.5"],
+        "model-torch": ["torch>=2.2", "lightning>=2.2"],
+        "model-gnn": ["torch-geometric>=2.5", "torch>=2.2"],
+        "gnn": ["torch-geometric>=2.5", "torch>=2.2"],
+        "pipeline-gnn": ["torch-geometric>=2.5", "torch>=2.2"],
         "data-uproot": ["uproot>=5.0", "awkward>=2.0"],  # For ROOT file ingestion
         "all": [
             "xgboost>=1.7",
-            "torch>=2.0",
-            "pytorch-lightning>=2.0",
-            "torch-geometric>=2.4",
+            "torch>=2.2",
+            "lightning>=2.2",
+            "torch-geometric>=2.5",
             "uproot>=5.0",
             "awkward>=2.0",
+            "matplotlib>=3.5",
         ],
     }
 

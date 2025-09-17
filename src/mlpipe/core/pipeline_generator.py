@@ -54,17 +54,6 @@ PIPELINE_CONFIGS = {
         "evaluation": "reconstruction",
         "runtime": "local_cpu",
     },
-    # PyTorch Lightning autoencoder pipeline
-    "autoencoder-lightning": {
-        "data": "csv_demo",
-        "preprocessing": "standard",
-        "feature_eng": "all_columns",
-        "model": "ae_lightning",
-        "training": "pytorch",
-        "evaluation": "reconstruction",
-        "runtime": "local_cpu",
-    },
-    # Deprecated alias (back-compat)
     "torch": {
         "data": "csv_demo",
         "preprocessing": "standard",
@@ -104,7 +93,7 @@ def generate_pipeline_config(
     """Generate a pipeline configuration for a specific algorithm type.
 
     Args:
-        pipeline_type: Type of pipeline (decision-tree, xgb, neural, autoencoder-lightning, gnn)
+        pipeline_type: Type of pipeline (decision-tree, xgb, neural, torch, gnn)
         custom_components: Optional dict to override default components
         output_path: Optional path to write the config to
 
@@ -140,7 +129,7 @@ def get_pipeline_dependencies(pipeline_type: str) -> Dict[str, list]:
     """Get the dependencies required for a specific pipeline type.
 
     Args:
-        pipeline_type: Type of pipeline (decision-tree, xgb, neural, autoencoder-lightning, gnn)
+        pipeline_type: Type of pipeline (decision-tree, xgb, neural, torch, gnn)
 
     Returns:
         Dict with 'required' and 'optional' dependency lists
@@ -151,8 +140,6 @@ def get_pipeline_dependencies(pipeline_type: str) -> Dict[str, list]:
         "decision-tree": {"required": []},
         "xgb": {"required": ["xgboost>=1.7"]},
         "neural": {"required": []},
-        "autoencoder-lightning": {"required": ["torch>=2.2", "lightning>=2.2"]},
-        # Deprecated alias (back-compat)
         "torch": {"required": ["torch>=2.2", "lightning>=2.2"]},
         "gnn": {"required": ["torch>=2.2", "torch-geometric>=2.5"]},
     }

@@ -65,16 +65,7 @@ Note: When you see a path like "/path/to/hep-ml-templates[extras]", it assumes y
 
 ## Quick Start
 
-The framework provides complete, pre-configured pipelines that you can run immediately. Each pipeline includes data loading, preprocessing, model training, and evaluation.
-
-**Available Pipelines:**
-- `pipeline-decision-tree` - Decision Tree classifier
-- `pipeline-xgb` - XGBoost with preprocessing and metrics
-- `pipeline-ensemble` - Ensemble methods
-- `pipeline-neural` - Neural network (MLP)
-- `pipeline-gnn` - Graph neural networks
-- `pipeline-autoencoder` - Autoencoder for reconstruction tasks
-- `pipeline-autoencoder-lightning` - PyTorch Lightning autoencoder
+The framework provides complete, pre-configured pipelines that you can run immediately. Each pipeline includes data loading, preprocessing, model training, and evaluation. See [Available Pipeline Bundles](#available-pipeline-bundles) for the complete list.
 
 **Run Any Pipeline in 5 Steps:**
 
@@ -115,9 +106,20 @@ pip install -e "/path/to/hep-ml-templates[pipeline-xgb]"
 mlpipe install-local --target-dir ./xgb-project pipeline-xgb
 ```
 
-### Demo data and metrics
-- Demo CSVs like `demo_tabular.csv`, `HIGGS_100k.csv`, and `graph_nodes_demo.csv` are included under `data/`.
-- Example runs compute metrics on held-out test splits where applicable. We’ve removed fixed accuracy numbers from the README to avoid misleading expectations; results vary by environment and seed.
+---
+
+### Demo Data & Evaluation
+
+The framework includes several demo datasets for immediate experimentation:
+
+- **`demo_tabular.csv`** - Small synthetic tabular dataset for quick testing and tutorials
+- **`HIGGS_100k.csv`** - Sample from the HIGGS UCI dataset (100k events) for realistic HEP benchmarking
+- **`graph_nodes_demo.csv`** - Graph-structured data for testing GNN pipelines
+
+**Evaluation Approach:**
+- All pipeline examples compute metrics on proper held-out test splits using stratified sampling
+- Results are reproducible when using the same random seed (default: 42)
+- Use `mlpipe run` to see actual performance on your system
 
 ---
 
@@ -249,12 +251,13 @@ pip install -e "/path/to/hep-ml-templates[data-csv,data-higgs,evaluation]"
 - Use the full absolute path to avoid issues
 
 ### Available Pipeline Bundles
-- `pipeline-xgb` - XGBoost pipeline with all dependencies
-- `pipeline-decision-tree` - Decision Tree pipeline
+**Complete, pre-configured pipelines** that you can run immediately with all dependencies included:
+- `pipeline-xgb` - XGBoost pipeline with preprocessing and metrics
+- `pipeline-decision-tree` - Decision Tree classifier pipeline
 - `pipeline-ensemble` - Ensemble methods pipeline
 - `pipeline-neural` - Neural Network (MLP) pipeline
-- `pipeline-autoencoder-lightning` - PyTorch Lightning autoencoder pipeline
-- `pipeline-autoencoder` - Autoencoder pipeline
+- `pipeline-autoencoder-lightning` - PyTorch Lightning autoencoder pipeline (formerly `pipeline-torch`)
+- `pipeline-autoencoder` - Autoencoder for reconstruction tasks
 - `pipeline-gnn` - Graph neural network pipeline
 
 ### Installation Scripts (Optional)
@@ -323,16 +326,6 @@ mlpipe install-local model-xgb evaluation --target-dir ./my-project
 ---
 
 ## Available Components
-
-### Complete Pipelines
-Ready-to-run workflows with everything included:
-- `pipeline-xgb` - XGBoost with preprocessing and metrics
-- `pipeline-decision-tree` - Decision tree workflow
-- `pipeline-neural` - Neural network (MLP) pipeline
-- `pipeline-ensemble` - Ensemble methods
-- `pipeline-autoencoder` - Autoencoder for reconstruction
-- `pipeline-autoencoder-lightning` - PyTorch Lightning autoencoder
-- `pipeline-gnn` - Graph neural networks
 
 ### Individual Models
 **Traditional ML:** Decision Tree, Random Forest, XGBoost, SVM, MLP, AdaBoost
