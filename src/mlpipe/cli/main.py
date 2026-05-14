@@ -110,7 +110,15 @@ def main() -> None:
     p_generate = sub.add_parser("generate-pipeline", help="Generate a pipeline configuration")
     p_generate.add_argument(
         "pipeline_type",
-        choices=["decision-tree", "xgb", "neural", "torch", "gnn"],
+        choices=[
+            "decision-tree",
+            "xgb",
+            "ensemble",
+            "neural",
+            "autoencoder",
+            "autoencoder-lightning",
+            "gnn",
+        ],
         help="Type of pipeline to generate",
     )
     p_generate.add_argument(
@@ -178,14 +186,10 @@ def main() -> None:
             for key, value in info.items():
                 print(f"  {key}: {value}")
         elif args.cmd == "list-pipeline-templates":
-            pipelines = list_available_pipelines()
             print("Available pipeline templates:")
-            for name, info in pipelines.items():
+            for name, info in list_available_pipelines().items():
                 print(f"  {name}: {info['description']}")
                 print(f"    Model: {info['config']['model']}")
-                deps = ", ".join(info["dependencies"]["required"])
-                print(f"    Dependencies: {deps}")
-                print()
         elif args.cmd == "install-local":
             if not install_local(args.extras, args.target_dir):
                 sys.exit(1)

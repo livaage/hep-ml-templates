@@ -1,14 +1,14 @@
-"""Pipeline configuration generator for hep-ml-templates.
-Creates pipeline.yaml files dynamically based on user choices.
-"""
+"""Pipeline configuration generator: writes pipeline.yaml for a chosen template."""
 
 from pathlib import Path
 from typing import Any
 
 import yaml
 
-# Pipeline configurations for different algorithms
-PIPELINE_CONFIGS = {
+# Canonical slot mapping for each pipeline template. Used both here (to write
+# pipeline.yaml) and by mlpipe.cli.local_install (to decide which blocks and
+# configs to copy when scaffolding a project).
+PIPELINE_CONFIGS: dict[str, dict[str, str]] = {
     "decision-tree": {
         "data": "csv_demo",
         "preprocessing": "standard",
@@ -54,7 +54,7 @@ PIPELINE_CONFIGS = {
         "evaluation": "reconstruction",
         "runtime": "local_cpu",
     },
-    "torch": {
+    "autoencoder-lightning": {
         "data": "csv_demo",
         "preprocessing": "standard",
         "feature_eng": "all_columns",
@@ -74,8 +74,12 @@ PIPELINE_CONFIGS = {
     },
 }
 
-# Default components that can be used across pipelines
-DEFAULT_COMPONENTS = {
+# Back-compat alias: older CLI usage referred to the Lightning autoencoder as "torch".
+PIPELINE_CONFIGS["torch"] = PIPELINE_CONFIGS["autoencoder-lightning"]
+
+# Default components used when a user passes a model name we don't have a
+# template for (we fall back to a sklearn classification pipeline).
+DEFAULT_COMPONENTS: dict[str, str] = {
     "data": "csv_demo",
     "preprocessing": "standard",
     "feature_eng": "all_columns",
@@ -90,117 +94,41 @@ def generate_pipeline_config(
     custom_components: dict[str, str] | None = None,
     output_path: Path | None = None,
 ) -> dict[str, Any]:
-    """Generate a pipeline configuration for a specific algorithm type.
+    """Build a pipeline configuration for a known template (or fall back to defaults).
 
     Args:
-        pipeline_type: Type of pipeline (decision-tree, xgb, neural, torch, gnn)
-        custom_components: Optional dict to override default components
-        output_path: Optional path to write the config to
+        pipeline_type: Template name (e.g. "xgb") or model name to substitute into
+            the default sklearn classification template.
+        custom_components: Optional slot overrides applied on top of the template.
+        output_path: If given, the resulting config is also written to this path.
 
     Returns:
-        Dictionary containing the pipeline configuration
+        The resolved pipeline configuration (a slot → config-name dict).
     """
-    # Start with the pipeline template
     if pipeline_type in PIPELINE_CONFIGS:
         config = PIPELINE_CONFIGS[pipeline_type].copy()
     else:
-        # For unknown pipeline types, use defaults with user-specified model
         config = DEFAULT_COMPONENTS.copy()
-        config["model"] = pipeline_type  # Assume pipeline_type is the model name
+        config["model"] = pipeline_type
 
-    # Apply any custom component overrides
     if custom_components:
         config.update(custom_components)
 
-    # Write to file if path specified
     if output_path:
         output_path = Path(output_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
-
         with open(output_path, "w") as f:
             yaml.dump(config, f, default_flow_style=False)
 
     return config
 
 
-def get_pipeline_dependencies(pipeline_type: str) -> dict[str, list]:
-    """Get the dependencies required for a specific pipeline type.
-
-    Args:
-        pipeline_type: Type of pipeline (decision-tree, xgb, neural, torch, gnn)
-
-    Returns:
-        Dict with 'required' and 'optional' dependency lists
-    """
-    base_deps = ["omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0", "scikit-learn>=1.2"]
-
-    pipeline_specific_deps = {
-        "decision-tree": {"required": []},
-        "xgb": {"required": ["xgboost>=1.7"]},
-        "neural": {"required": []},
-        "torch": {"required": ["torch>=2.2", "lightning>=2.2"]},
-        "gnn": {"required": ["torch>=2.2", "torch-geometric>=2.5"]},
-    }
-
-    # Optional dependencies based on data ingestion method
-    optional_deps = {
-        "uproot": ["uproot>=5.0", "awkward>=2.0"],  # For ROOT file ingestion
-        "requests": ["requests>=2.25"],  # For downloading datasets
-    }
-
-    required = base_deps + pipeline_specific_deps.get(pipeline_type, {}).get("required", [])
-
-    return {"required": required, "optional": optional_deps}
-
-
-def detect_required_dependencies(config: dict[str, Any]) -> list:
-    """Analyze a pipeline configuration to detect required dependencies.
-
-    Args:
-        config: Pipeline configuration dictionary
-
-    Returns:
-        List of required dependency strings
-    """
-    deps = ["omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0", "scikit-learn>=1.2"]
-
-    # Check model dependencies
-    model = config.get("model", "")
-    if "xgb" in model:
-        deps.append("xgboost>=1.7")
-    elif any(neural in model for neural in ["torch", "lightning", "ae_"]):
-        deps.extend(["torch>=2.2", "lightning>=2.2"])
-    elif "gnn" in model:
-        deps.extend(["torch>=2.2", "torch-geometric>=2.5"])
-
-    # Check data ingestion dependencies
-    config.get("data", "")
-    # This would need to be extended based on actual data config inspection
-    # For now, we'll handle this in the data configuration files themselves
-
-    return list(set(deps))  # Remove duplicates
-
-
 def list_available_pipelines() -> dict[str, dict[str, Any]]:
-    """List all available pipeline configurations with their descriptions.
-
-    Returns:
-        Dict mapping pipeline names to their configs and metadata
-    """
-    pipelines = {}
-
-    for name, config in PIPELINE_CONFIGS.items():
-        deps = get_pipeline_dependencies(name)
-        pipelines[name] = {
+    """Return each available pipeline template with its slot configuration."""
+    return {
+        name: {
             "config": config,
-            "dependencies": deps,
             "description": f"{name.title()} pipeline with {config['model']} model",
         }
-
-    return pipelines
-
-
-if __name__ == "__main__":
-    # Example usage
-    for _name, _info in list_available_pipelines().items():
-        pass
+        for name, config in PIPELINE_CONFIGS.items()
+    }

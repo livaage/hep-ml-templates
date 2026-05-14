@@ -9,51 +9,117 @@ import yaml
 
 from mlpipe.core.pipeline_generator import PIPELINE_CONFIGS, generate_pipeline_config
 
-# Core modules needed by all extras
+# Core modules needed by all extras.
 CORE_MODULES = ["interfaces.py", "registry.py", "config.py", "utils.py", "universal_runner.py"]
 
+# Slimmer core set for pipeline scaffolds (they get the CLI-driven universal runner
+# from the parent package, not a private copy).
+_PIPELINE_CORE = ["interfaces.py", "registry.py", "config.py", "utils.py"]
 
-# Helper function to create consistent model extra definitions
+# For each (config-group, config-name) pair, which block file implements it.
+# Several configs share the same block file (e.g. ensemble_models.py provides
+# random_forest, adaboost, and ensemble_voting), so this is many-to-one.
+_BLOCK_FOR_CONFIG: dict[tuple[str, str], str] = {
+    ("data", "csv_demo"): "ingest/csv_loader.py",
+    ("data", "higgs_uci"): "ingest/csv_loader.py",
+    ("data", "graph_demo"): "ingest/graph_csv_loader.py",
+    ("data", "uproot_demo"): "ingest/uproot_loader.py",
+    ("preprocessing", "standard"): "preprocessing/standard_scaler.py",
+    ("preprocessing", "data_split"): "preprocessing/data_split.py",
+    ("preprocessing", "onehot_encoder"): "preprocessing/onehot_encoder.py",
+    ("feature_eng", "all_columns"): "feature_eng/column_selector.py",
+    ("feature_eng", "column_selector"): "feature_eng/column_selector.py",
+    ("feature_eng", "demo_features"): "feature_eng/column_selector.py",
+    ("model", "xgb_classifier"): "model/xgb_classifier.py",
+    ("model", "decision_tree"): "model/decision_tree.py",
+    ("model", "random_forest"): "model/ensemble_models.py",
+    ("model", "adaboost"): "model/ensemble_models.py",
+    ("model", "ensemble_voting"): "model/ensemble_models.py",
+    ("model", "svm"): "model/svm.py",
+    ("model", "mlp"): "model/mlp.py",
+    ("model", "ae_lightning"): "model/ae_lightning.py",
+    ("model", "ae_vanilla"): "model/ae_lightning.py",
+    ("model", "ae_variational"): "model/ae_lightning.py",
+    ("model", "gnn_pyg"): "model/gnn_pyg.py",
+    ("model", "gnn_gcn"): "model/gnn_pyg.py",
+    ("model", "gnn_gat"): "model/gnn_pyg.py",
+    ("model", "transformer_hep"): "model/hep_neural.py",
+    ("model", "cnn_hep"): "model/hep_neural.py",
+    ("training", "sklearn"): "training/sklearn_trainer.py",
+    ("training", "pytorch"): "training/pytorch_trainer.py",
+    ("evaluation", "classification"): "evaluation/classification_metrics.py",
+    ("evaluation", "reconstruction"): "evaluation/reconstruction_metrics.py",
+}
+
+# Data files bundled with each pipeline scaffold.
+_PIPELINE_DATA: dict[str, list[str]] = {
+    "gnn": ["graph_nodes_demo.csv"],
+}
+
+
 def create_model_extra(
-    block_file: str, config_files: list[str], include_data: list[str] = None
+    block_file: str, config_files: list[str], include_data: list[str] | None = None
 ) -> dict:
-    """Create a standard model extra definition."""
+    """Build an EXTRAS_TO_BLOCKS entry for a single model file + N configs."""
     return {
         "blocks": [f"model/{block_file}"],
         "core": CORE_MODULES,
-        "configs": [f"model/{config}" for config in config_files],
+        "configs": [f"model/{cfg}" for cfg in config_files],
         "data": include_data or [],
     }
 
 
-# Helper function to create algorithm combos (model + preprocessing)
 def create_algorithm_combo(
     model_file: str, model_config: str, include_preprocessing: bool = True
 ) -> dict:
-    """Create a complete algorithm package with model + preprocessing."""
+    """Build an EXTRAS_TO_BLOCKS entry for a model + (optional) standard scaler."""
     blocks = [f"model/{model_file}"]
     configs = [f"model/{model_config}"]
-
     if include_preprocessing:
         blocks.append("preprocessing/standard_scaler.py")
         configs.append("preprocessing/standard.yaml")
-
     return {"blocks": blocks, "core": CORE_MODULES, "configs": configs, "data": []}
 
 
-# Helper function to create category-based extras (preprocessing, evaluation, etc.)
 def create_category_extra(
-    category: str, block_files: list[str], config_files: list[str], include_data: list[str] = None
+    category: str,
+    block_files: list[str],
+    config_files: list[str],
+    include_data: list[str] | None = None,
 ) -> dict:
-    """Create a standard category-based extra definition."""
+    """Build an EXTRAS_TO_BLOCKS entry for an entire category (preprocessing, etc.)."""
     return {
         "blocks": [f"{category}/{block}" for block in block_files],
         "core": CORE_MODULES,
         "configs": [
-            f"{category}/{config}" if not config.startswith(category) else config
-            for config in config_files
+            f"{category}/{cfg}" if not cfg.startswith(category) else cfg for cfg in config_files
         ],
         "data": include_data or [],
+    }
+
+
+def _make_pipeline_extra(pipeline_type: str) -> dict:
+    """Generate an EXTRAS_TO_BLOCKS entry for a `pipeline-X` bundle from PIPELINE_CONFIGS.
+
+    Reads the slot mapping for `pipeline_type` (e.g. {"data": "csv_demo", ...}),
+    resolves each (slot, name) to its block file via _BLOCK_FOR_CONFIG, and
+    pairs every slot with its matching `<slot>/<name>.yaml` config.
+    """
+    slots = PIPELINE_CONFIGS[pipeline_type]
+    blocks = sorted(
+        {
+            _BLOCK_FOR_CONFIG[(group, name)]
+            for group, name in slots.items()
+            if (group, name) in _BLOCK_FOR_CONFIG
+        }
+    )
+    configs = sorted(f"{group}/{name}.yaml" for group, name in slots.items())
+    return {
+        "blocks": blocks,
+        "core": _PIPELINE_CORE,
+        "configs": configs,
+        "data": _PIPELINE_DATA.get(pipeline_type, ["demo_tabular.csv"]),
+        "pipeline_type": pipeline_type,
     }
 
 
@@ -111,165 +177,16 @@ EXTRAS_TO_BLOCKS = {
     "ensemble": create_algorithm_combo("ensemble_models.py", "ensemble_voting.yaml"),
     "torch": create_algorithm_combo("ae_lightning.py", "ae_lightning.yaml"),
     "gnn": create_algorithm_combo("gnn_pyg.py", "gnn_pyg.yaml"),
-    # Complete pipeline bundles - now generated dynamically
-    "pipeline-xgb": {
-        "blocks": [
-            "ingest/csv_loader.py",
-            "preprocessing/standard_scaler.py",
-            "feature_eng/column_selector.py",
-            "model/xgb_classifier.py",
-            "training/sklearn_trainer.py",
-            "evaluation/classification_metrics.py",
-        ],
-        "core": ["interfaces.py", "registry.py", "config.py", "utils.py"],
-        "configs": [
-            "data/csv_demo.yaml",
-            "preprocessing/standard.yaml",
-            "feature_eng/all_columns.yaml",
-            "model/xgb_classifier.yaml",
-            "training/sklearn.yaml",
-            "evaluation/classification.yaml",
-            "runtime/local_cpu.yaml",
-        ],
-        "data": ["demo_tabular.csv"],
-        "pipeline_type": "xgb",  # Used for dynamic pipeline.yaml generation
-    },
-    "pipeline-decision-tree": {
-        "blocks": [
-            "ingest/csv_loader.py",
-            "preprocessing/standard_scaler.py",
-            "feature_eng/column_selector.py",
-            "model/decision_tree.py",
-            "training/sklearn_trainer.py",
-            "evaluation/classification_metrics.py",
-        ],
-        "core": ["interfaces.py", "registry.py", "config.py", "utils.py"],
-        "configs": [
-            "data/csv_demo.yaml",
-            "preprocessing/standard.yaml",
-            "feature_eng/all_columns.yaml",
-            "model/decision_tree.yaml",
-            "training/sklearn.yaml",
-            "evaluation/classification.yaml",
-            "runtime/local_cpu.yaml",
-        ],
-        "data": ["demo_tabular.csv"],
-        "pipeline_type": "decision-tree",
-    },
-    # PyTorch Lightning autoencoder pipeline (formerly pipeline-torch)
-    "pipeline-autoencoder-lightning": {
-        "blocks": [
-            "ingest/csv_loader.py",
-            "preprocessing/standard_scaler.py",
-            "feature_eng/column_selector.py",
-            "model/ae_lightning.py",
-            "training/sklearn_trainer.py",
-            "training/pytorch_trainer.py",
-            "evaluation/reconstruction_metrics.py",
-        ],
-        "core": ["interfaces.py", "registry.py", "config.py", "utils.py"],
-        "configs": [
-            "data/csv_demo.yaml",
-            "preprocessing/standard.yaml",
-            "feature_eng/all_columns.yaml",
-            "model/ae_lightning.yaml",
-            "training/pytorch.yaml",
-            "evaluation/reconstruction.yaml",
-            "runtime/local_cpu.yaml",
-        ],
-        "data": ["demo_tabular.csv"],
-        "pipeline_type": "torch",  # Uses Lightning AE components
-    },
-    "pipeline-gnn": {
-        "blocks": [
-            "ingest/csv_loader.py",
-            "ingest/graph_csv_loader.py",
-            "preprocessing/standard_scaler.py",
-            "feature_eng/column_selector.py",
-            "model/gnn_pyg.py",
-            "training/sklearn_trainer.py",
-            "evaluation/classification_metrics.py",
-        ],
-        "core": ["interfaces.py", "registry.py", "config.py", "utils.py"],
-        "configs": [
-            "data/graph_demo.yaml",
-            "preprocessing/standard.yaml",
-            "feature_eng/all_columns.yaml",
-            "model/gnn_pyg.yaml",
-            "training/sklearn.yaml",
-            "evaluation/classification.yaml",
-            "runtime/local_cpu.yaml",
-        ],
-        "data": ["graph_nodes_demo.csv"],
-        "pipeline_type": "gnn",
-    },
-    "pipeline-neural": {
-        "blocks": [
-            "ingest/csv_loader.py",
-            "preprocessing/standard_scaler.py",
-            "feature_eng/column_selector.py",
-            "model/mlp.py",
-            "training/sklearn_trainer.py",
-            "evaluation/classification_metrics.py",
-        ],
-        "core": ["interfaces.py", "registry.py", "config.py", "utils.py"],
-        "configs": [
-            "data/csv_demo.yaml",
-            "preprocessing/standard.yaml",
-            "feature_eng/all_columns.yaml",
-            "model/mlp.yaml",
-            "training/sklearn.yaml",
-            "evaluation/classification.yaml",
-            "runtime/local_cpu.yaml",
-        ],
-        "data": ["demo_tabular.csv"],
-        "pipeline_type": "neural",
-    },
-    "pipeline-ensemble": {
-        "blocks": [
-            "ingest/csv_loader.py",
-            "preprocessing/standard_scaler.py",
-            "feature_eng/column_selector.py",
-            "model/ensemble_models.py",
-            "training/sklearn_trainer.py",
-            "evaluation/classification_metrics.py",
-        ],
-        "core": ["interfaces.py", "registry.py", "config.py", "utils.py"],
-        "configs": [
-            "data/csv_demo.yaml",
-            "preprocessing/standard.yaml",
-            "feature_eng/all_columns.yaml",
-            "model/ensemble_voting.yaml",
-            "training/sklearn.yaml",
-            "evaluation/classification.yaml",
-            "runtime/local_cpu.yaml",
-        ],
-        "data": ["demo_tabular.csv"],
-        "pipeline_type": "ensemble",
-    },
-    "pipeline-autoencoder": {
-        "blocks": [
-            "ingest/csv_loader.py",
-            "preprocessing/standard_scaler.py",
-            "feature_eng/column_selector.py",
-            "model/ae_lightning.py",
-            "training/sklearn_trainer.py",
-            "training/pytorch_trainer.py",
-            "evaluation/reconstruction_metrics.py",
-        ],
-        "core": ["interfaces.py", "registry.py", "config.py", "utils.py"],
-        "configs": [
-            "data/csv_demo.yaml",
-            "preprocessing/standard.yaml",
-            "feature_eng/all_columns.yaml",
-            "model/ae_vanilla.yaml",
-            "training/pytorch.yaml",
-            "evaluation/reconstruction.yaml",
-            "runtime/local_cpu.yaml",
-        ],
-        "data": ["demo_tabular.csv"],
-        "pipeline_type": "autoencoder",
-    },
+    # Complete pipeline bundles — generated from PIPELINE_CONFIGS so the slot
+    # mapping (which goes into the scaffold's pipeline.yaml) and the file list
+    # (which is what install_local copies) can never drift.
+    "pipeline-xgb": _make_pipeline_extra("xgb"),
+    "pipeline-decision-tree": _make_pipeline_extra("decision-tree"),
+    "pipeline-ensemble": _make_pipeline_extra("ensemble"),
+    "pipeline-neural": _make_pipeline_extra("neural"),
+    "pipeline-gnn": _make_pipeline_extra("gnn"),
+    "pipeline-autoencoder": _make_pipeline_extra("autoencoder"),
+    "pipeline-autoencoder-lightning": _make_pipeline_extra("autoencoder-lightning"),
     # Bundle everything
     "all": {
         "blocks": [
@@ -663,42 +580,19 @@ def copy_data_files(data_files: set[str], source_dir: Path, target_dir: Path):
 
 
 def generate_pipeline_configs(pipeline_extras: list[str], target_path: Path):
-    """Generate pipeline.yaml files for installed pipeline extras."""
+    """Write a `pipeline.yaml` into the scaffold for each `pipeline-*` extra."""
     configs_dir = target_path / "configs"
     configs_dir.mkdir(exist_ok=True)
+    pipeline_file = configs_dir / "pipeline.yaml"
 
     for extra in pipeline_extras:
-        # Extract pipeline type from extra name (e.g., pipeline-xgb -> xgb)
-        pipeline_type = extra.replace("pipeline-", "")
-        # Back-compat and normalization: map autoencoder-lightning -> torch
-        if pipeline_type == "autoencoder-lightning":
-            pipeline_type = "torch"
-
-        if pipeline_type in PIPELINE_CONFIGS:
-            config = generate_pipeline_config(pipeline_type)
-            pipeline_file = configs_dir / "pipeline.yaml"
-
-            # Write the generated config
-            with open(pipeline_file, "w") as f:
-                yaml.dump(config, f, default_flow_style=False, sort_keys=False)
-
-            print(f"Generated {pipeline_type} pipeline config: pipeline.yaml")
-        else:
-            print(f"Warning: Unknown pipeline type '{pipeline_type}' - using default config")
-            # Generate default config
-            default_config = {
-                "data": "csv_demo",
-                "preprocessing": "standard",
-                "feature_eng": "all_columns",
-                "model": pipeline_type,  # Use the pipeline type as model name
-                "training": "sklearn",
-                "evaluation": "classification",
-                "runtime": "local_cpu",
-            }
-            pipeline_file = configs_dir / "pipeline.yaml"
-            with open(pipeline_file, "w") as f:
-                yaml.dump(default_config, f, default_flow_style=False, sort_keys=False)
-            print(f"Generated default pipeline config for: {pipeline_type}")
+        pipeline_type = extra.removeprefix("pipeline-")
+        # generate_pipeline_config falls back to a sklearn-classification default
+        # when pipeline_type isn't a known template, so this handles both cases.
+        config = generate_pipeline_config(pipeline_type)
+        with open(pipeline_file, "w") as f:
+            yaml.dump(config, f, default_flow_style=False, sort_keys=False)
+        print(f"Generated {pipeline_type} pipeline config: pipeline.yaml")
 
 
 def install_local(extras: list[str], target_dir: str) -> bool:
@@ -785,76 +679,74 @@ def install_local(extras: list[str], target_dir: str) -> bool:
         return False
 
 
+# Dependencies the scaffolded setup.py should always install (matches base
+# `dependencies` in the upstream pyproject.toml).
+_BASE_PIP_DEPS = ["numpy>=1.22", "pandas>=2.0", "scikit-learn>=1.2", "omegaconf>=2.3"]
+
+# Per-extra pip dependencies *beyond* _BASE_PIP_DEPS. Mirrors
+# [project.optional-dependencies] in pyproject.toml.
+_EXTRA_PIP_DEPS: dict[str, list[str]] = {
+    "data-uproot": ["uproot>=5.0", "awkward>=2.0"],
+    "data-higgs": ["requests>=2.25"],
+    "model-xgb": ["xgboost>=1.7"],
+    "model-ensemble": ["xgboost>=1.7"],
+    "model-torch": ["torch>=2.2", "lightning>=2.2"],
+    "model-lightning": ["torch>=2.2", "lightning>=2.2"],
+    "model-gnn": ["torch>=2.2", "torch-geometric>=2.5"],
+    "xgb": ["xgboost>=1.7"],
+    "ensemble": ["xgboost>=1.7"],
+    "torch": ["torch>=2.2", "lightning>=2.2"],
+    "gnn": ["torch>=2.2", "torch-geometric>=2.5"],
+    "autoencoder": ["torch>=2.2", "lightning>=2.2"],
+    "transformer": ["torch>=2.2", "lightning>=2.2"],
+    "cnn": ["torch>=2.2", "lightning>=2.2"],
+    "pipeline-xgb": ["xgboost>=1.7"],
+    "pipeline-ensemble": ["xgboost>=1.7"],
+    "pipeline-autoencoder": ["torch>=2.2", "lightning>=2.2", "matplotlib>=3.5"],
+    "pipeline-autoencoder-lightning": ["torch>=2.2", "lightning>=2.2", "matplotlib>=3.5"],
+    "pipeline-gnn": ["torch>=2.2", "torch-geometric>=2.5"],
+    "all": [
+        "xgboost>=1.7",
+        "torch>=2.2",
+        "lightning>=2.2",
+        "torch-geometric>=2.5",
+        "uproot>=5.0",
+        "awkward>=2.0",
+        "requests>=2.25",
+        "matplotlib>=3.5",
+    ],
+}
+
+
 def create_setup_py(target_dir: Path, extras: list[str]):
-    """Create a simple setup.py for local installation with automatic dependency resolution."""
-    # Base dependencies required by all installations
-    base_deps = [
-        "omegaconf>=2.3",
-        "pandas>=2.0",
-        "numpy>=1.22",
-        "scikit-learn>=1.2",
-    ]
-
-    # Extra-specific dependencies that should be automatically installed
-    extra_deps = {
-        "model-xgb": ["xgboost>=1.7"],
-        "xgb": ["xgboost>=1.7"],
-        "pipeline-xgb": ["xgboost>=1.7"],
-        "pipeline-neural": ["scikit-learn>=1.2"],
-        "pipeline-ensemble": ["xgboost>=1.7"],
-        "pipeline-decision-tree": ["scikit-learn>=1.2"],
-        "pipeline-autoencoder-lightning": ["torch>=2.2", "lightning>=2.2", "matplotlib>=3.5"],
-        "model-torch": ["torch>=2.2", "lightning>=2.2"],
-        "model-gnn": ["torch-geometric>=2.5", "torch>=2.2"],
-        "gnn": ["torch-geometric>=2.5", "torch>=2.2"],
-        "pipeline-gnn": ["torch-geometric>=2.5", "torch>=2.2"],
-        "data-uproot": ["uproot>=5.0", "awkward>=2.0"],  # For ROOT file ingestion
-        "all": [
-            "xgboost>=1.7",
-            "torch>=2.2",
-            "lightning>=2.2",
-            "torch-geometric>=2.5",
-            "uproot>=5.0",
-            "awkward>=2.0",
-            "matplotlib>=3.5",
-        ],
-    }
-
-    # Collect all required dependencies for the installed extras
-    install_requires = base_deps.copy()
-    added_deps = set()
-
+    """Write a setup.py into the scaffold that installs the right pip deps for each extra."""
+    install_requires: list[str] = list(_BASE_PIP_DEPS)
+    seen = set(install_requires)
     for extra in extras:
-        if extra in extra_deps:
-            for dep in extra_deps[extra]:
-                if dep not in added_deps:
-                    install_requires.append(dep)
-                    added_deps.add(dep)
+        for dep in _EXTRA_PIP_DEPS.get(extra, []):
+            if dep not in seen:
+                install_requires.append(dep)
+                seen.add(dep)
 
-    # Generate install_requires string
     install_requires_str = ",\n        ".join(f'"{dep}"' for dep in install_requires)
+    added = sorted(set(install_requires) - set(_BASE_PIP_DEPS))
 
-    setup_content = f'''"""
-Setup script for locally installed hep-ml-templates components.
-Installed extras: {', '.join(extras)}
-Auto-resolved dependencies: {', '.join(sorted(added_deps)) if added_deps else 'none'}
+    setup_content = f'''"""Setup script for the locally scaffolded hep-ml-templates project.
+Installed extras: {", ".join(extras)}
+Auto-resolved dependencies beyond the base set: {", ".join(added) if added else "none"}
 """
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 setup(
     name="hep-ml-templates-local",
     version="0.1.0",
-    description="Locally installed HEP ML Templates components",
+    description="Locally installed hep-ml-templates components",
     packages=find_packages(),
     install_requires=[
         {install_requires_str}
     ],
-    extras_require={{
-        "dev": ["pytest>=7.0", "pytest-cov>=4.0"],
-        "docs": ["sphinx>=5.0", "sphinx-rtd-theme>=1.0"],
-    }},
-    python_requires=">=3.9",
+    python_requires=">=3.10",
     entry_points={{
         "console_scripts": [
             "mlpipe=mlpipe.cli.main:main",
@@ -862,15 +754,8 @@ setup(
     }},
 )
 '''
-
-    setup_file = target_dir / "setup.py"
-    with open(setup_file, "w") as f:
-        f.write(setup_content)
-
-    if added_deps:
-        print(f"Created setup.py with auto-resolved dependencies: {', '.join(sorted(added_deps))}")
-    else:
-        print("Created setup.py for local installation")
+    (target_dir / "setup.py").write_text(setup_content)
+    print(f"Created setup.py (extras: {', '.join(extras)})")
 
 
 def create_cli_script(target_dir: Path):
