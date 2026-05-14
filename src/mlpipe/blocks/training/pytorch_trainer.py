@@ -7,7 +7,7 @@ This trainer handles:
 - Integration with HEP ML workflows
 """
 
-from typing import Any, Dict
+from typing import Any
 
 import pytorch_lightning as pl
 import torch
@@ -42,7 +42,7 @@ class PyTorchTrainer(Trainer):
         default_params.update(kwargs)
         self.params = default_params
 
-    def train(self, model, X, y, config: Dict[str, Any]) -> Any:
+    def train(self, model, X, y, config: dict[str, Any]) -> Any:
         """Train a PyTorch Lightning model.
 
         Args:
@@ -54,9 +54,6 @@ class PyTorchTrainer(Trainer):
         Returns:
             Trained PyTorch Lightning model
         """
-        print(
-            f"🔥 Training {model.__class__.__name__} on {len(X)} samples, {X.shape[1]} features..."
-        )
 
         # Convert DataFrames/Series to numpy arrays first
         X_np = X.values if hasattr(X, "values") else X
@@ -69,7 +66,6 @@ class PyTorchTrainer(Trainer):
                 "autoencoder" in model.__class__.__name__.lower()
                 or "ae_" in model.__class__.__name__.lower()
             ):
-                print(f"Using {model.__class__.__name__} internal training...")
                 model.fit(X, y)
                 return model
 
@@ -81,9 +77,6 @@ class PyTorchTrainer(Trainer):
             # Ensure the model knows the correct input dimension
             input_dim = X_np.shape[1]
             if hasattr(lightning_model, "input_dim") and lightning_model.input_dim != input_dim:
-                print(
-                    f"⚠️  Updating model input dimension from {lightning_model.input_dim} to {input_dim}"
-                )
                 lightning_model.input_dim = input_dim
                 lightning_model.build_layers()
         else:
@@ -152,16 +145,13 @@ class PyTorchTrainer(Trainer):
         # Train the model using PyTorch Lightning Trainer
         trainer.fit(lightning_model, train_loader, val_loader)
 
-        print(f"✅ {model.__class__.__name__} training completed!")
         if hasattr(model, "task_type") and model.task_type == "autoencoder":
-            print(
-                f"   - Final reconstruction loss: {trainer.callback_metrics.get('train_loss', 'N/A')}"
-            )
+            pass
         else:
-            print(f"   - Final loss: {trainer.callback_metrics.get('train_loss', 'N/A')}")
+            pass
 
         return model
 
-    def get_config(self) -> Dict[str, Any]:
+    def get_config(self) -> dict[str, Any]:
         """Return training configuration."""
         return {"block": "training.pytorch", "params": self.params}

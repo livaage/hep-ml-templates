@@ -1,14 +1,14 @@
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 from omegaconf import OmegaConf
 
 
-def load_yaml(path: Path) -> Dict[str, Any]:
+def load_yaml(path: Path) -> dict[str, Any]:
     return OmegaConf.to_container(OmegaConf.load(path), resolve=True)  # type: ignore
 
 
-def merge_overrides(cfg: Dict[str, Any], dotlist: List[str]) -> Dict[str, Any]:
+def merge_overrides(cfg: dict[str, Any], dotlist: list[str]) -> dict[str, Any]:
     if not dotlist:
         return cfg
     base = OmegaConf.create(cfg)
@@ -18,8 +18,8 @@ def merge_overrides(cfg: Dict[str, Any], dotlist: List[str]) -> Dict[str, Any]:
 
 
 def load_pipeline_config(
-    config_path: Path, pipeline_name: str, overrides: List[str] | None = None
-) -> Dict[str, Any]:
+    config_path: Path, pipeline_name: str, overrides: list[str] | None = None
+) -> dict[str, Any]:
     """pipeline.yaml declares which group files to load:
       data: csv_demo
       preprocessing: standard

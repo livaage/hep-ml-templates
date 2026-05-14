@@ -1,7 +1,6 @@
 """Comprehensive pipeline tests for all HEP ML Templates pipeline types."""
 
 import shutil
-import pytest
 import subprocess
 import sys
 import tempfile
@@ -189,9 +188,7 @@ def test_gnn_pipeline():
     If torch_geometric is unavailable, assert we surface a clear, actionable error message
     instead of crashing or providing a cryptic failure.
     """
-    tg = pytest.importorskip if False else None  # silence linter about unused importorskip
     try:
-        import torch_geometric  # type: ignore
         has_tg = True
     except Exception:
         has_tg = False

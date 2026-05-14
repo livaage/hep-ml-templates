@@ -30,6 +30,7 @@ ENV/
 .tox/
 .nox/
 coverage.xml
+htmlcov/
 .hypothesis/
 .mypy_cache/
 .dmypy.json

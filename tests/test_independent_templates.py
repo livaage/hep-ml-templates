@@ -13,7 +13,6 @@ Each test is completely isolated and uses its own environment.
 """
 
 import os
-import pytest
 import shutil
 import subprocess
 import sys
@@ -217,7 +216,6 @@ def test_gnn_independent():
     If torch_geometric is missing, ensure we emit a clear message rather than crash.
     """
     try:
-        import torch_geometric  # type: ignore
         has_tg = True
     except Exception:
         has_tg = False

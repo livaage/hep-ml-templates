@@ -3,7 +3,7 @@ Creates pipeline.yaml files dynamically based on user choices.
 """
 
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 import yaml
 
@@ -87,9 +87,9 @@ DEFAULT_COMPONENTS = {
 
 def generate_pipeline_config(
     pipeline_type: str,
-    custom_components: Optional[Dict[str, str]] = None,
-    output_path: Optional[Path] = None,
-) -> Dict[str, Any]:
+    custom_components: dict[str, str] | None = None,
+    output_path: Path | None = None,
+) -> dict[str, Any]:
     """Generate a pipeline configuration for a specific algorithm type.
 
     Args:
@@ -120,12 +120,10 @@ def generate_pipeline_config(
         with open(output_path, "w") as f:
             yaml.dump(config, f, default_flow_style=False)
 
-        print(f"✅ Generated pipeline config: {output_path}")
-
     return config
 
 
-def get_pipeline_dependencies(pipeline_type: str) -> Dict[str, list]:
+def get_pipeline_dependencies(pipeline_type: str) -> dict[str, list]:
     """Get the dependencies required for a specific pipeline type.
 
     Args:
@@ -155,7 +153,7 @@ def get_pipeline_dependencies(pipeline_type: str) -> Dict[str, list]:
     return {"required": required, "optional": optional_deps}
 
 
-def detect_required_dependencies(config: Dict[str, Any]) -> list:
+def detect_required_dependencies(config: dict[str, Any]) -> list:
     """Analyze a pipeline configuration to detect required dependencies.
 
     Args:
@@ -176,14 +174,14 @@ def detect_required_dependencies(config: Dict[str, Any]) -> list:
         deps.extend(["torch>=2.2", "torch-geometric>=2.5"])
 
     # Check data ingestion dependencies
-    data = config.get("data", "")
+    config.get("data", "")
     # This would need to be extended based on actual data config inspection
     # For now, we'll handle this in the data configuration files themselves
 
     return list(set(deps))  # Remove duplicates
 
 
-def list_available_pipelines() -> Dict[str, Dict[str, Any]]:
+def list_available_pipelines() -> dict[str, dict[str, Any]]:
     """List all available pipeline configurations with their descriptions.
 
     Returns:
@@ -204,8 +202,5 @@ def list_available_pipelines() -> Dict[str, Dict[str, Any]]:
 
 if __name__ == "__main__":
     # Example usage
-    print("Available pipelines:")
-    for name, info in list_available_pipelines().items():
-        print(f"  {name}: {info['description']}")
-        print(f"    Dependencies: {info['dependencies']['required']}")
-        print()
+    for _name, _info in list_available_pipelines().items():
+        pass

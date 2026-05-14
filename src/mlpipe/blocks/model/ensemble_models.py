@@ -9,7 +9,7 @@ Includes:
 - Voting Classifier (combines different algorithms)
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 import pandas as pd
 from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
@@ -53,7 +53,7 @@ class RandomForestBlock(ModelBlock):
         self.params = {**default_params, **kwargs}
         self.model = None
 
-    def build(self, config: Optional[Dict[str, Any]] = None) -> None:
+    def build(self, config: dict[str, Any] | None = None) -> None:
         """Build Random Forest model."""
         if config:
             params = {**self.params, **config}
@@ -67,17 +67,10 @@ class RandomForestBlock(ModelBlock):
 
         self.model = RandomForestClassifier(**sklearn_params)
 
-        print(
-            f"✅ Random Forest built with {params['n_estimators']} trees, "
-            f"max_depth={params['max_depth']}"
-        )
-
     def fit(self, X, y) -> None:
         """Fit Random Forest model."""
         if self.model is None:
             self.build()
-
-        print(f"🌲 Training Random Forest on {X.shape[0]} samples, {X.shape[1]} features...")
 
         X_values = X.values if hasattr(X, "values") else X
         y_values = y.values if hasattr(y, "values") else y
@@ -86,15 +79,12 @@ class RandomForestBlock(ModelBlock):
 
         # Print feature importances
         if hasattr(X, "columns"):
-            feature_importance = pd.DataFrame(
+            pd.DataFrame(
                 {"feature": X.columns, "importance": self.model.feature_importances_}
             ).sort_values("importance", ascending=False)
 
-            print("✅ Random Forest training completed!")
-            print("📊 Top 5 most important features:")
-            print(feature_importance.head().to_string(index=False))
         else:
-            print("✅ Random Forest training completed!")
+            pass
 
     def predict(self, X):
         """Make predictions."""
@@ -150,7 +140,7 @@ class AdaBoostBlock(ModelBlock):
         self.params = {**default_params, **kwargs}
         self.model = None
 
-    def build(self, config: Optional[Dict[str, Any]] = None) -> None:
+    def build(self, config: dict[str, Any] | None = None) -> None:
         """Build AdaBoost model."""
         if config:
             params = {**self.params, **config}
@@ -163,25 +153,15 @@ class AdaBoostBlock(ModelBlock):
 
         self.model = AdaBoostClassifier(**sklearn_params)
 
-        print(
-            f"✅ AdaBoost built with {params['n_estimators']} estimators, "
-            f"learning_rate={params['learning_rate']}"
-        )
-
     def fit(self, X, y) -> None:
         """Fit AdaBoost model."""
         if self.model is None:
             self.build()
 
-        print(f"🚀 Training AdaBoost on {X.shape[0]} samples, {X.shape[1]} features...")
-
         X_values = X.values if hasattr(X, "values") else X
         y_values = y.values if hasattr(y, "values") else y
 
         self.model.fit(X_values, y_values)
-
-        print("✅ AdaBoost training completed!")
-        print(f"   - Estimator weights shape: {self.model.estimator_weights_.shape}")
 
     def predict(self, X):
         """Make predictions."""
@@ -238,7 +218,7 @@ class VotingEnsembleBlock(ModelBlock):
         self.scaler = None
         self.fitted = False
 
-    def build(self, config: Optional[Dict[str, Any]] = None) -> None:
+    def build(self, config: dict[str, Any] | None = None) -> None:
         """Build ensemble of models."""
         if config:
             params = {**self.params, **config}
@@ -257,7 +237,7 @@ class VotingEnsembleBlock(ModelBlock):
                 xgb = XGBClassifier(random_state=params["random_state"], eval_metric="logloss")
                 estimators.append(("xgb", xgb))
             except ImportError:
-                print("Warning: XGBoost not available, skipping from ensemble")
+                pass
 
         if params["use_rf"]:
             rf = RandomForestClassifier(
@@ -277,7 +257,7 @@ class VotingEnsembleBlock(ModelBlock):
 
                 self.scaler = StandardScaler()
             except ImportError:
-                print("Warning: SVM model not available, skipping from ensemble")
+                pass
 
         if params["use_mlp"]:
             try:
@@ -292,7 +272,7 @@ class VotingEnsembleBlock(ModelBlock):
 
                     self.scaler = StandardScaler()
             except ImportError:
-                print("Warning: MLP model not available, skipping from ensemble")
+                pass
 
         if not estimators:
             raise ValueError("No base models available for ensemble")
@@ -301,17 +281,10 @@ class VotingEnsembleBlock(ModelBlock):
             estimators=estimators, voting=params["voting"], weights=params["weights"]
         )
 
-        print(
-            f"✅ Voting Ensemble built with {len(estimators)} models: "
-            f"{[name for name, _ in estimators]}"
-        )
-
     def fit(self, X, y) -> None:
         """Fit ensemble model."""
         if self.model is None:
             self.build()
-
-        print(f"🗳️  Training Ensemble on {X.shape[0]} samples, {X.shape[1]} features...")
 
         X_values = X.values if hasattr(X, "values") else X
         y_values = y.values if hasattr(y, "values") else y
@@ -324,8 +297,6 @@ class VotingEnsembleBlock(ModelBlock):
 
         self.model.fit(X_processed, y_values)
         self.fitted = True
-
-        print("✅ Ensemble training completed!")
 
     def predict(self, X):
         """Make ensemble predictions."""

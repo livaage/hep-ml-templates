@@ -163,9 +163,9 @@ def main():
     )
 
     # Add extras management commands
-    p_list_extras = sub.add_parser("list-extras", help="List all available extras")
+    sub.add_parser("list-extras", help="List all available extras")
 
-    p_validate_extras = sub.add_parser("validate-extras", help="Validate extras configuration")
+    sub.add_parser("validate-extras", help="Validate extras configuration")
 
     p_extra_details = sub.add_parser("extra-details", help="Show details for a specific extra")
     p_extra_details.add_argument("extra", help="Name of the extra to show details for")

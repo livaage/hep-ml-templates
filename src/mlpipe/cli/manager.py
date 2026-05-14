@@ -5,7 +5,6 @@ Command-line utility for managing local installations and extras.
 
 import argparse
 import sys
-from typing import List, Tuple
 
 from .local_install import (
     EXTRAS_TO_BLOCKS,
@@ -46,7 +45,7 @@ def list_extras():
         else:
             algorithm_combos.append((name, block_count, config_count))
 
-    def print_group(title: str, extras_list: List[Tuple[str, int, int]]):
+    def print_group(title: str, extras_list: list[tuple[str, int, int]]):
         if extras_list:
             print(f"\n{title}:")
             for name, blocks, configs in extras_list:
@@ -109,7 +108,7 @@ def show_extra_details(extra_name: str):
             print(f"  - {data_file}")
 
 
-def preview_installation(extras: List[str]):
+def preview_installation(extras: list[str]):
     """Preview what would be installed for the given extras."""
     print(f"🔍 Installation preview for: {', '.join(extras)}")
     print("=" * 50)

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any
 
 from xgboost import XGBClassifier
 
@@ -44,7 +44,7 @@ class XGBClassifierModel(ModelBlock):
         # Auto-build with defaults if no explicit build() call
         self._auto_built = False
 
-    def build(self, config: Optional[Dict[str, Any]] = None) -> None:
+    def build(self, config: dict[str, Any] | None = None) -> None:
         """Build model with optional config override."""
         if config:
             params = {**self.params, **config}

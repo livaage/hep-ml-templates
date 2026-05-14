@@ -7,7 +7,7 @@ Common HEP use cases:
 - Unsupervised feature learning from raw detector data
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 import pytorch_lightning as pl
 import torch
@@ -50,7 +50,7 @@ class VanillaAutoencoderBlock(ModelBlock):
         self.scaler = StandardScaler() if self.params["normalize_inputs"] else None
         self.trainer = None
 
-    def build(self, config: Optional[Dict[str, Any]] = None) -> None:
+    def build(self, config: dict[str, Any] | None = None) -> None:
         """Build autoencoder model."""
         if config:
             params = {**self.params, **config}
@@ -77,8 +77,6 @@ class VanillaAutoencoderBlock(ModelBlock):
             enable_model_summary=True,
         )
 
-        print(f"✅ Vanilla Autoencoder built with latent dimension {params['latent_dim']}")
-
     def fit(self, X, y=None) -> None:
         """Fit the autoencoder (unsupervised learning)."""
         # Prepare data and fit scaler
@@ -99,12 +97,8 @@ class VanillaAutoencoderBlock(ModelBlock):
         dataset = TensorDataset(X_tensor, X_tensor)  # Target = input for autoencoder
         dataloader = DataLoader(dataset, batch_size=self.params["batch_size"], shuffle=True)
 
-        print(f"🔄 Training Autoencoder on {X_scaled.shape[0]} samples, {input_dim} features...")
-
         # Train model
         self.trainer.fit(self.model, dataloader)
-
-        print("✅ Autoencoder training completed!")
 
     def _prepare_data(self, X, fit_scaler=False):
         """Prepare data for training or prediction."""
@@ -298,7 +292,7 @@ class VariationalAutoencoderBlock(ModelBlock):
         self.scaler = StandardScaler() if self.params["normalize_inputs"] else None
         self.trainer = None
 
-    def build(self, config: Optional[Dict[str, Any]] = None) -> None:
+    def build(self, config: dict[str, Any] | None = None) -> None:
         """Build VAE model."""
         if config:
             params = {**self.params, **config}
@@ -323,8 +317,6 @@ class VariationalAutoencoderBlock(ModelBlock):
             enable_progress_bar=True,
         )
 
-        print(f"✅ Variational Autoencoder built with latent dimension {params['latent_dim']}")
-
     def fit(self, X, y=None) -> None:
         """Fit the VAE."""
         # Prepare data
@@ -346,9 +338,7 @@ class VariationalAutoencoderBlock(ModelBlock):
         dataset = TensorDataset(X_tensor, X_tensor)
         dataloader = DataLoader(dataset, batch_size=self.params["batch_size"], shuffle=True)
 
-        print(f"🔄 Training Variational Autoencoder on {X_scaled.shape[0]} samples...")
         self.trainer.fit(self.model, dataloader)
-        print("✅ VAE training completed!")
 
     def predict(self, X):
         """Return reconstruction error for anomaly detection."""
@@ -383,7 +373,7 @@ class VariationalAutoencoderBlock(ModelBlock):
         self.model.eval()
         with torch.no_grad():
             reconstructed, _, _ = self.model(X_tensor)
-            
+
             # Scale back if normalization was applied
             if self.scaler and self.params["normalize_inputs"]:
                 return self.scaler.inverse_transform(reconstructed.numpy())

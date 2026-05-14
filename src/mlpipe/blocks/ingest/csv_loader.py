@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import warnings
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 import pandas as pd
 
@@ -22,7 +22,7 @@ class UniversalCSVLoader(DataIngestor):
         X, y = loader.load()
     """
 
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
+    def __init__(self, config: dict[str, Any] | None = None):
         """Initialize with configuration."""
         if config is None:
             config = {}
@@ -86,17 +86,13 @@ class UniversalCSVLoader(DataIngestor):
                     path = p
                     break
             else:
-                if self.verbose:
-                    print("⚠️  File not found in standard locations:")
-                    for p in possible_paths:
-                        print(f"   - {p}")
                 raise FileNotFoundError(f"CSV file not found: {self.file_path}")
 
         if not path.exists():
             raise FileNotFoundError(f"CSV file not found: {path}")
 
         if self.verbose:
-            print(f"📁 Loading CSV from: {path}")
+            pass
 
         return path
 
@@ -123,7 +119,7 @@ class UniversalCSVLoader(DataIngestor):
         if separator_scores:
             detected_sep = max(separator_scores, key=separator_scores.get)
             if detected_sep != "," and self.verbose:
-                print(f"🔍 Auto-detected separator: '{detected_sep}'")
+                pass
             return detected_sep
 
         return ","
@@ -143,10 +139,7 @@ class UniversalCSVLoader(DataIngestor):
             )
 
             if self.verbose:
-                print("📊 Dataset structure detected:")
-                print(f"   - Shape (sample): {df_sample.shape}")
-                print(f"   - Columns: {len(df_sample.columns)}")
-                print(f"   - Has header: {self.has_header}")
+                pass
 
             # Load full dataset
             load_kwargs = {
@@ -175,39 +168,39 @@ class UniversalCSVLoader(DataIngestor):
                 else:
                     warnings.warn(
                         f"Column name count mismatch: got {len(self.column_names)}, "
-                        f"expected {len(df.columns)}"
+                        f"expected {len(df.columns)}",
+                        stacklevel=2,
                     )
                 return df
 
             df = pd.read_csv(file_path, **load_kwargs)
 
             if self.verbose:
-                print(f"✅ Data loaded successfully: {df.shape}")
+                pass
 
             return df
 
         except Exception as e:
-            raise RuntimeError(f"Failed to load CSV file: {e}")
+            raise RuntimeError(f"Failed to load CSV file: {e}") from e
 
     def _validate_target_column(self, df: pd.DataFrame) -> str:
         """Validate and locate target column."""
         if self.target_column not in df.columns:
             if self.verbose:
-                print(f"⚠️  Target column '{self.target_column}' not found.")
-                print(f"   Available columns: {list(df.columns)}")
+                pass
 
             # Try common target column names
             common_targets = ["target", "label", "y", "class", "output"]
             for target in common_targets:
                 if target in df.columns:
                     if self.verbose:
-                        print(f"🎯 Using '{target}' as target column")
+                        pass
                     return target
 
             # If still not found, use last column as common convention
             target_col = df.columns[-1]
             if self.verbose:
-                print(f"🎯 Using last column '{target_col}' as target")
+                pass
             return target_col
 
         return self.target_column
@@ -215,7 +208,7 @@ class UniversalCSVLoader(DataIngestor):
     def _preprocess_data(self, df: pd.DataFrame) -> pd.DataFrame:
         """Preprocess the loaded data."""
         if self.verbose:
-            print("🔧 Preprocessing data...")
+            pass
 
         original_shape = df.shape
 
@@ -223,7 +216,7 @@ class UniversalCSVLoader(DataIngestor):
         missing_stats = df.isnull().sum()
         if missing_stats.sum() > 0:
             if self.verbose:
-                print(f"   Missing values found: {missing_stats.sum()} total")
+                pass
 
             # Drop columns with too many missing values
             high_missing_cols = missing_stats[
@@ -232,23 +225,20 @@ class UniversalCSVLoader(DataIngestor):
             if len(high_missing_cols) > 0:
                 df = df.drop(columns=high_missing_cols)
                 if self.verbose:
-                    print(
-                        f"   Dropped {len(high_missing_cols)} columns with "
-                        f">{self.drop_missing_threshold*100}% missing"
-                    )
+                    pass
 
         # Sample data if requested
         if self.sample_fraction and 0 < self.sample_fraction < 1:
             df = df.sample(frac=self.sample_fraction, random_state=42)
             if self.verbose:
-                print(f"   Sampled {self.sample_fraction*100}% of data")
+                pass
 
         if self.verbose and df.shape != original_shape:
-            print(f"   Shape after preprocessing: {df.shape}")
+            pass
 
         return df
 
-    def _process_target(self, y: pd.Series) -> Tuple[pd.Series, Dict[str, Any]]:
+    def _process_target(self, y: pd.Series) -> tuple[pd.Series, dict[str, Any]]:
         """Process target variable and determine task type."""
         target_info = {"original_type": str(y.dtype)}
 
@@ -295,15 +285,12 @@ class UniversalCSVLoader(DataIngestor):
             target_info["max_value"] = float(y_processed.max())
 
         if self.verbose:
-            print("🎯 Target processing:")
-            print(f"   Task type: {target_info['task_type']}")
             if "classes" in target_info:
-                print(f"   Classes: {target_info['classes']}")
-            print(f"   Target distribution: {y_processed.value_counts().head()}")
+                pass
 
         return y_processed, target_info
 
-    def load(self) -> Tuple[pd.DataFrame, pd.Series, Dict[str, Any]]:
+    def load(self) -> tuple[pd.DataFrame, pd.Series, dict[str, Any]]:
         """Load and preprocess CSV data.
 
         Returns:
@@ -312,8 +299,7 @@ class UniversalCSVLoader(DataIngestor):
             metadata: Dictionary with dataset information
         """
         if self.verbose:
-            print("🚀 Universal CSV Loader")
-            print("=" * 40)
+            pass
 
         # Validate and load
         file_path = self._validate_file_path()
@@ -340,9 +326,6 @@ class UniversalCSVLoader(DataIngestor):
         }
 
         if self.verbose:
-            print("✅ Loading complete:")
-            print(f"   Features: {X.shape}")
-            print(f"   Target: {y_processed.shape}")
-            print(f"   Task: {target_info['task_type']}")
+            pass
 
         return X, y_processed, metadata

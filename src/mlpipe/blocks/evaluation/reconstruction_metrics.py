@@ -13,7 +13,7 @@ Metrics include:
 """
 
 from pathlib import Path
-from typing import Any, Dict, Union
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -56,7 +56,7 @@ class ReconstructionEvaluator(Evaluator):
         super().__init__()
         self.config = {}
 
-    def build(self, config: Dict[str, Any]) -> None:
+    def build(self, config: dict[str, Any]) -> None:
         """Configure the reconstruction evaluator."""
         default_config = {
             "metrics": [
@@ -83,20 +83,12 @@ class ReconstructionEvaluator(Evaluator):
             raise ValueError(f"Invalid metrics: {invalid_metrics}. Available: {available_metrics}")
 
         if "ssim" in self.config.get("metrics", []) and not SSIM_AVAILABLE:
-            print(
-                "⚠️  Warning: SSIM metric requires scikit-image. Install with: pip install scikit-image"
-            )
             self.config["metrics"] = [m for m in self.config.get("metrics", []) if m != "ssim"]
 
         if self.config.get("verbose", True):
-            print("🔍 Reconstruction Evaluator Configuration:")
-            print(f"   Metrics: {self.config.get('metrics', ['mse', 'mae', 'rmse'])}")
-            print(f"   Per-sample analysis: {self.config.get('per_sample', True)}")
-            print(f"   Generate plots: {self.config.get('plot_reconstruction', True)}")
+            pass
 
-    def _compute_mse(
-        self, original: np.ndarray, reconstructed: np.ndarray
-    ) -> Union[float, np.ndarray]:
+    def _compute_mse(self, original: np.ndarray, reconstructed: np.ndarray) -> float | np.ndarray:
         """Compute Mean Squared Error."""
         error = (original - reconstructed) ** 2
         if self.config.get("per_sample", True):
@@ -106,9 +98,7 @@ class ReconstructionEvaluator(Evaluator):
         else:
             return np.mean(error)
 
-    def _compute_mae(
-        self, original: np.ndarray, reconstructed: np.ndarray
-    ) -> Union[float, np.ndarray]:
+    def _compute_mae(self, original: np.ndarray, reconstructed: np.ndarray) -> float | np.ndarray:
         """Compute Mean Absolute Error."""
         error = np.abs(original - reconstructed)
         if self.config.get("per_sample", True):
@@ -116,16 +106,12 @@ class ReconstructionEvaluator(Evaluator):
         else:
             return np.mean(error)
 
-    def _compute_rmse(
-        self, original: np.ndarray, reconstructed: np.ndarray
-    ) -> Union[float, np.ndarray]:
+    def _compute_rmse(self, original: np.ndarray, reconstructed: np.ndarray) -> float | np.ndarray:
         """Compute Root Mean Squared Error."""
         mse = self._compute_mse(original, reconstructed)
         return np.sqrt(mse)
 
-    def _compute_snr(
-        self, original: np.ndarray, reconstructed: np.ndarray
-    ) -> Union[float, np.ndarray]:
+    def _compute_snr(self, original: np.ndarray, reconstructed: np.ndarray) -> float | np.ndarray:
         """Compute Signal-to-Noise Ratio in dB."""
         signal_power = (
             np.mean(original**2, axis=tuple(range(1, original.ndim)))
@@ -146,9 +132,7 @@ class ReconstructionEvaluator(Evaluator):
 
         return snr_db
 
-    def _compute_ssim(
-        self, original: np.ndarray, reconstructed: np.ndarray
-    ) -> Union[float, np.ndarray]:
+    def _compute_ssim(self, original: np.ndarray, reconstructed: np.ndarray) -> float | np.ndarray:
         """Compute Structural Similarity Index (for image data)."""
         if not SSIM_AVAILABLE:
             raise ValueError("SSIM requires scikit-image. Install with: pip install scikit-image")
@@ -161,7 +145,6 @@ class ReconstructionEvaluator(Evaluator):
                 original_2d = original.reshape(-1, side_length, side_length)
                 reconstructed_2d = reconstructed.reshape(-1, side_length, side_length)
             else:
-                print("⚠️  Warning: Cannot compute SSIM for 1D data that's not a perfect square")
                 return np.nan
         else:
             original_2d = original
@@ -186,8 +169,7 @@ class ReconstructionEvaluator(Evaluator):
                 try:
                     ssim_val = ssim(orig_img, recon_img, data_range=1.0)
                     ssim_values.append(ssim_val)
-                except Exception as e:
-                    print(f"⚠️  Warning: Could not compute SSIM for sample {i}: {e}")
+                except Exception:
                     ssim_values.append(np.nan)
 
             return np.array(ssim_values)
@@ -216,8 +198,7 @@ class ReconstructionEvaluator(Evaluator):
                     ssim_values.append(ssim_val)
 
                 return np.mean(ssim_values)
-            except Exception as e:
-                print(f"⚠️  Warning: Could not compute SSIM: {e}")
+            except Exception:
                 return np.nan
 
     def _plot_reconstructions(
@@ -294,7 +275,7 @@ class ReconstructionEvaluator(Evaluator):
         plt.close()
 
         if self.config.get("verbose", True):
-            print(f"📊 Reconstruction plots saved to: {plot_path}")
+            pass
 
     def _save_samples(
         self, original: np.ndarray, reconstructed: np.ndarray, output_dir: Path
@@ -310,11 +291,11 @@ class ReconstructionEvaluator(Evaluator):
         )
 
         if self.config.get("verbose", True):
-            print(f"💾 Samples saved to: {output_dir}")
+            pass
 
     def evaluate(
-        self, original: np.ndarray, reconstructed: np.ndarray, config: Dict[str, Any] = None
-    ) -> Dict[str, Any]:
+        self, original: np.ndarray, reconstructed: np.ndarray, config: dict[str, Any] = None
+    ) -> dict[str, Any]:
         """Evaluate reconstruction quality.
 
         Args:
@@ -345,9 +326,7 @@ class ReconstructionEvaluator(Evaluator):
             )
 
         if self.config.get("verbose", True):
-            print("🔍 Evaluating reconstruction quality:")
-            print(f"   Data shape: {original.shape}")
-            print(f"   Computing metrics: {self.config.get('metrics', ['mse', 'mae', 'rmse'])}")
+            pass
 
         results = {}
 
@@ -389,13 +368,5 @@ class ReconstructionEvaluator(Evaluator):
         if self.config.get("save_outputs", False):
             output_dir = Path(self.config.get("output_dir", "."))
             self._save_samples(original, reconstructed, output_dir)
-
-        if self.config.get("verbose", True):
-            print("✅ Reconstruction evaluation complete:")
-            for metric, value in results.items():
-                if isinstance(value, np.ndarray) and value.size > 1:
-                    print(f"   {metric}: {np.mean(value):.6f} ± {np.std(value):.6f}")
-                elif isinstance(value, (int, float)):
-                    print(f"   {metric}: {value:.6f}")
 
         return results

@@ -18,7 +18,7 @@ except ImportError:
 # Only proceed with class definition if uproot is available
 if UPROOT_AVAILABLE:
     from pathlib import Path
-    from typing import Any, Dict, Optional, Tuple
+    from typing import Any
 
     from mlpipe.core.interfaces import DataIngestor
     from mlpipe.core.registry import register
@@ -30,14 +30,14 @@ if UPROOT_AVAILABLE:
         Designed for High Energy Physics data stored in ROOT format.
         """
 
-        def __init__(self, config: Optional[Dict[str, Any]] = None):
+        def __init__(self, config: dict[str, Any] | None = None):
             super().__init__(config or {})
             self.file_path = None
             self.tree_name = None
             self.branches = None
             self.target_column = None
 
-        def configure(self, config: Dict[str, Any]) -> "UprootDataBlock":
+        def configure(self, config: dict[str, Any]) -> "UprootDataBlock":
             """Configure the loader with parameters."""
             self.file_path = config.get("file_path", config.get("path"))
             self.tree_name = config.get("tree_name", config.get("tree", "Events"))
@@ -45,7 +45,7 @@ if UPROOT_AVAILABLE:
             self.target_column = config.get("target_column", config.get("label"))
             return self
 
-        def load(self) -> Tuple[pd.DataFrame, Optional[pd.Series], Dict[str, Any]]:
+        def load(self) -> tuple[pd.DataFrame, pd.Series | None, dict[str, Any]]:
             """Load data from ROOT file."""
             if not self.file_path:
                 raise ValueError("file_path must be specified")
@@ -53,8 +53,6 @@ if UPROOT_AVAILABLE:
             file_path = Path(self.file_path)
             if not file_path.exists():
                 raise FileNotFoundError(f"ROOT file not found: {file_path}")
-
-            print(f"Loading ROOT file: {file_path}")
 
             with uproot.open(file_path) as file:
                 tree = file[self.tree_name]
@@ -78,7 +76,6 @@ if UPROOT_AVAILABLE:
                     "n_features": len(X.columns),
                 }
 
-                print(f"Loaded {len(X)} entries with {len(X.columns)} features")
                 return X, y, metadata
 
 else:

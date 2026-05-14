@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import importlib
-from typing import Callable, Dict, Type
+from collections.abc import Callable
 
-_REGISTRY: Dict[str, object] = {}
+_REGISTRY: dict[str, object] = {}
 
 # Lazy loading mappings for optional blocks
 _LAZY_IMPORTS = {
@@ -14,8 +14,8 @@ _LAZY_IMPORTS = {
 }
 
 
-def register(name: str) -> Callable[[Type], Type]:
-    def deco(cls: Type) -> Type:
+def register(name: str) -> Callable[[type], type]:
+    def deco(cls: type) -> type:
         if name in _REGISTRY:
             raise ValueError(f"Block name already registered: {name}")
         _REGISTRY[name] = cls
@@ -43,7 +43,7 @@ def get(name: str):
                     f"Block {name} requires additional dependencies. "
                     f"Try: pip install hep-ml-templates[data-uproot]. "
                     f"Error: {e}"
-                )
+                ) from e
 
         raise KeyError(f"Unknown block: {name}. Known: {list(_REGISTRY)}")
     return _REGISTRY[name]

@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 import numpy as np
 from sklearn.metrics import accuracy_score, roc_auc_score
@@ -9,7 +9,7 @@ from mlpipe.core.registry import register
 
 @register("eval.classification")
 class ClassificationEvaluator(Evaluator):
-    def evaluate(self, y_true, y_pred, config: Dict[str, Any]) -> Dict[str, float]:
+    def evaluate(self, y_true, y_pred, config: dict[str, Any]) -> dict[str, float]:
         threshold = float(config.get("threshold", 0.5))
         # If y_pred are probabilities, threshold; if labels, handle gracefully
         if y_pred.ndim == 1 and np.issubdtype(y_pred.dtype, np.floating):

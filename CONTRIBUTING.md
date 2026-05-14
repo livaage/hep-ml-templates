@@ -41,4 +41,4 @@ Pre-commit hooks run the same checks on every commit. If a hook fails, fix the i
 - Branch off `main`, keep PRs focused.
 - Run `make dev-check` locally.
 - Reference any related issue in the description.
-- CI runs lint, type-check, security scan, and tests on Linux/macOS/Windows across supported Python versions.
+- CI (see [`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs ruff, black, isort, mypy, and pytest with coverage across Python 3.10, 3.11, and 3.12 on Ubuntu.

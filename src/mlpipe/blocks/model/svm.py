@@ -3,7 +3,7 @@
 This module provides a scikit-learn based SVM classifier optimized for HEP use cases.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
@@ -45,7 +45,7 @@ class SVMBlock(ModelBlock):
         self.model = None
         self.scaler = StandardScaler()  # SVM needs scaled features
 
-    def build(self, config: Optional[Dict[str, Any]] = None) -> None:
+    def build(self, config: dict[str, Any] | None = None) -> None:
         """Build SVM model."""
         if config:
             params = {**self.params, **config}
@@ -58,14 +58,10 @@ class SVMBlock(ModelBlock):
 
         self.model = SVC(**sklearn_params)
 
-        print(f"✅ SVM built with {params['kernel']} kernel, C={params['C']}")
-
     def fit(self, X, y) -> None:
         """Fit SVM model with feature scaling."""
         if self.model is None:
             self.build()
-
-        print(f"🔍 Training SVM on {X.shape[0]} samples, {X.shape[1]} features...")
 
         X_values = X.values if hasattr(X, "values") else X
         y_values = y.values if hasattr(y, "values") else y
@@ -74,9 +70,6 @@ class SVMBlock(ModelBlock):
         X_scaled = self.scaler.fit_transform(X_values)
 
         self.model.fit(X_scaled, y_values)
-
-        print("✅ SVM training completed!")
-        print(f"   - Support vectors: {self.model.n_support_}")
 
     def predict(self, X):
         """Make predictions with feature scaling."""

@@ -4,7 +4,6 @@ Allows users to download blocks and configs to their project directory.
 
 import shutil
 from pathlib import Path
-from typing import Dict, List, Set
 
 import yaml
 
@@ -16,8 +15,8 @@ CORE_MODULES = ["interfaces.py", "registry.py", "config.py", "utils.py", "univer
 
 # Helper function to create consistent model extra definitions
 def create_model_extra(
-    block_file: str, config_files: List[str], include_data: List[str] = None
-) -> Dict:
+    block_file: str, config_files: list[str], include_data: list[str] = None
+) -> dict:
     """Create a standard model extra definition."""
     return {
         "blocks": [f"model/{block_file}"],
@@ -30,7 +29,7 @@ def create_model_extra(
 # Helper function to create algorithm combos (model + preprocessing)
 def create_algorithm_combo(
     model_file: str, model_config: str, include_preprocessing: bool = True
-) -> Dict:
+) -> dict:
     """Create a complete algorithm package with model + preprocessing."""
     blocks = [f"model/{model_file}"]
     configs = [f"model/{model_config}"]
@@ -44,8 +43,8 @@ def create_algorithm_combo(
 
 # Helper function to create category-based extras (preprocessing, evaluation, etc.)
 def create_category_extra(
-    category: str, block_files: List[str], config_files: List[str], include_data: List[str] = None
-) -> Dict:
+    category: str, block_files: list[str], config_files: list[str], include_data: list[str] = None
+) -> dict:
     """Create a standard category-based extra definition."""
     return {
         "blocks": [f"{category}/{block}" for block in block_files],
@@ -179,7 +178,7 @@ EXTRAS_TO_BLOCKS = {
             "runtime/local_cpu.yaml",
         ],
         "data": ["demo_tabular.csv"],
-    "pipeline_type": "torch",  # Uses Lightning AE components
+        "pipeline_type": "torch",  # Uses Lightning AE components
     },
     "pipeline-gnn": {
         "blocks": [
@@ -320,7 +319,7 @@ EXTRAS_TO_BLOCKS = {
 }
 
 
-def validate_extras_mappings() -> Dict[str, List[str]]:
+def validate_extras_mappings() -> dict[str, list[str]]:
     """Validate that all files referenced in EXTRAS_TO_BLOCKS actually exist.
     Returns a dictionary of issues found.
     """
@@ -374,13 +373,13 @@ def get_package_path() -> Path:
             spec = importlib.util.find_spec("mlpipe")
             if spec and spec.origin:
                 return Path(spec.origin).parent
-        except:
-            pass
-        raise FileNotFoundError("Could not locate hep-ml-templates installation")
+        except Exception as err:
+            raise FileNotFoundError("Could not locate hep-ml-templates installation") from err
+        raise FileNotFoundError("Could not locate hep-ml-templates installation") from None
 
 
-def get_blocks_and_configs_for_extras(extras: List[str]) -> Dict[str, Set[str]]:
-    """Given a list of extras, return the blocks, core modules, configs, and data that should be downloaded.
+def get_blocks_and_configs_for_extras(extras: list[str]) -> dict[str, set[str]]:
+    """Return the blocks, core modules, configs, and data files an extras list pulls in.
 
     Args:
         extras: List of extra names (e.g., ['model-xgb', 'data-higgs'])
@@ -423,7 +422,7 @@ def get_blocks_and_configs_for_extras(extras: List[str]) -> Dict[str, Set[str]]:
     return {"blocks": all_blocks, "core": all_core, "configs": all_configs, "data": all_data}
 
 
-def copy_core_modules(core_modules: Set[str], source_dir: Path, target_dir: Path):
+def copy_core_modules(core_modules: set[str], source_dir: Path, target_dir: Path):
     """Copy core modules from source to target directory."""
     core_source = source_dir / "core"  # This is src/mlpipe/core
 
@@ -451,7 +450,7 @@ def copy_core_modules(core_modules: Set[str], source_dir: Path, target_dir: Path
         shutil.copy2(core_init, target_init)
 
 
-def copy_blocks(blocks: Set[str], source_dir: Path, target_dir: Path):
+def copy_blocks(blocks: set[str], source_dir: Path, target_dir: Path):
     """Copy block files from source to target directory."""
     blocks_source = source_dir / "blocks"
 
@@ -496,7 +495,7 @@ def copy_blocks(blocks: Set[str], source_dir: Path, target_dir: Path):
     create_main_mlpipe_init(target_dir / "mlpipe" / "__init__.py")
 
 
-def create_custom_blocks_init(installed_modules: Dict[str, List[str]], init_file_path: Path):
+def create_custom_blocks_init(installed_modules: dict[str, list[str]], init_file_path: Path):
     """Create a custom __init__.py file for blocks that only imports installed modules.
 
     This function now supports additive installations - it merges with existing imports
@@ -577,7 +576,8 @@ def create_custom_blocks_init(installed_modules: Dict[str, List[str]], init_file
 
     if existing_count > 0:
         print(
-            f"✅ Updated blocks/__init__.py: {existing_count} existing + {new_count} new = {total_imports} total imports"
+            f"✅ Updated blocks/__init__.py: {existing_count} existing + {new_count} new "
+            f"= {total_imports} total imports"
         )
     else:
         print(f"✅ Created custom blocks/__init__.py with {total_imports} imports")
@@ -608,7 +608,7 @@ def create_main_mlpipe_init(init_file_path: Path):
     print("✅ Created main mlpipe/__init__.py")
 
 
-def copy_configs(configs: Set[str], source_dir: Path, target_dir: Path):
+def copy_configs(configs: set[str], source_dir: Path, target_dir: Path):
     """Copy config files from source to target directory."""
     # The config files are in the hep-ml-templates root directory
     # source_dir is src/mlpipe, so we go up two levels to get to hep-ml-templates root
@@ -634,7 +634,7 @@ def copy_configs(configs: Set[str], source_dir: Path, target_dir: Path):
             print(f"⚠️  Warning: Config file not found: {source_file}")
 
 
-def copy_data_files(data_files: Set[str], source_dir: Path, target_dir: Path):
+def copy_data_files(data_files: set[str], source_dir: Path, target_dir: Path):
     """Copy data files from source to target directory."""
     # The source directory for data files is typically at the same level as src
     # Look for data directory in the parent directory of src
@@ -659,7 +659,7 @@ def copy_data_files(data_files: Set[str], source_dir: Path, target_dir: Path):
             print(f"⚠️  Warning: Data file not found: {source_file}")
 
 
-def generate_pipeline_configs(pipeline_extras: List[str], target_path: Path):
+def generate_pipeline_configs(pipeline_extras: list[str], target_path: Path):
     """Generate pipeline.yaml files for installed pipeline extras."""
     configs_dir = target_path / "configs"
     configs_dir.mkdir(exist_ok=True)
@@ -698,7 +698,7 @@ def generate_pipeline_configs(pipeline_extras: List[str], target_path: Path):
             print(f"✅ Generated default pipeline config for: {pipeline_type}")
 
 
-def install_local(extras: List[str], target_dir: str) -> bool:
+def install_local(extras: list[str], target_dir: str) -> bool:
     """Install blocks and configs locally based on the provided extras.
 
     Args:
@@ -781,7 +781,7 @@ def install_local(extras: List[str], target_dir: str) -> bool:
         return False
 
 
-def create_setup_py(target_dir: Path, extras: List[str]):
+def create_setup_py(target_dir: Path, extras: list[str]):
     """Create a simple setup.py for local installation with automatic dependency resolution."""
     # Base dependencies required by all installations
     base_deps = [

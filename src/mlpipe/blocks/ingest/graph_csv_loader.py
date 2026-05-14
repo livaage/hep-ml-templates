@@ -4,7 +4,7 @@ This loader loads tabular CSV data and prepares it for graph neural network
 processing. The graph structure creation happens in the model block.
 """
 
-from typing import Any, Dict, Tuple
+from typing import Any
 
 import pandas as pd
 
@@ -20,7 +20,7 @@ class GraphCSVLoader(DataIngestor):
     processing. The graph structure creation happens in the model block.
     """
 
-    def __init__(self, config: Dict[str, Any] = None):
+    def __init__(self, config: dict[str, Any] = None):
         """Initialize Graph CSV Loader.
 
         Args:
@@ -44,10 +44,7 @@ class GraphCSVLoader(DataIngestor):
         self.separator = config.get("separator", ",")
         self.encoding = config.get("encoding", "utf-8")
 
-        print("🔗 Graph CSV Loader")
-        print("========================================")
-
-    def load(self) -> Tuple[pd.DataFrame, pd.Series, Dict[str, Any]]:
+    def load(self) -> tuple[pd.DataFrame, pd.Series, dict[str, Any]]:
         """Load CSV data for graph processing.
 
         Returns:
@@ -62,20 +59,9 @@ class GraphCSVLoader(DataIngestor):
             encoding=self.encoding,
         )
 
-        print(f"📁 Loading CSV from: {self.file_path}")
-        print("📊 Dataset structure detected:")
-        print(f"   - Shape: {df.shape}")
-        print(f"   - Columns: {len(df.columns)}")
-        print(f"   - Has header: {self.has_header}")
-
         # Separate features and target
         target = df[self.target_column]
         features = df.drop(columns=[self.target_column])
-
-        print("✅ Data loaded successfully:")
-        print(f"   - Features shape: {features.shape}")
-        print(f"   - Target shape: {target.shape}")
-        print(f"   - Target classes: {target.nunique()}")
 
         # Create metadata for pipeline
         metadata = {
@@ -89,7 +75,7 @@ class GraphCSVLoader(DataIngestor):
 
         return features, target, metadata
 
-    def get_info(self) -> Dict[str, Any]:
+    def get_info(self) -> dict[str, Any]:
         """Get information about the CSV dataset."""
         return {
             "loader_type": "graph_csv",

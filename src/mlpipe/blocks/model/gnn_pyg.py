@@ -7,7 +7,7 @@ Common HEP use cases:
 - Event topology classification
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 import numpy as np
 import torch
@@ -19,6 +19,7 @@ import torch.nn.functional as F
 try:  # pragma: no cover - simple import guard
     from torch_geometric.data import Batch, Data  # type: ignore
     from torch_geometric.nn import GATConv, GCNConv, global_mean_pool  # type: ignore
+
     _HAS_TORCH_GEOMETRIC = True
 except Exception:  # broad to catch runtime import issues on some platforms
     Batch = Data = GATConv = GCNConv = global_mean_pool = None  # type: ignore
@@ -65,7 +66,7 @@ class GCNClassifier(ModelBlock):
         self.model = None
         self.device = torch.device(self.params["device"])
 
-    def build(self, config: Optional[Dict[str, Any]] = None) -> None:
+    def build(self, config: dict[str, Any] | None = None) -> None:
         """Build GCN model."""
         if not _HAS_TORCH_GEOMETRIC:
             # Defer error until build to allow registry/discovery without hard failure
@@ -86,10 +87,6 @@ class GCNClassifier(ModelBlock):
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=params["learning_rate"])
         self.criterion = nn.CrossEntropyLoss()
 
-        print(
-            f"✅ GCN model built with {sum(p.numel() for p in self.model.parameters())} parameters"
-        )
-
     def fit(self, X, y) -> None:
         """Fit the GCN model."""
         if self.model is None:
@@ -99,7 +96,6 @@ class GCNClassifier(ModelBlock):
             elif isinstance(X, list) and len(X) > 0:
                 self.params["input_dim"] = len(X[0]) if hasattr(X[0], "__len__") else X.shape[1]
 
-            print(f"🔧 Auto-detected input dimension: {self.params['input_dim']}")
             self.build()
 
         # Convert data to PyG format
@@ -119,9 +115,7 @@ class GCNClassifier(ModelBlock):
                 total_loss += loss.item()
 
             if epoch % 20 == 0:
-                print(f"Epoch {epoch}, Loss: {total_loss/len(data_list):.4f}")
-
-        print("✅ GCN training completed!")
+                pass
 
     def predict(self, X):
         """Make predictions with the GCN model."""
@@ -181,10 +175,6 @@ class GCNClassifier(ModelBlock):
         else:
             data = Data(x=node_features, edge_index=edge_index)
 
-        print(
-            f"🔗 Created graph: {data.num_nodes} nodes, {data.num_edges} edges, {data.num_node_features} features per node"
-        )
-
         return [data]  # Return single graph as list for consistency
 
     def _create_batches(self, data_list):
@@ -196,6 +186,7 @@ class GCNClassifier(ModelBlock):
 
 
 if _HAS_TORCH_GEOMETRIC:
+
     class GCNNet(nn.Module):
         """Graph Convolutional Network architecture."""
 
@@ -229,7 +220,7 @@ if _HAS_TORCH_GEOMETRIC:
                 # Graph-level prediction (pool node features)
                 x = global_mean_pool(x, batch.batch)
                 x = self.classifier(x)
-            
+
             return x
 
 
@@ -243,7 +234,7 @@ class GATClassifier(GCNClassifier):
     - When attention weights provide interpretability
     """
 
-    def build(self, config: Optional[Dict[str, Any]] = None) -> None:
+    def build(self, config: dict[str, Any] | None = None) -> None:
         """Build GAT model."""
         if config:
             params = {**self.params, **config}
@@ -261,10 +252,6 @@ class GATClassifier(GCNClassifier):
 
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=params["learning_rate"])
         self.criterion = nn.CrossEntropyLoss()
-
-        print(
-            f"✅ GAT model built with {sum(p.numel() for p in self.model.parameters())} parameters"
-        )
 
 
 class GATNet(nn.Module):
@@ -308,5 +295,5 @@ class GATNet(nn.Module):
             # Graph-level prediction (pool node features)
             x = global_mean_pool(x, batch.batch)
             x = self.classifier(x)
-        
+
         return x

@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Tuple
+from typing import Any
 
 import pandas as pd
 
 
 class DataIngestor(ABC):
     @abstractmethod
-    def load(self) -> Tuple[pd.DataFrame, pd.Series, Dict[str, Any]]:
+    def load(self) -> tuple[pd.DataFrame, pd.Series, dict[str, Any]]:
         """Load data and return features, target, and metadata.
 
         Returns:
@@ -30,7 +30,7 @@ class FeatureBlock(ABC):
 
 class ModelBlock(ABC):
     @abstractmethod
-    def build(self, config: Dict[str, Any]) -> None: ...
+    def build(self, config: dict[str, Any]) -> None: ...
 
     @abstractmethod
     def fit(self, X: pd.DataFrame, y: pd.Series) -> None: ...
@@ -41,9 +41,9 @@ class ModelBlock(ABC):
 
 class Trainer(ABC):
     @abstractmethod
-    def train(self, model: ModelBlock, X: pd.DataFrame, y: pd.Series, config: Dict[str, Any]): ...
+    def train(self, model: ModelBlock, X: pd.DataFrame, y: pd.Series, config: dict[str, Any]): ...
 
 
 class Evaluator(ABC):
     @abstractmethod
-    def evaluate(self, y_true, y_pred, config: Dict[str, Any]) -> Dict[str, float]: ...
+    def evaluate(self, y_true, y_pred, config: dict[str, Any]) -> dict[str, float]: ...

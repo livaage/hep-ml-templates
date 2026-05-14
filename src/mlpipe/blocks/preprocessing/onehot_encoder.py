@@ -11,7 +11,7 @@ Features:
 - Integration with existing pipelines
 """
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -53,7 +53,7 @@ class OneHotEncoderBlock(Preprocessor):
         self.feature_names = None
         self.config = {}
 
-    def build(self, config: Dict[str, Any]) -> None:
+    def build(self, config: dict[str, Any]) -> None:
         """Configure the one-hot encoder."""
         default_config = {
             "categorical_columns": "auto",  # 'auto' to detect, or list of column names/indices
@@ -69,15 +69,9 @@ class OneHotEncoderBlock(Preprocessor):
         self.config = {**default_config, **config}
 
         if self.config["verbose"]:
-            print("🎯 One-Hot Encoder Configuration:")
-            print(f"   Categorical columns: {self.config['categorical_columns']}")
-            print(f"   Drop first: {self.config['drop_first']}")
-            print(f"   Handle unknown: {self.config['handle_unknown']}")
-            print(f"   Sparse output: {self.config['sparse_output']}")
+            pass
 
-    def _detect_categorical_columns(
-        self, X: Union[np.ndarray, pd.DataFrame]
-    ) -> List[Union[int, str]]:
+    def _detect_categorical_columns(self, X: np.ndarray | pd.DataFrame) -> list[int | str]:
         """Automatically detect categorical columns."""
         if isinstance(X, pd.DataFrame):
             # For DataFrames, use dtype information
@@ -91,10 +85,8 @@ class OneHotEncoderBlock(Preprocessor):
                     categorical_cols.append(col)
 
             if self.config["verbose"] and categorical_cols:
-                print(f"🔍 Auto-detected categorical columns: {categorical_cols}")
                 for col in categorical_cols:
                     unique_vals = X[col].nunique()
-                    print(f"   {col}: {unique_vals} unique values")
 
             return categorical_cols
 
@@ -108,11 +100,11 @@ class OneHotEncoderBlock(Preprocessor):
                     categorical_cols.append(i)
 
             if self.config["verbose"] and categorical_cols:
-                print(f"🔍 Auto-detected categorical columns (indices): {categorical_cols}")
+                pass
 
             return categorical_cols
 
-    def _validate_columns(self, X: Union[np.ndarray, pd.DataFrame], columns: List) -> List:
+    def _validate_columns(self, X: np.ndarray | pd.DataFrame, columns: list) -> list:
         """Validate that specified columns exist in the data."""
         if isinstance(X, pd.DataFrame):
             missing_cols = [col for col in columns if col not in X.columns]
@@ -128,7 +120,7 @@ class OneHotEncoderBlock(Preprocessor):
         return columns
 
     def fit(
-        self, X: Union[np.ndarray, pd.DataFrame], y: Optional[np.ndarray] = None
+        self, X: np.ndarray | pd.DataFrame, y: np.ndarray | None = None
     ) -> "OneHotEncoderBlock":
         """Fit the one-hot encoder to the data."""
         # Determine categorical columns
@@ -139,7 +131,7 @@ class OneHotEncoderBlock(Preprocessor):
 
         if not self.categorical_columns:
             if self.config["verbose"]:
-                print("⚠️  No categorical columns found - encoder will pass through data unchanged")
+                pass
             # Create a passthrough transformer
             self.encoder = ColumnTransformer([("passthrough", "passthrough", slice(None))])
             self.encoder.fit(X)
@@ -162,7 +154,7 @@ class OneHotEncoderBlock(Preprocessor):
         onehot_encoder = OneHotEncoder(**encoder_params)
 
         if isinstance(X, pd.DataFrame):
-            # For DataFrames, we'll use ColumnTransformer to handle both categorical and numerical columns
+            # Use ColumnTransformer to handle categorical + numerical columns together.
             numerical_columns = [col for col in X.columns if col not in self.categorical_columns]
 
             transformers = []
@@ -189,20 +181,12 @@ class OneHotEncoderBlock(Preprocessor):
         if hasattr(self.encoder, "get_feature_names_out"):
             try:
                 self.feature_names = self.encoder.get_feature_names_out()
-            except:
+            except Exception:
                 self.feature_names = None
-
-        if self.config["verbose"]:
-            print("✅ One-hot encoder fitted:")
-            if isinstance(X, pd.DataFrame):
-                print(f"   Input features: {X.shape[1]}")
-            else:
-                print(f"   Input features: {X.shape[1]}")
-            print(f"   Categorical features: {len(self.categorical_columns)}")
 
         return self
 
-    def transform(self, X: Union[np.ndarray, pd.DataFrame]) -> Union[np.ndarray, pd.DataFrame]:
+    def transform(self, X: np.ndarray | pd.DataFrame) -> np.ndarray | pd.DataFrame:
         """Transform data using the fitted encoder."""
         if self.encoder is None:
             raise ValueError("Encoder must be fitted before transform. Call fit() first.")
@@ -227,8 +211,8 @@ class OneHotEncoderBlock(Preprocessor):
                         return pd.DataFrame(
                             X_transformed, columns=self.feature_names, index=X.index
                         )
-                    except:
-                        pass
+                    except Exception:  # noqa: S110
+                        pass  # fall through to the unnamed-column DataFrame below
 
                 return pd.DataFrame(X_transformed, index=X.index)
 
@@ -254,12 +238,12 @@ class OneHotEncoderBlock(Preprocessor):
                     return X_encoded
 
     def fit_transform(
-        self, X: Union[np.ndarray, pd.DataFrame], y: Optional[np.ndarray] = None
-    ) -> Union[np.ndarray, pd.DataFrame]:
+        self, X: np.ndarray | pd.DataFrame, y: np.ndarray | None = None
+    ) -> np.ndarray | pd.DataFrame:
         """Fit the encoder and transform the data in one step."""
         return self.fit(X, y).transform(X)
 
-    def get_feature_names_out(self, input_features: Optional[List[str]] = None) -> np.ndarray:
+    def get_feature_names_out(self, input_features: list[str] | None = None) -> np.ndarray:
         """Get output feature names for transformation."""
         if self.encoder is None:
             raise ValueError("Encoder must be fitted before getting feature names.")
@@ -282,14 +266,14 @@ class OneHotEncoderBlock(Preprocessor):
                     ).shape[1]
                 return np.array([f"feature_{i}" for i in range(n_features)])
 
-    def inverse_transform(
-        self, X: Union[np.ndarray, pd.DataFrame]
-    ) -> Union[np.ndarray, pd.DataFrame]:
+    def inverse_transform(self, X: np.ndarray | pd.DataFrame) -> np.ndarray | pd.DataFrame:
         """Inverse transform the encoded data back to original format."""
         if self.encoder is None:
             raise ValueError("Encoder must be fitted before inverse transform.")
 
         try:
             return self.encoder.inverse_transform(X)
-        except AttributeError:
-            raise NotImplementedError("Inverse transform not available for this configuration.")
+        except AttributeError as err:
+            raise NotImplementedError(
+                "Inverse transform not available for this configuration."
+            ) from err

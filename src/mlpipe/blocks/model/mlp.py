@@ -3,7 +3,7 @@
 This module provides a scikit-learn based MLP classifier optimized for HEP use cases.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import StandardScaler
@@ -48,7 +48,7 @@ class MLPBlock(ModelBlock):
         self.model = None
         self.scaler = StandardScaler()  # Neural networks need scaled features
 
-    def build(self, config: Optional[Dict[str, Any]] = None) -> None:
+    def build(self, config: dict[str, Any] | None = None) -> None:
         """Build MLP model."""
         if config:
             params = {**self.params, **config}
@@ -61,17 +61,10 @@ class MLPBlock(ModelBlock):
 
         self.model = MLPClassifier(**sklearn_params)
 
-        print(
-            f"✅ MLP built with layers {params['hidden_layer_sizes']}, "
-            f"activation={params['activation']}"
-        )
-
     def fit(self, X, y) -> None:
         """Fit MLP model with feature scaling."""
         if self.model is None:
             self.build()
-
-        print(f"🧠 Training MLP on {X.shape[0]} samples, {X.shape[1]} features...")
 
         X_values = X.values if hasattr(X, "values") else X
         y_values = y.values if hasattr(y, "values") else y
@@ -80,10 +73,6 @@ class MLPBlock(ModelBlock):
         X_scaled = self.scaler.fit_transform(X_values)
 
         self.model.fit(X_scaled, y_values)
-
-        print("✅ MLP training completed!")
-        print(f"   - Iterations: {self.model.n_iter_}")
-        print(f"   - Final loss: {self.model.loss_:.6f}")
 
     def predict(self, X):
         """Make predictions with feature scaling."""

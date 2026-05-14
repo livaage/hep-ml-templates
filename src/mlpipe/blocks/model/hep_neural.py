@@ -7,7 +7,7 @@ Common applications:
 - Multi-particle interaction analysis
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 import numpy as np
 import pytorch_lightning as pl
@@ -54,7 +54,7 @@ class HEPTransformerBlock(ModelBlock):
         self.scaler = StandardScaler() if self.params["normalize_inputs"] else None
         self.trainer = None
 
-    def build(self, config: Optional[Dict[str, Any]] = None) -> None:
+    def build(self, config: dict[str, Any] | None = None) -> None:
         """Build Transformer model."""
         if config:
             params = {**self.params, **config}
@@ -81,10 +81,6 @@ class HEPTransformerBlock(ModelBlock):
             enable_progress_bar=True,
         )
 
-        print(
-            f"✅ HEP Transformer built with {params['d_model']} model dimension, {params['nhead']} heads"
-        )
-
     def fit(self, X, y) -> None:
         """Fit the Transformer model."""
         # Prepare sequence data
@@ -96,9 +92,7 @@ class HEPTransformerBlock(ModelBlock):
         if self.model is None:
             self.build()
 
-        print(f"🔄 Training Transformer on {X_sequences.shape[0]} sequences...")
         self.trainer.fit(self.model, dataloader)
-        print("✅ Transformer training completed!")
 
     def predict(self, X):
         """Make predictions with the Transformer."""
@@ -293,7 +287,7 @@ class HEPCNNBlock(ModelBlock):
         self.scaler = StandardScaler() if self.params["normalize_inputs"] else None
         self.trainer = None
 
-    def build(self, config: Optional[Dict[str, Any]] = None) -> None:
+    def build(self, config: dict[str, Any] | None = None) -> None:
         """Build CNN model."""
         if config:
             params = {**self.params, **config}
@@ -318,8 +312,6 @@ class HEPCNNBlock(ModelBlock):
             devices=1,
             enable_progress_bar=True,
         )
-
-        print(f"✅ HEP CNN built with {len(params['conv_layers'])} conv layers")
 
     def fit(self, X, y) -> None:
         """Fit the CNN model."""
@@ -349,9 +341,7 @@ class HEPCNNBlock(ModelBlock):
         dataset = TensorDataset(X_tensor, y_tensor)
         dataloader = DataLoader(dataset, batch_size=self.params["batch_size"], shuffle=True)
 
-        print(f"🔄 Training CNN on {X_cnn.shape[0]} samples...")
         self.trainer.fit(self.model, dataloader)
-        print("✅ CNN training completed!")
 
     def predict(self, X):
         """Make predictions with the CNN."""
@@ -417,8 +407,8 @@ class HEPCNN(pl.LightningModule):
         in_channels = self.input_channels
         current_length = self.input_length
 
-        for i, (out_channels, kernel_size, pool_size) in enumerate(
-            zip(self.conv_layers, self.kernel_sizes, self.pool_sizes)
+        for out_channels, kernel_size, pool_size in zip(
+            self.conv_layers, self.kernel_sizes, self.pool_sizes, strict=False
         ):
             # Conv layer
             conv_modules.append(
