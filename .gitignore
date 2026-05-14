@@ -5,19 +5,8 @@ __pycache__/
 *.so
 .Python
 build/
-develop-eggs/
 dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
 *.egg-info/
-.installed.cfg
 *.egg
 
 # Virtual environments
@@ -26,158 +15,78 @@ venv/
 env/
 ENV/
 .conda/
+*/venv/
+*/.venv/
 
-# IDE & Editors
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-.vim/
-*.sublime-*
 
-# Testing & Coverage
+# Testing, type-checking, linting caches
 .coverage
 .pytest_cache/
-.cache
-htmlcov/
 .tox/
 .nox/
 coverage.xml
-*.cover
 .hypothesis/
-
-# Type checking
 .mypy_cache/
 .dmypy.json
-dmypy.json
-
-# Linting & Formatting
 .ruff_cache/
 
-# Documentation
+# Docs build
 docs/_build/
 docs/build/
 site/
 
-# Security
-bandit-report.json
-
-# Temporary files
-*.tmp
-*.temp
+# OS
 .DS_Store
+._*
 Thumbs.db
 
-# Log files
+# Logs and temp
 *.log
-logs/
+*.tmp
+*.temp
+.ipynb_checkpoints/
 
-# Jupyter Notebooks (checkpoints)
-.ipynb_checkpoints
-
-# Large data files (exclude large datasets but keep small demo/example data)
+# Data: ignore large/derived, keep small demo files
 data/*_large.csv
 data/*_big.csv
 data/*.parquet
 data/*.h5
 data/*.hdf5
-*.gz
-!data/demo_*.csv
-!data/custom_test_data.csv
-!data/graph_nodes_demo.csv
-!data/HIGGS_100k.csv
-
-# User-generated data files (but keep examples)
 data/user_*
 data/my_*
 data/personal_*
 
-# Model artifacts
+# Model artifacts and experiment outputs
 models/
 *.pkl
 *.joblib
 *.pt
 *.pth
+*.ckpt
 *.onnx
-
-# Experiment outputs
 experiments/
 outputs/
 runs/
 wandb/
 mlruns/
+.neptune/
 
-# Local development
+# Local env
 .env
 .env.local
 local_config.*
 
-# OS-specific
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Desktop.ini
-
-# Pipeline testing directories (created during development)
+# Scratch dirs created during dev
 test_runs/
 test_modular_install/
 quick-test/
 *-project/
 *-demo/
 *-test/
-
-# Cleanup folders and temporary scripts (keep main clean)
 cleanup/
-scripts/lint.py
-scripts/cleanup.py
 temp_*.py
-
-# Archive files
-*.zip
-*.tar.gz
-*.rar
-models/*.ckpt
-models/*.pth
-models/*.h5
-models/large_*
-*.pkl
-*.joblib
-!models/demo_*
-!models/example_*
-
-# Jupyter Notebooks checkpoints
-.ipynb_checkpoints/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
-
-# Temporary files
-*.tmp
-*.temp
-
-# Testing artifacts
-.coverage
-.pytest_cache/
-htmlcov/
-.tox/
-coverage.xml
-*.cover
-
-# ML experiment tracking
-wandb/
-mlruns/
-experiments/
-.neptune/
-
-# Virtual environments that might be created in subdirectories
-*/venv/
-*/.venv/
-comprehensive_testing/*/
-sandbox_test/test_venv/
