@@ -402,6 +402,11 @@ def get_blocks_and_configs_for_extras(extras: list[str]) -> dict[str, set[str]]:
         "universal_runner.py",
     }
 
+    unknown = [extra for extra in extras if extra not in EXTRAS_TO_BLOCKS and extra != "all"]
+    if unknown:
+        known = ", ".join(sorted(EXTRAS_TO_BLOCKS))
+        raise ValueError(f"Unknown extras: {', '.join(unknown)}.\nKnown extras: {known}")
+
     for extra in extras:
         if extra in EXTRAS_TO_BLOCKS:
             mapping = EXTRAS_TO_BLOCKS[extra]
@@ -409,8 +414,6 @@ def get_blocks_and_configs_for_extras(extras: list[str]) -> dict[str, set[str]]:
             all_core.update(mapping.get("core", []))
             all_configs.update(mapping.get("configs", []))
             all_data.update(mapping.get("data", []))
-        else:
-            print(f"⚠️  Warning: Unknown extra '{extra}' - skipping")
 
     # Add essential core modules (always needed for CLI to work)
     all_core.update(essential_core)

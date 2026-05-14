@@ -214,7 +214,7 @@ class VotingEnsembleBlock(ModelBlock):
         }
 
         self.params = {**default_params, **kwargs}
-        self.models = {}
+        self.model = None
         self.scaler = None
         self.fitted = False
 

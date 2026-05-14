@@ -1,8 +1,5 @@
-# Import all preprocessing blocks to register them
-from . import (
-    data_split,  # noqa: F401
-    standard_scaler,  # noqa: F401
-)
+# Import preprocessing blocks for their @register side effects.
+from . import data_split, standard_scaler  # noqa: F401
 
 try:
     from . import onehot_encoder  # noqa: F401
