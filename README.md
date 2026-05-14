@@ -149,8 +149,7 @@ preds = model.predict(X_test)
 `data/` contains small files committed for demos:
 
 - `HIGGS_100k.csv` — first 100k rows of the UCI HIGGS dataset
-- `demo_tabular.csv` — generic tabular demo
-- `custom_test_data.csv` — small CSV used by tests
+- `demo_tabular.csv` — generic tabular demo (also used by the test suite)
 - `graph_nodes_demo.csv` — minimal graph data for GNN demos
 
 For larger HIGGS data, configure `data/higgs_uci.yaml` to point at the full file; the loader will download it on demand.

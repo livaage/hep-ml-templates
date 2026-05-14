@@ -10,6 +10,9 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 authors = [{ name = "Arvind Tawker" }]
+maintainers = [{ name = "livaage" }]
+# These are always installed. Extras below add *additional* deps on top —
+# they should not re-list these.
 dependencies = [
   "numpy>=1.22",
   "pandas>=2.0",
@@ -18,39 +21,58 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# Core framework (minimal dependencies)
-core = ["omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0"]
+# `core` is kept as a no-op extra so `pip install -e ".[core]"` works as
+# documented in the README. The base `dependencies` above are already enough.
+core = []
 
-# Individual components
-data-csv = ["pandas>=2.0"]
-data-higgs = ["pandas>=2.0", "requests>=2.25"]
-data-uproot = ["uproot>=5.0", "awkward>=2.0", "pandas>=2.0"]
+# Per-block extras: only the packages that aren't in the base dependencies.
+data-csv = []
+data-higgs = ["requests>=2.25"]
+data-uproot = ["uproot>=5.0", "awkward>=2.0"]
 model-xgb = ["xgboost>=1.7"]
-model-decision-tree = ["scikit-learn>=1.2"]
-model-random-forest = ["scikit-learn>=1.2"]
-model-svm = ["scikit-learn>=1.2"]
-model-mlp = ["scikit-learn>=1.2"]
-model-adaboost = ["scikit-learn>=1.2"]
-model-ensemble = ["scikit-learn>=1.2", "xgboost>=1.7"]
+model-decision-tree = []
+model-random-forest = []
+model-svm = []
+model-mlp = []
+model-adaboost = []
+model-ensemble = ["xgboost>=1.7"]
 model-torch = ["torch>=2.2"]
 model-lightning = ["torch>=2.2", "lightning>=2.2"]
-model-gnn = ["torch-geometric>=2.5", "torch>=2.2"]
-preprocessing = ["scikit-learn>=1.2"]
-evaluation = ["scikit-learn>=1.2"]
+model-gnn = ["torch>=2.2", "torch-geometric>=2.5"]
+preprocessing = []
+evaluation = []
 
-# Algorithm-specific extras
-xgb = ["xgboost>=1.7", "scikit-learn>=1.2"]
-decision-tree = ["scikit-learn>=1.2"]
-random-forest = ["scikit-learn>=1.2"]
-svm = ["scikit-learn>=1.2"]
-mlp = ["scikit-learn>=1.2"]
-adaboost = ["scikit-learn>=1.2"]
-ensemble = ["scikit-learn>=1.2", "xgboost>=1.7"]
+# Algorithm shortcuts (model + preprocessing combo, matches the install-local extras).
+xgb = ["xgboost>=1.7"]
+decision-tree = []
+random-forest = []
+svm = []
+mlp = []
+adaboost = []
+ensemble = ["xgboost>=1.7"]
 torch = ["torch>=2.2", "lightning>=2.2"]
-gnn = ["torch-geometric>=2.5", "torch>=2.2"]
+gnn = ["torch>=2.2", "torch-geometric>=2.5"]
 autoencoder = ["torch>=2.2", "lightning>=2.2"]
 transformer = ["torch>=2.2", "lightning>=2.2"]
 cnn = ["torch>=2.2", "lightning>=2.2"]
+
+# Complete pipeline bundles — list only what extras add beyond base deps.
+pipeline-xgb = ["xgboost>=1.7"]
+pipeline-decision-tree = []
+pipeline-ensemble = ["xgboost>=1.7"]
+pipeline-autoencoder-lightning = ["torch>=2.2", "lightning>=2.2", "matplotlib>=3.5"]
+pipeline-neural = []
+pipeline-gnn = ["torch>=2.2", "torch-geometric>=2.5"]
+all = [
+  "xgboost>=1.7",
+  "torch>=2.2",
+  "lightning>=2.2",
+  "torch-geometric>=2.5",
+  "uproot>=5.0",
+  "awkward>=2.0",
+  "requests>=2.25",
+  "matplotlib>=3.5",
+]
 
 # Development
 dev = [
@@ -62,31 +84,6 @@ dev = [
   "mypy>=1.8",
   "isort>=5.13",
   "bandit>=1.7",
-  "pydocstyle>=6.3"
-]
-
-# Complete pipeline bundles
-pipeline-xgb = [
-  "omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0", "scikit-learn>=1.2", "xgboost>=1.7"
-]
-pipeline-decision-tree = [
-  "omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0", "scikit-learn>=1.2"
-]
-pipeline-ensemble = [
-  "omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0", "scikit-learn>=1.2", "xgboost>=1.7"
-]
-pipeline-autoencoder-lightning = [
-  "omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0", "scikit-learn>=1.2", "torch>=2.2", "lightning>=2.2", "matplotlib>=3.5"
-]
-pipeline-neural = [
-  "omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0", "scikit-learn>=1.2"
-]
-pipeline-gnn = [
-  "omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0", "scikit-learn>=1.2", "torch>=2.2", "torch-geometric>=2.5"
-]
-all = [
-  "omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0", "scikit-learn>=1.2",
-  "xgboost>=1.7", "torch>=2.2", "lightning>=2.2", "torch-geometric>=2.5", "uproot>=5.0", "awkward>=2.0", "matplotlib>=3.5"
 ]
 
 [project.scripts]

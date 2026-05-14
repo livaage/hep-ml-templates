@@ -15,84 +15,67 @@ from mlpipe.core.pipeline_generator import generate_pipeline_config, list_availa
 from mlpipe.core.registry import list_blocks
 from mlpipe.core.universal_runner import get_pipeline_info, run_pipeline, validate_pipeline_config
 
-# Don't import global blocks here - import them AFTER local blocks in main()
 
-
-def _try_import_local_blocks():
-    """Try to import local blocks if they exist in current directory."""
+def _try_import_local_blocks() -> None:
+    """If the user is in a project scaffolded by `mlpipe install-local`, import its
+    blocks before the global ones so local edits take precedence.
+    """
     cwd = Path.cwd()
-    local_blocks_init = cwd / "mlpipe" / "blocks" / "__init__.py"
-
-    if not local_blocks_init.exists():
+    if not (cwd / "mlpipe" / "blocks" / "__init__.py").exists():
         return
 
-    # Add current directory to Python path if not already there
     if str(cwd) not in sys.path:
         sys.path.insert(0, str(cwd))
 
     try:
-        # Try importing local blocks using normal import syntax now that cwd is in path
-        # Force reload to make sure we get the local version
         import importlib
 
-        import mlpipe.blocks as local_blocks  # This should import the local version  # noqa: F401
+        import mlpipe.blocks as local_blocks  # noqa: F401
 
         importlib.reload(local_blocks)
-
-    except Exception:
-        # Silently continue with global blocks only
-        pass
+    except Exception:  # noqa: S110 — fall back to global blocks if the local copy is incomplete
         pass
 
 
-def list_available_configs(config_path: str = "configs"):
-    """List available configurations in a helpful format."""
+def list_available_configs(config_path: str = "configs") -> None:
     config_dir = Path(config_path)
     if not config_dir.exists():
-        print(f"❌ Configuration directory '{config_path}' not found.")
+        print(f"Error: configuration directory {config_path!r} not found", file=sys.stderr)
         return
 
-    # List pipeline configs (top-level .yaml files)
-    pipeline_configs = list(config_dir.glob("*.yaml"))
-    print("📋 Available pipeline configurations:")
+    pipeline_configs = sorted(config_dir.glob("*.yaml"))
+    print("Available pipeline configurations:")
     if pipeline_configs:
-        for config_file in sorted(pipeline_configs):
-            print(f"  • {config_file.stem}")
-        print("\n🚀 Usage: mlpipe run --config-name <config_name>")
-        print("   Example: mlpipe run --config-name pipeline")
+        for config_file in pipeline_configs:
+            print(f"  {config_file.stem}")
+        print("\nUsage: mlpipe run --config-name <config_name>")
     else:
-        print("   (none found)")
+        print("  (none found)")
 
-    # List modular configs by category
-    print("\n🧩 Available modular configurations:")
-    categories = ["data", "model", "preprocessing", "feature_eng", "training", "evaluation"]
-
-    for category in categories:
+    print("\nAvailable modular configurations:")
+    for category in ("data", "model", "preprocessing", "feature_eng", "training", "evaluation"):
         cat_dir = config_dir / category
-        if cat_dir.exists():
-            configs = list(cat_dir.glob("*.yaml"))
-            if configs:
-                print(f"  📁 {category}:")
-                for config_file in sorted(configs):
-                    print(f"     • {config_file.stem}")
+        if not cat_dir.exists():
+            continue
+        configs = sorted(cat_dir.glob("*.yaml"))
+        if not configs:
+            continue
+        print(f"  {category}:")
+        for config_file in configs:
+            print(f"    {config_file.stem}")
 
-    print("\n✨ You can override any component:")
-    print("   mlpipe run --overrides data=csv_demo model=xgb_classifier")
-    print("   mlpipe run --overrides data=higgs_uci")
+    print("\nOverride any component on the command line, e.g.:")
+    print("  mlpipe run --overrides data=csv_demo model=xgb_classifier")
 
 
-def main():
-    # Try to import local blocks FIRST (before any global imports)
+def main() -> None:
+    # Local blocks first, then fall back to global blocks for anything still missing.
     _try_import_local_blocks()
-
-    # Then import global blocks to fill in any missing ones
-    # Only import global blocks if we don't have a local installation
-    cwd = Path.cwd()
-    if not (cwd / "mlpipe" / "blocks" / "__init__.py").exists():
+    if not (Path.cwd() / "mlpipe" / "blocks" / "__init__.py").exists():
         import mlpipe.blocks  # noqa: F401
 
     parser = argparse.ArgumentParser(
-        "mlpipe", description="HEP ML Templates - Modular ML Pipeline Framework"
+        "mlpipe", description="hep-ml-templates: modular ML pipeline framework"
     )
     sub = parser.add_subparsers(dest="cmd", required=True)
 
@@ -110,7 +93,7 @@ def main():
     p_run.add_argument(
         "--config-name",
         default="pipeline",
-        help="Pipeline configuration file name without .yaml " "extension (default: pipeline)",
+        help="Pipeline configuration file name without .yaml extension (default: pipeline)",
     )
     p_run.add_argument(
         "--overrides",
@@ -119,13 +102,11 @@ def main():
         help="Override config values (e.g., data=csv_demo model=xgb_classifier)",
     )
 
-    # Add subcommands
     sub.add_parser("list-blocks", help="List available blocks")
 
     p_list_configs = sub.add_parser("list-configs", help="List available configurations")
     p_list_configs.add_argument("--config-path", default="configs")
 
-    # Add pipeline generation command
     p_generate = sub.add_parser("generate-pipeline", help="Generate a pipeline configuration")
     p_generate.add_argument(
         "pipeline_type",
@@ -136,20 +117,16 @@ def main():
         "--output", default="pipeline.yaml", help="Output file path (default: pipeline.yaml)"
     )
 
-    # Add pipeline validation
     p_validate = sub.add_parser("validate-config", help="Validate a pipeline configuration")
     p_validate.add_argument("--config-path", default="configs")
     p_validate.add_argument("--config-name", default="pipeline")
 
-    # Add pipeline info
     p_info = sub.add_parser("pipeline-info", help="Show information about a pipeline configuration")
     p_info.add_argument("--config-path", default="configs")
     p_info.add_argument("--config-name", default="pipeline")
 
-    # List available pipeline templates
     sub.add_parser("list-pipeline-templates", help="List available pipeline templates")
 
-    # Add local installation command
     p_install = sub.add_parser(
         "install-local", help="Install blocks and configs locally to your project"
     )
@@ -162,9 +139,7 @@ def main():
         "--target-dir", required=True, help="Directory where to install the local components"
     )
 
-    # Add extras management commands
     sub.add_parser("list-extras", help="List all available extras")
-
     sub.add_parser("validate-extras", help="Validate extras configuration")
 
     p_extra_details = sub.add_parser("extra-details", help="Show details for a specific extra")
@@ -199,7 +174,7 @@ def main():
             validate_pipeline_config(Path(args.config_path), args.config_name)
         elif args.cmd == "pipeline-info":
             info = get_pipeline_info(Path(args.config_path), args.config_name)
-            print("Pipeline Configuration Info:")
+            print("Pipeline configuration info:")
             for key, value in info.items():
                 print(f"  {key}: {value}")
         elif args.cmd == "list-pipeline-templates":
@@ -212,9 +187,8 @@ def main():
                 print(f"    Dependencies: {deps}")
                 print()
         elif args.cmd == "install-local":
-            success = install_local(args.extras, args.target_dir)
-            if not success:
-                exit(1)
+            if not install_local(args.extras, args.target_dir):
+                sys.exit(1)
         elif args.cmd == "list-extras":
             list_extras()
         elif args.cmd == "validate-extras":
@@ -225,14 +199,9 @@ def main():
             preview_installation(args.extras)
     except FileNotFoundError as e:
         if ".yaml" in str(e):
-            print("❌ Error: Configuration file not found")
-            print(f"Looking for: {e}")
-            print()
-            list_available_configs(args.config_path if hasattr(args, "config_path") else "configs")
-        else:
-            raise
-    except Exception as e:
-        print(f"❌ Error: {e}")
+            print(f"Error: configuration file not found: {e}", file=sys.stderr)
+            list_available_configs(getattr(args, "config_path", "configs"))
+            sys.exit(1)
         raise
 
 

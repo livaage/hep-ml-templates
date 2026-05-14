@@ -85,9 +85,6 @@ class ReconstructionEvaluator(Evaluator):
         if "ssim" in self.config.get("metrics", []) and not SSIM_AVAILABLE:
             self.config["metrics"] = [m for m in self.config.get("metrics", []) if m != "ssim"]
 
-        if self.config.get("verbose", True):
-            pass
-
     def _compute_mse(self, original: np.ndarray, reconstructed: np.ndarray) -> float | np.ndarray:
         """Compute Mean Squared Error."""
         error = (original - reconstructed) ** 2
@@ -274,9 +271,6 @@ class ReconstructionEvaluator(Evaluator):
         plt.savefig(plot_path, dpi=150, bbox_inches="tight")
         plt.close()
 
-        if self.config.get("verbose", True):
-            pass
-
     def _save_samples(
         self, original: np.ndarray, reconstructed: np.ndarray, output_dir: Path
     ) -> None:
@@ -289,9 +283,6 @@ class ReconstructionEvaluator(Evaluator):
             output_dir / "reconstructed_samples.npy",
             reconstructed[: self.config.get("plot_samples", 5)],
         )
-
-        if self.config.get("verbose", True):
-            pass
 
     def evaluate(
         self, original: np.ndarray, reconstructed: np.ndarray, config: dict[str, Any] = None
@@ -324,9 +315,6 @@ class ReconstructionEvaluator(Evaluator):
             raise ValueError(
                 f"Shape mismatch: original {original.shape} vs reconstructed {reconstructed.shape}"
             )
-
-        if self.config.get("verbose", True):
-            pass
 
         results = {}
 

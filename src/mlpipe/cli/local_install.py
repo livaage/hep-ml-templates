@@ -442,9 +442,9 @@ def copy_core_modules(core_modules: set[str], source_dir: Path, target_dir: Path
 
         if source_file.exists():
             shutil.copy2(source_file, target_file)
-            print(f"✅ Copied core module: {core_file}")
+            print(f"Copied core module: {core_file}")
         else:
-            print(f"⚠️  Warning: Core module not found: {source_file}")
+            print(f"Warning: Core module not found: {source_file}")
 
     # Always copy __init__.py for the core module
     core_init = core_source / "__init__.py"
@@ -473,7 +473,7 @@ def copy_blocks(blocks: set[str], source_dir: Path, target_dir: Path):
 
             # Copy the file
             shutil.copy2(source_file, target_file)
-            print(f"✅ Copied block: {block_path}")
+            print(f"Copied block: {block_path}")
 
             # Track which categories were installed for __init__.py generation
             category = block_path.split("/")[0]  # e.g., 'ingest', 'model', 'preprocessing'
@@ -489,7 +489,7 @@ def copy_blocks(blocks: set[str], source_dir: Path, target_dir: Path):
                 target_category_init.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(category_init, target_category_init)
         else:
-            print(f"⚠️  Warning: Block file not found: {source_file}")
+            print(f"Warning: Block file not found: {source_file}")
 
     # Create custom blocks/__init__.py that only imports installed blocks
     create_custom_blocks_init(installed_modules, target_dir / "mlpipe" / "blocks" / "__init__.py")
@@ -524,7 +524,7 @@ def create_custom_blocks_init(installed_modules: dict[str, list[str]], init_file
                             existing_imports[category] = set()
                         existing_imports[category].add(module)
         except Exception as e:
-            print(f"⚠️  Warning: Could not parse existing __init__.py: {e}")
+            print(f"Warning: Could not parse existing __init__.py: {e}")
 
     # Merge existing and new imports
     all_modules = {}
@@ -579,11 +579,11 @@ def create_custom_blocks_init(installed_modules: dict[str, list[str]], init_file
 
     if existing_count > 0:
         print(
-            f"✅ Updated blocks/__init__.py: {existing_count} existing + {new_count} new "
+            f"Updated blocks/__init__.py: {existing_count} existing + {new_count} new "
             f"= {total_imports} total imports"
         )
     else:
-        print(f"✅ Created custom blocks/__init__.py with {total_imports} imports")
+        print(f"Created custom blocks/__init__.py with {total_imports} imports")
 
 
 def create_main_mlpipe_init(init_file_path: Path):
@@ -608,7 +608,7 @@ def create_main_mlpipe_init(init_file_path: Path):
     with open(init_file_path, "w") as f:
         f.write("\n".join(init_content))
 
-    print("✅ Created main mlpipe/__init__.py")
+    print("Created main mlpipe/__init__.py")
 
 
 def copy_configs(configs: set[str], source_dir: Path, target_dir: Path):
@@ -632,9 +632,9 @@ def copy_configs(configs: set[str], source_dir: Path, target_dir: Path):
 
             # Copy the file
             shutil.copy2(source_file, target_file)
-            print(f"✅ Copied config: {config_path}")
+            print(f"Copied config: {config_path}")
         else:
-            print(f"⚠️  Warning: Config file not found: {source_file}")
+            print(f"Warning: Config file not found: {source_file}")
 
 
 def copy_data_files(data_files: set[str], source_dir: Path, target_dir: Path):
@@ -644,7 +644,7 @@ def copy_data_files(data_files: set[str], source_dir: Path, target_dir: Path):
     data_source = source_dir.parent.parent / "data"  # Going up from src/mlpipe to find data/
 
     if not data_source.exists():
-        print(f"⚠️  Data directory not found: {data_source}")
+        print(f"Data directory not found: {data_source}")
         return
 
     # Create target data directory
@@ -657,9 +657,9 @@ def copy_data_files(data_files: set[str], source_dir: Path, target_dir: Path):
 
         if source_file.exists():
             shutil.copy2(source_file, target_file)
-            print(f"✅ Copied data file: {data_file}")
+            print(f"Copied data file: {data_file}")
         else:
-            print(f"⚠️  Warning: Data file not found: {source_file}")
+            print(f"Warning: Data file not found: {source_file}")
 
 
 def generate_pipeline_configs(pipeline_extras: list[str], target_path: Path):
@@ -682,9 +682,9 @@ def generate_pipeline_configs(pipeline_extras: list[str], target_path: Path):
             with open(pipeline_file, "w") as f:
                 yaml.dump(config, f, default_flow_style=False, sort_keys=False)
 
-            print(f"✅ Generated {pipeline_type} pipeline config: pipeline.yaml")
+            print(f"Generated {pipeline_type} pipeline config: pipeline.yaml")
         else:
-            print(f"⚠️  Warning: Unknown pipeline type '{pipeline_type}' - using default config")
+            print(f"Warning: Unknown pipeline type '{pipeline_type}' - using default config")
             # Generate default config
             default_config = {
                 "data": "csv_demo",
@@ -698,7 +698,7 @@ def generate_pipeline_configs(pipeline_extras: list[str], target_path: Path):
             pipeline_file = configs_dir / "pipeline.yaml"
             with open(pipeline_file, "w") as f:
                 yaml.dump(default_config, f, default_flow_style=False, sort_keys=False)
-            print(f"✅ Generated default pipeline config for: {pipeline_type}")
+            print(f"Generated default pipeline config for: {pipeline_type}")
 
 
 def install_local(extras: list[str], target_dir: str) -> bool:
@@ -712,53 +712,53 @@ def install_local(extras: list[str], target_dir: str) -> bool:
         True if successful, False otherwise
     """
     try:
-        print("🚀 Installing hep-ml-templates locally...")
-        print(f"📦 Extras: {', '.join(extras)}")
+        print("Installing hep-ml-templates locally...")
+        print(f"Extras: {', '.join(extras)}")
 
         # Resolve target directory
         target_path = Path(target_dir).resolve()
         target_path.mkdir(parents=True, exist_ok=True)
 
-        print(f"📁 Installing to: {target_path}")
+        print(f"Installing to: {target_path}")
 
         # Get source directory (installed package)
         package_path = get_package_path()
-        print(f"📦 Source package: {package_path}")
+        print(f"Source package: {package_path}")
 
         # Get blocks and configs to download
         to_download = get_blocks_and_configs_for_extras(extras)
 
-        print("\n📋 Will install:")
-        print(f"   🧩 {len(to_download['blocks'])} blocks")
-        print(f"   🔧 {len(to_download['core'])} core modules")
-        print(f"   ⚙️  {len(to_download['configs'])} configs")
+        print("\nWill install:")
+        print(f"   {len(to_download['blocks'])} blocks")
+        print(f"   {len(to_download['core'])} core modules")
+        print(f"   {len(to_download['configs'])} configs")
         if to_download["data"]:
-            print(f"   📊 {len(to_download['data'])} data files")
+            print(f"   {len(to_download['data'])} data files")
 
         # Copy core modules first (blocks depend on them)
         if to_download["core"]:
-            print("\n🔧 Installing core modules...")
+            print("\nInstalling core modules...")
             copy_core_modules(to_download["core"], package_path, target_path)
 
         # Copy blocks
         if to_download["blocks"]:
-            print("\n🧩 Installing blocks...")
+            print("\nInstalling blocks...")
             copy_blocks(to_download["blocks"], package_path, target_path)
 
         # Copy configs
         if to_download["configs"]:
-            print("\n⚙️  Installing configs...")
+            print("\nInstalling configs...")
             copy_configs(to_download["configs"], package_path, target_path)
 
         # Generate appropriate pipeline.yaml for installed pipelines
         pipeline_extras = [extra for extra in extras if extra.startswith("pipeline-")]
         if pipeline_extras:
-            print("\n📄 Generating pipeline configurations...")
+            print("\nGenerating pipeline configurations...")
             generate_pipeline_configs(pipeline_extras, target_path)
 
         # Copy data files
         if to_download["data"]:
-            print("\n📊 Installing data files...")
+            print("\nInstalling data files...")
             copy_data_files(to_download["data"], package_path, target_path)
 
         # Create a simple setup.py for pip install -e
@@ -767,9 +767,9 @@ def install_local(extras: list[str], target_dir: str) -> bool:
         # Create a simple CLI script for the local installation
         create_cli_script(target_path)
 
-        print("\n🎉 Local installation complete!")
-        print(f"📁 Files installed in: {target_path}")
-        print("\n💡 Next steps:")
+        print("\nLocal installation complete!")
+        print(f"Files installed in: {target_path}")
+        print("\nNext steps:")
         print(f"   1. cd {target_path}")
         print("   2. pip install -e .")
         print("   3. Use: mlpipe run")
@@ -777,9 +777,10 @@ def install_local(extras: list[str], target_dir: str) -> bool:
         return True
 
     except Exception as e:
-        print(f"❌ Local installation failed: {e}")
+        import sys
         import traceback
 
+        print(f"Local installation failed: {e}", file=sys.stderr)
         traceback.print_exc()
         return False
 
@@ -867,11 +868,9 @@ setup(
         f.write(setup_content)
 
     if added_deps:
-        print(
-            f"✅ Created setup.py with auto-resolved dependencies: {', '.join(sorted(added_deps))}"
-        )
+        print(f"Created setup.py with auto-resolved dependencies: {', '.join(sorted(added_deps))}")
     else:
-        print("✅ Created setup.py for local installation")
+        print("Created setup.py for local installation")
 
 
 def create_cli_script(target_dir: Path):
@@ -906,12 +905,12 @@ try:
 
         if command == "run":
             # Run the pipeline (using local blocks)
-            print("🚀 Running pipeline with local blocks...")
+            print("Running pipeline with local blocks...")
             try:
                 run_pipeline(pipeline="pipeline", config_path="configs", config_name="pipeline")
-                print("✅ Pipeline completed successfully!")
+                print("Pipeline completed successfully!")
             except Exception as e:
-                print(f"❌ Pipeline failed: {e}")
+                print(f"Pipeline failed: {e}")
                 import traceback
                 traceback.print_exc()
 
@@ -951,4 +950,4 @@ except ImportError as e:
 
     cli_file.chmod(cli_file.stat().st_mode | stat.S_IEXEC)
 
-    print("✅ Created mlpipe_cli.py script")
+    print("Created mlpipe_cli.py script")
