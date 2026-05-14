@@ -88,7 +88,6 @@ dev = [
 
 [project.scripts]
 mlpipe = "mlpipe.cli.main:main"
-mlpipe-manager = "mlpipe.cli.manager:main"
 
 [tool.black]
 line-length = 100

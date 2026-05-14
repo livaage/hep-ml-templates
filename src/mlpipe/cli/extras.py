@@ -1,19 +1,21 @@
-#!/usr/bin/env python3
-"""Command-line utility for inspecting and installing hep-ml-templates extras."""
+"""Helpers backing the `mlpipe` CLI's extras subcommands.
 
-import argparse
+These functions are imported by `mlpipe.cli.main` to implement `list-extras`,
+`validate-extras`, `extra-details`, and `preview-install`. There is no
+standalone CLI entry point — everything is reachable via `mlpipe ...`.
+"""
+
 import sys
 
 from .local_install import (
     EXTRAS_TO_BLOCKS,
     get_blocks_and_configs_for_extras,
-    install_local,
     validate_extras_mappings,
 )
 
 
-def list_extras():
-    """List all available extras grouped by category."""
+def list_extras() -> None:
+    """Print all available extras grouped by category."""
     print("Available extras:")
 
     groups: dict[str, list[tuple[str, int, int]]] = {
@@ -66,7 +68,7 @@ def validate_installation() -> bool:
     return False
 
 
-def show_extra_details(extra_name: str):
+def show_extra_details(extra_name: str) -> None:
     """Show what blocks, core modules, configs, and data an extra pulls in."""
     if extra_name not in EXTRAS_TO_BLOCKS:
         print(f"Error: unknown extra {extra_name!r}", file=sys.stderr)
@@ -90,7 +92,7 @@ def show_extra_details(extra_name: str):
             print(f"  - {item}")
 
 
-def preview_installation(extras: list[str]):
+def preview_installation(extras: list[str]) -> None:
     """Preview what `install_local(extras)` would copy without writing anything."""
     print(f"Installation preview for: {', '.join(extras)}")
 
@@ -107,56 +109,3 @@ def preview_installation(extras: list[str]):
         print(f"\n{label} ({len(items)}):")
         for item in items:
             print(f"  - {item}")
-
-
-def main():
-    parser = argparse.ArgumentParser(
-        description="hep-ml-templates extras manager",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  mlpipe-manager list
-  mlpipe-manager validate
-  mlpipe-manager details model-xgb
-  mlpipe-manager preview model-xgb preprocessing
-  mlpipe-manager install model-xgb ./my-project
-        """,
-    )
-
-    subparsers = parser.add_subparsers(dest="command", help="Available commands")
-    subparsers.add_parser("list", help="List all available extras")
-    subparsers.add_parser("validate", help="Validate extras configuration")
-
-    details_parser = subparsers.add_parser("details", help="Show details for a specific extra")
-    details_parser.add_argument("extra", help="Name of the extra to show details for")
-
-    preview_parser = subparsers.add_parser("preview", help="Preview what would be installed")
-    preview_parser.add_argument("extras", nargs="+", help="Extras to preview")
-
-    install_parser = subparsers.add_parser("install", help="Install extras to a directory")
-    install_parser.add_argument("extras", nargs="+", help="Extras to install")
-    install_parser.add_argument("directory", help="Target directory for installation")
-
-    if len(sys.argv) == 1:
-        parser.print_help()
-        return
-
-    args = parser.parse_args()
-    if args.command == "list":
-        list_extras()
-    elif args.command == "validate":
-        validate_installation()
-    elif args.command == "details":
-        show_extra_details(args.extra)
-    elif args.command == "preview":
-        preview_installation(args.extras)
-    elif args.command == "install":
-        print(f"Installing extras: {', '.join(args.extras)}")
-        print(f"Target directory: {args.directory}")
-        if not install_local(args.extras, args.directory):
-            print("Installation failed", file=sys.stderr)
-            sys.exit(1)
-
-
-if __name__ == "__main__":
-    main()

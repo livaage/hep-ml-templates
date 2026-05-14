@@ -4,13 +4,13 @@ import argparse
 import sys
 from pathlib import Path
 
-from mlpipe.cli.local_install import install_local
-from mlpipe.cli.manager import (
+from mlpipe.cli.extras import (
     list_extras,
     preview_installation,
     show_extra_details,
     validate_installation,
 )
+from mlpipe.cli.local_install import install_local
 from mlpipe.core.pipeline_generator import generate_pipeline_config, list_available_pipelines
 from mlpipe.core.registry import list_blocks
 from mlpipe.core.universal_runner import get_pipeline_info, run_pipeline, validate_pipeline_config

@@ -81,8 +81,7 @@ The scaffold copies the block code and configs for the chosen extras into `./my-
 | `mlpipe generate-pipeline <type>` | Write a starter `pipeline.yaml` for a given pipeline type |
 | `mlpipe validate-config` | Validate a pipeline config |
 | `mlpipe pipeline-info` | Inspect a pipeline config |
-
-`mlpipe-manager` is an alternative front-end focused on extras discovery (`list`, `details`, `validate`, `preview`); use whichever fits your workflow.
+| `mlpipe validate-extras` | Sanity-check the extras → blocks/configs mappings |
 
 ## Architecture
 
