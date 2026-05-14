@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Any, Dict, List
+
 from omegaconf import OmegaConf
 
 
@@ -16,10 +17,10 @@ def merge_overrides(cfg: Dict[str, Any], dotlist: List[str]) -> Dict[str, Any]:
     return OmegaConf.to_container(merged, resolve=True)  # type: ignore
 
 
-def load_pipeline_config(config_path: Path, pipeline_name: str,
-                         overrides: List[str] | None = None) -> Dict[str, Any]:
-    """
-    pipeline.yaml declares which group files to load:
+def load_pipeline_config(
+    config_path: Path, pipeline_name: str, overrides: List[str] | None = None
+) -> Dict[str, Any]:
+    """pipeline.yaml declares which group files to load:
       data: csv_demo
       preprocessing: standard
       feature_eng: column_selector
@@ -42,8 +43,15 @@ def load_pipeline_config(config_path: Path, pipeline_name: str,
             if "=" in override:
                 key, value = override.split("=", 1)
                 # If it's a top-level group (data, model, etc.), override which config to load
-                if key in ["data", "preprocessing", "feature_eng", "model",
-                           "training", "evaluation", "runtime"]:
+                if key in [
+                    "data",
+                    "preprocessing",
+                    "feature_eng",
+                    "model",
+                    "training",
+                    "evaluation",
+                    "runtime",
+                ]:
                     pipe_overrides[key] = value
                 else:
                     # Otherwise, it's a deep override for the final config

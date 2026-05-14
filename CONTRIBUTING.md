@@ -1,388 +1,267 @@
 # Contributing to HEP-ML-Templates
 
-## Adding New Models to the Library
+Thank you for your interest in contributing to HEP-ML-Templates! This document provides guidelines and instructions for contributors.
 
-This guide explains how contributors can add new machine learning models to the hep-ml-templates library, ensuring proper integration with the local installation system and maintaining the library's modularity.
+## 🚀 Quick Start for Contributors
 
-## Overview
+### 1. Development Environment Setup
 
-To add a new model to the library, you need to modify several files to ensure:
-1. The model is properly registered and can be discovered
-2. Users can install it locally via `mlpipe install-local`
-3. The model follows the established patterns and interfaces
-4. Dependencies are properly managed
+```bash
+# Clone the repository
+git clone https://github.com/livaage/hep-ml-templates.git
+cd hep-ml-templates
 
-## Step-by-Step Guide
+# Set up development environment
+make setup-dev
 
-### Step 1: Create the Model Implementation
+# Verify installation
+make info
+```
 
-Create a new Python file in `src/mlpipe/blocks/model/` for your model. Use the following template:
+### 2. Development Workflow
 
+```bash
+# Before making changes
+make quick-check
+
+# During development
+make format        # Format your code
+make lint         # Check code quality
+make test-fast    # Run fast tests
+
+# Before committing
+make dev-check    # Run full checks
+make pre-commit   # Run all pre-commit hooks
+```
+
+## 📋 Code Quality Standards
+
+### Automated Linting and Formatting
+
+We use automated tools to maintain code quality. **No manual linting scripts** - everything is automated:
+
+- **Black**: Code formatting
+- **Ruff**: Fast Python linter and formatter
+- **isort**: Import sorting
+- **mypy**: Type checking
+- **bandit**: Security scanning
+- **pydocstyle**: Docstring linting
+
+### Pre-commit Hooks
+
+All code quality checks run automatically via pre-commit hooks:
+
+```bash
+# Install hooks (done automatically with make setup-dev)
+pre-commit install
+
+# Run manually if needed
+pre-commit run --all-files
+```
+
+### GitHub Actions CI
+
+Our CI pipeline automatically:
+- ✅ Runs all linting and formatting checks
+- ✅ Executes tests across Python 3.9-3.12
+- ✅ Performs security scanning
+- ✅ Builds and validates packages
+- ✅ Runs on Ubuntu, macOS, and Windows
+
+## 🧪 Testing Guidelines
+
+### Test Structure
+```
+tests/
+├── unit/           # Fast unit tests
+├── integration/    # Integration tests
+└── conftest.py     # Shared test fixtures
+```
+
+### Running Tests
+```bash
+make test           # All tests
+make test-fast      # Unit tests only
+make test-cov       # Tests with coverage report
+```
+
+### Test Markers
+- `@pytest.mark.slow`: For slow-running tests
+- `@pytest.mark.integration`: For integration tests
+- `@pytest.mark.unit`: For unit tests
+
+## 📁 Project Structure Guidelines
+
+### Keep Main Branch Clean
+
+- **No cleanup folders**: Use `.gitignore` to exclude temporary files
+- **No manual scripts**: Use automated tools (Makefile, pre-commit, CI/CD)
+- **No temporary files**: Clean development environment
+
+### Modular Architecture
+
+- **Core library changes**: Make improvements in `src/mlpipe/`
+- **Block-based design**: Each component should be self-contained
+- **Registry system**: Use `@register` decorator for new blocks
+- **Interface compliance**: Follow established interfaces
+
+## 🔧 Adding New Features
+
+### Adding a New Block
+
+1. **Create the block file**:
+   ```python
+   # src/mlpipe/blocks/{category}/{block_name}.py
+   from mlpipe.core.interfaces import {Interface}
+   from mlpipe.core.registry import register
+
+   @register("{category}.{block_name}")
+   class {BlockName}({Interface}):
+       def __init__(self, config=None):
+           # Implementation
+
+       def {required_methods}(self):
+           # Implementation
+   ```
+
+2. **Add imports** to `src/mlpipe/blocks/{category}/__init__.py`
+
+3. **Create configuration** in `configs/{category}/{block_name}.yaml`
+
+4. **Add tests** in `tests/unit/test_{block_name}.py`
+
+5. **Update documentation** as needed
+
+### Adding Dependencies
+
+1. **Core dependencies**: Add to `dependencies` in `pyproject.toml`
+2. **Optional dependencies**: Add to appropriate `optional-dependencies`
+3. **Development dependencies**: Add to `dev` extra
+4. **Pipeline dependencies**: Update relevant `pipeline-*` extras
+
+## 📝 Code Style Guidelines
+
+### Docstrings (Google Style)
 ```python
-"""
-[Model Name] implementation for High Energy Physics data analysis.
+def function(param1: str, param2: int) -> bool:
+    """Brief description.
 
-This module provides a [brief description of the model].
-"""
+    Longer description if needed.
 
-from typing import Any, Dict, Optional
-import numpy as np
-import pandas as pd
-# Import your model's dependencies here
-from sklearn.ensemble import YourModelClass
+    Args:
+        param1: Description of param1.
+        param2: Description of param2.
 
-from mlpipe.core.interfaces import ModelBlock
-from mlpipe.core.registry import register
+    Returns:
+        Description of return value.
 
-
-@register("model.your_model_name")  # This is how users will reference your model
-class YourModelBlock(ModelBlock):
+    Raises:
+        ValueError: When something goes wrong.
     """
-    Brief description of your model.
-    
-    Good for:
-    - Use case 1
-    - Use case 2
-    - Use case 3
-    
-    Example usage:
-        model = YourModelBlock(param1=value1, param2=value2)
-        model.build()
-        model.fit(X_train, y_train)
-        predictions = model.predict(X_test)
-    """
-    
-    def __init__(self, **kwargs):
-        """Initialize with default parameters."""
-        default_params = {
-            'param1': default_value1,
-            'param2': default_value2,
-            'random_state': 42,
-            # Add all parameters your model supports
-        }
-        
-        self.params = {**default_params, **kwargs}
-        self.model = None
-        # Add any additional attributes needed (e.g., scalers)
-        
-    def build(self, config: Optional[Dict[str, Any]] = None) -> None:
-        """Build the model with optional config override."""
-        if config:
-            params = {**self.params, **config}
-        else:
-            params = self.params
-            
-        # Filter out non-model parameters
-        sklearn_params = {k: v for k, v in params.items() 
-                         if k not in ['block', '_target_', 'name', 'description']}
-        
-        self.model = YourModelClass(**sklearn_params)
-        
-        print(f"✅ {self.__class__.__name__} built with [key parameters]")
-        
-    def fit(self, X, y) -> None:
-        """Fit the model."""
-        if self.model is None:
-            self.build()  # Auto-build if not already built
-            
-        print(f"🔄 Training {self.__class__.__name__} on {X.shape[0]} samples, {X.shape[1]} features...")
-        
-        # Convert to numpy arrays if needed
-        X_values = X.values if hasattr(X, 'values') else X
-        y_values = y.values if hasattr(y, 'values') else y
-        
-        # Apply any preprocessing if needed
-        # X_processed = self.preprocess(X_values)
-        
-        self.model.fit(X_values, y_values)
-        
-        print("✅ Training completed!")
-        # Add any model-specific metrics/info
-        
-    def predict(self, X):
-        """Make predictions. Returns probabilities for binary classification."""
-        if self.model is None:
-            raise ValueError("Model not fitted. Call fit(X, y) first.")
-            
-        X_values = X.values if hasattr(X, 'values') else X
-        # X_processed = self.preprocess(X_values)
-        
-        # Prefer probabilities if available
-        if hasattr(self.model, "predict_proba"):
-            return self.model.predict_proba(X_values)[:, 1]
-        return self.model.predict(X_values)
-
-    def predict_proba(self, X):
-        """Predict class probabilities."""
-        if self.model is None:
-            raise ValueError("Model not fitted. Call fit(X, y) first.")
-            
-        X_values = X.values if hasattr(X, 'values') else X
-        return self.model.predict_proba(X_values)
 ```
 
-### Step 2: Create Configuration File
-
-Create a YAML configuration file in `configs/model/your_model_name.yaml`:
-
-```yaml
-# @package _global_
-
-# Model configuration for Your Model Name
-model:
-  _target_: mlpipe.blocks.model.your_model_file.YourModelBlock
-  # List all parameters with their default values
-  param1: default_value1
-  param2: default_value2
-  random_state: 42
-
-# Optional: Add documentation
-_help: |
-  Configuration for Your Model Name
-  
-  Parameters:
-  - param1: Description of parameter 1
-  - param2: Description of parameter 2
-```
-
-### Step 3: Update pyproject.toml
-
-Add your model to the optional dependencies in `pyproject.toml`:
-
-```toml
-[project.optional-dependencies]
-# Add your model to individual components
-model-your-model = ["required-dependency>=1.0"]
-
-# Add to algorithm-specific extras
-your-model = ["required-dependency>=1.0", "scikit-learn>=1.2"]
-
-# Add to complete pipeline bundles if applicable
-pipeline-your-model = [
-  "omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0", 
-  "scikit-learn>=1.2", "required-dependency>=1.0"
-]
-
-# Update 'all' extra to include your dependencies
-all = [
-  "omegaconf>=2.3", "numpy>=1.22", "pandas>=2.0", "scikit-learn>=1.2", 
-  "xgboost>=1.7", "torch>=2.2", "lightning>=2.2", "torch-geometric>=2.5",
-  "required-dependency>=1.0"  # Add your dependency here
-]
-```
-
-### Step 4: Update Local Installation Mappings
-
-Add your model to `src/mlpipe/cli/local_install.py` in the `EXTRAS_TO_BLOCKS` dictionary:
-
+### Type Hints
 ```python
-EXTRAS_TO_BLOCKS = {
-    # ... existing mappings ...
-    
-    # Individual component mapping
-    'model-your-model': {
-        'blocks': ['model/your_model_file.py'],
-        'core': ['interfaces.py', 'registry.py'],
-        'configs': ['model/your_model_name.yaml']
-    },
-    
-    # Algorithm-specific extra (shorthand)
-    'your-model': {
-        'blocks': ['model/your_model_file.py', 'preprocessing/standard_scaler.py'],
-        'core': ['interfaces.py', 'registry.py'],
-        'configs': ['model/your_model_name.yaml', 'preprocessing/standard.yaml']
-    },
-    
-    # If it's part of a complete pipeline
-    'pipeline-your-model': {
-        'blocks': [
-            'ingest/csv_loader.py',
-            'preprocessing/standard_scaler.py',
-            'feature_eng/column_selector.py',
-            'model/your_model_file.py',
-            'evaluation/classification_metrics.py'
-        ],
-        'core': ['interfaces.py', 'registry.py', 'config.py', 'utils.py'],
-        'configs': [
-            'pipeline.yaml',
-            'data/higgs_uci.yaml',
-            'preprocessing/standard.yaml',
-            'model/your_model_name.yaml',
-            'evaluation/classification.yaml'
-        ],
-        'data': ['HIGGS_100k.csv']
-    },
-}
+from typing import Dict, List, Optional, Any
+
+def process_data(
+    data: pd.DataFrame,
+    config: Dict[str, Any],
+    target_col: Optional[str] = None
+) -> List[str]:
+    # Implementation
 ```
 
-### Step 5: Update Model Module Imports
-
-Add your model import to `src/mlpipe/blocks/model/__init__.py`:
-
+### Error Handling
 ```python
+# Good: Specific exceptions with helpful messages
+if not os.path.exists(file_path):
+    raise FileNotFoundError(f"Data file not found: {file_path}")
+
+# Good: Preserve context
 try:
-    from . import your_model_file         # registers "model.your_model_name"
-except ImportError:
-    pass  # Dependencies not available
+    result = risky_operation()
+except SpecificError as e:
+    raise ProcessingError(f"Failed to process data: {e}") from e
 ```
 
-### Step 6: Write Tests (Recommended)
+## 🚦 Pull Request Process
 
-Create tests for your model in `tests/model/test_your_model.py`:
+1. **Create feature branch**: `git checkout -b feature/your-feature-name`
 
-```python
-import pytest
-import numpy as np
-import pandas as pd
-from mlpipe.blocks.model.your_model_file import YourModelBlock
+2. **Make changes** following the guidelines above
 
-def test_your_model_init():
-    model = YourModelBlock()
-    assert model.model is None
-    assert 'param1' in model.params
+3. **Run full checks**: `make dev-check`
 
-def test_your_model_build():
-    model = YourModelBlock()
-    model.build()
-    assert model.model is not None
+4. **Commit with clear message**:
+   ```
+   Add new XYZ feature: brief description
 
-def test_your_model_fit_predict():
-    # Create dummy data
-    X = pd.DataFrame(np.random.randn(100, 5))
-    y = np.random.randint(0, 2, 100)
-    
-    model = YourModelBlock()
-    model.build()
-    model.fit(X, y)
-    
-    predictions = model.predict(X)
-    assert len(predictions) == len(X)
-    assert all(0 <= p <= 1 for p in predictions)  # For probability outputs
-```
-
-### Step 7: Update Documentation
-
-Add your model to the README.md file:
-
-1. Add it to the features list
-2. Add installation instructions
-3. Add usage examples
-4. Update the model comparison table if present
-
-## Model Categories and File Organization
-
-### Ensemble Methods
-File: `src/mlpipe/blocks/model/ensemble_models.py`
-- Random Forest
-- AdaBoost  
-- Voting Classifier
-
-### Individual Algorithms
-Each gets its own file:
-- `src/mlpipe/blocks/model/svm.py` - Support Vector Machine
-- `src/mlpipe/blocks/model/mlp.py` - Multi-Layer Perceptron
-- `src/mlpipe/blocks/model/decision_tree.py` - Decision Tree
-- `src/mlpipe/blocks/model/xgb_classifier.py` - XGBoost
-
-### Neural Networks
-- `src/mlpipe/blocks/model/ae_lightning.py` - Autoencoders
-- `src/mlpipe/blocks/model/hep_neural.py` - HEP-specific neural networks
-
-## Best Practices
-
-### 1. Error Handling
-```python
-def predict(self, X):
-    if self.model is None:
-        raise ValueError("Model not fitted. Call fit(X, y) first.")
-    # ... rest of implementation
-```
-
-### 2. Input Validation
-```python
-def fit(self, X, y):
-    # Convert pandas to numpy if needed
-    X_values = X.values if hasattr(X, 'values') else X
-    y_values = y.values if hasattr(y, 'values') else y
-    
-    # Validate shapes
-    assert len(X_values) == len(y_values), "X and y must have same number of samples"
-```
-
-### 3. Logging and User Feedback
-```python
-print(f"✅ Model built with key_param={params['key_param']}")
-print(f"🔄 Training on {X.shape[0]} samples, {X.shape[1]} features...")
-print("✅ Training completed!")
-```
-
-### 4. Registry Naming Convention
-- Use descriptive, consistent naming: `"model.your_model_name"`
-- Follow existing patterns: `"model.random_forest"`, `"model.svm"`, etc.
-- Avoid spaces and special characters
-
-### 5. Configuration Flexibility
-```python
-def build(self, config: Optional[Dict[str, Any]] = None) -> None:
-    if config:
-        params = {**self.params, **config}
-    else:
-        params = self.params
-    # This allows runtime configuration override
-```
-
-## Testing Your Model
-
-After implementing your model, test the complete workflow:
-
-1. **Test import and registration:**
-   ```python
-   from mlpipe.core.registry import list_blocks
-   print("model.your_model_name" in list_blocks())
+   - Detailed change 1
+   - Detailed change 2
+   - Fixes #issue_number
    ```
 
-2. **Test local installation:**
-   ```bash
-   mlpipe install-local --target-dir test_install your-model
-   cd test_install && pip install -e .
-   ```
+5. **Push and create PR** with:
+   - Clear description of changes
+   - Link to related issues
+   - Screenshots if UI changes
+   - Test results if applicable
 
-3. **Test integration:**
-   ```python
-   from mlpipe.blocks.model.your_model_file import YourModelBlock
-   model = YourModelBlock()
-   # Test full workflow
-   ```
+6. **Address review feedback** and ensure CI passes
 
-## Common Pitfalls
+## 🎯 Development Best Practices
 
-1. **Forgetting to update local_install.py** - Users won't be able to install your model locally
-2. **Missing dependency handling** - Use try/except blocks for optional imports
-3. **Inconsistent interfaces** - Always inherit from ModelBlock and implement required methods
-4. **Poor error messages** - Provide clear, actionable error messages
-5. **Missing documentation** - Document parameters, usage, and examples
+### DO ✅
+- Use automated tools (make commands, pre-commit)
+- Write tests for new features
+- Follow existing patterns and interfaces
+- Keep commits focused and atomic
+- Update documentation when needed
+- Test across different Python versions locally if possible
 
-## Getting Help
+### DON'T ❌
+- Commit temporary/cleanup files
+- Skip running tests before submitting
+- Ignore linting/formatting errors
+- Create manual linting scripts
+- Break existing interfaces without discussion
+- Submit large, unfocused PRs
 
-- Check existing model implementations for patterns
-- Look at the ModelBlock interface definition
-- Test with the provided example datasets
-- Ask questions in GitHub issues before submitting PRs
+## 🛠 Local Development Commands
 
-## Review Process
+```bash
+# Setup
+make setup-dev      # One-time setup
+make info          # Check environment
 
-Before submitting a PR:
+# Daily development
+make quick-check   # Fast checks
+make format        # Format code
+make test-fast     # Run unit tests
 
-1. Ensure all tests pass
-2. Test local installation workflow
-3. Update all relevant configuration files
-4. Add comprehensive docstrings
-5. Follow the existing code style
-6. Add usage examples to documentation
+# Before committing
+make dev-check     # Full validation
+make pre-commit    # Run all hooks
 
-Your contribution will be reviewed for:
-- Code quality and consistency
-- Integration with existing infrastructure  
-- Documentation completeness
-- Test coverage
-- Performance considerations
+# CI simulation
+make ci-local      # Simulate full CI locally
+
+# Cleanup
+make clean         # Remove build artifacts
+```
+
+## 📞 Getting Help
+
+- **Issues**: Open a GitHub issue for bugs or feature requests
+- **Discussions**: Use GitHub Discussions for questions
+- **Documentation**: Check comprehensive documentation in repository
+
+## 🏆 Recognition
+
+Contributors will be acknowledged in:
+- README.md contributors section
+- Release notes for significant contributions
+- Git history for all contributions
+
+Thank you for helping make HEP-ML-Templates better! 🚀

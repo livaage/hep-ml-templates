@@ -1,5 +1,6 @@
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
+
 from mlpipe.core.interfaces import Preprocessor
 from mlpipe.core.registry import register
 

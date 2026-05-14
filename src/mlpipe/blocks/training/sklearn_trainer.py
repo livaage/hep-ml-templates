@@ -1,5 +1,6 @@
-from typing import Dict, Any
-from mlpipe.core.interfaces import Trainer, ModelBlock
+from typing import Any, Dict
+
+from mlpipe.core.interfaces import ModelBlock, Trainer
 from mlpipe.core.registry import register
 
 

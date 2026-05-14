@@ -1,10 +1,10 @@
 block: model.svm
 params:
   C: 1.0
-  kernel: "rbf"  # "linear", "poly", "rbf", "sigmoid"
-  degree: 3  # For poly kernel
-  gamma: "scale"  # "scale", "auto" or float value
-  probability: true  # Enable probability estimates
+  kernel: "rbf" # "linear", "poly", "rbf", "sigmoid"
+  degree: 3 # For poly kernel
+  gamma: "scale" # "scale", "auto" or float value
+  probability: true # Enable probability estimates
   random_state: 42
-  class_weight: null  # Use "balanced" for imbalanced datasets
+  class_weight: null # Use "balanced" for imbalanced datasets
   cache_size: 200

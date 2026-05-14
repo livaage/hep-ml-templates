@@ -1,5 +1,4 @@
-"""
-Graph Neural Network implementations using PyTorch Geometric.
+"""Graph Neural Network implementations using PyTorch Geometric.
 
 Common HEP use cases:
 - Particle interaction networks
@@ -8,22 +7,40 @@ Common HEP use cases:
 - Event topology classification
 """
 
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
+
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch_geometric.nn import GCNConv, GATConv, GraphConv, global_mean_pool
-from torch_geometric.data import Data, Batch
-import numpy as np
+
+# Optional dependency: torch_geometric. Import lazily and guard usage so the
+# library doesn't crash at import time when the extra isn't installed.
+try:  # pragma: no cover - simple import guard
+    from torch_geometric.data import Batch, Data  # type: ignore
+    from torch_geometric.nn import GATConv, GCNConv, global_mean_pool  # type: ignore
+    _HAS_TORCH_GEOMETRIC = True
+except Exception:  # broad to catch runtime import issues on some platforms
+    Batch = Data = GATConv = GCNConv = global_mean_pool = None  # type: ignore
+    _HAS_TORCH_GEOMETRIC = False
 
 from mlpipe.core.interfaces import ModelBlock
 from mlpipe.core.registry import register
 
 
-@register("model.gcn")
-class GCNModel(ModelBlock):
-    """
-    Graph Convolutional Network for node/graph classification.
+def _missing_tg_error() -> RuntimeError:
+    return RuntimeError(
+        "Torch Geometric (torch_geometric) is required for GNN models. "
+        "Install the extra dependencies, e.g.:\n\n"
+        "  pip install -e '.[model-gnn]'\n\n"
+        "Or install PyTorch Geometric following official wheels instructions: "
+        "https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html"
+    )
+
+
+@register("model.gnn_gcn")
+class GCNClassifier(ModelBlock):
+    """Graph Convolutional Network for node/graph classification.
 
     Ideal for:
     - Particle interaction networks
@@ -33,54 +50,63 @@ class GCNModel(ModelBlock):
 
     def __init__(self, **kwargs):
         default_params = {
-            'input_dim': 4,  # Common for 4-momentum features
-            'hidden_dims': [64, 32],
-            'output_dim': 2,  # Binary classification
-            'dropout': 0.2,
-            'learning_rate': 0.001,
-            'epochs': 100,
-            'batch_size': 32,
-            'task': 'graph',  # 'node' or 'graph'
-            'device': 'cuda' if torch.cuda.is_available() else 'cpu'
+            "input_dim": 4,  # Common for 4-momentum features
+            "hidden_dims": [64, 32],
+            "output_dim": 2,  # Binary classification
+            "dropout": 0.2,
+            "learning_rate": 0.001,
+            "epochs": 100,
+            "batch_size": 32,
+            "task": "node",  # 'node' or 'graph' - changed to 'node' for CSV data
+            "device": "cuda" if torch.cuda.is_available() else "cpu",
         }
 
         self.params = {**default_params, **kwargs}
         self.model = None
-        self.device = torch.device(self.params['device'])
+        self.device = torch.device(self.params["device"])
 
     def build(self, config: Optional[Dict[str, Any]] = None) -> None:
         """Build GCN model."""
+        if not _HAS_TORCH_GEOMETRIC:
+            # Defer error until build to allow registry/discovery without hard failure
+            raise _missing_tg_error()
         if config:
             params = {**self.params, **config}
         else:
             params = self.params
 
         self.model = GCNNet(
-            input_dim=params['input_dim'],
-            hidden_dims=params['hidden_dims'],
-            output_dim=params['output_dim'],
-            dropout=params['dropout'],
-            task=params['task']
+            input_dim=params["input_dim"],
+            hidden_dims=params["hidden_dims"],
+            output_dim=params["output_dim"],
+            dropout=params["dropout"],
+            task=params["task"],
         ).to(self.device)
 
-        self.optimizer = torch.optim.Adam(
-            self.model.parameters(),
-            lr=params['learning_rate']
-        )
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=params["learning_rate"])
         self.criterion = nn.CrossEntropyLoss()
 
-        print(f"✅ GCN model built with {sum(p.numel() for p in self.model.parameters())} parameters")
+        print(
+            f"✅ GCN model built with {sum(p.numel() for p in self.model.parameters())} parameters"
+        )
 
     def fit(self, X, y) -> None:
         """Fit the GCN model."""
         if self.model is None:
+            # Auto-detect input dimension from data
+            if hasattr(X, "shape") and len(X.shape) > 1:
+                self.params["input_dim"] = X.shape[1]
+            elif isinstance(X, list) and len(X) > 0:
+                self.params["input_dim"] = len(X[0]) if hasattr(X[0], "__len__") else X.shape[1]
+
+            print(f"🔧 Auto-detected input dimension: {self.params['input_dim']}")
             self.build()
 
         # Convert data to PyG format
         data_list = self._prepare_graph_data(X, y)
 
         self.model.train()
-        for epoch in range(self.params['epochs']):
+        for epoch in range(self.params["epochs"]):
             total_loss = 0
             for batch in self._create_batches(data_list):
                 batch = batch.to(self.device)
@@ -116,82 +142,100 @@ class GCNModel(ModelBlock):
         return np.array(predictions)
 
     def _prepare_graph_data(self, X, y=None):
-        """Convert tabular data to graph format for HEP use cases."""
-        # This is a simplified example - real implementation would depend on data structure
-        # For jets: each row could be a jet, columns could be constituent features
-        # For events: each row could be a particle, need to group by event
+        """Convert tabular data to graph format."""
+        # For CSV data: each row becomes a node, columns are node features
+        # Create edges based on feature similarity or use a k-NN approach
 
-        data_list = []
-        for idx, row in X.iterrows():
-            # Example: create a simple graph from tabular features
-            # In practice, you'd use domain knowledge to construct meaningful graphs
+        import numpy as np
+        import pandas as pd
+        from sklearn.neighbors import kneighbors_graph
+        from sklearn.preprocessing import StandardScaler
 
-            # Simple example: fully connected graph of features
-            num_nodes = len(row)
-            edge_index = torch.combinations(torch.arange(num_nodes), 2).t().contiguous()
+        # Convert to numpy if needed
+        if isinstance(X, pd.DataFrame):
+            X_array = X.values.astype(np.float32)
+        else:
+            X_array = np.array(X, dtype=np.float32)
 
-            # Add reverse edges for undirected graph
-            edge_index = torch.cat([edge_index, edge_index.flip(0)], dim=1)
+        # Standardize features for better similarity computation
+        scaler = StandardScaler()
+        X_scaled = scaler.fit_transform(X_array)
 
-            node_features = torch.tensor(row.values, dtype=torch.float).view(-1, 1)
+        # Create edges using k-nearest neighbors (k=8 for good connectivity)
+        k = min(8, len(X_array) - 1)  # Ensure k < num_samples
+        adjacency = kneighbors_graph(
+            X_scaled, n_neighbors=k, mode="connectivity", include_self=False
+        )
 
-            if y is not None:
-                label = torch.tensor(y.iloc[idx], dtype=torch.long)
-                data = Data(x=node_features, edge_index=edge_index, y=label)
-            else:
-                data = Data(x=node_features, edge_index=edge_index)
+        # Convert sparse adjacency matrix to edge list
+        edge_indices = np.array(adjacency.nonzero()).T
+        edge_index = torch.tensor(edge_indices.T, dtype=torch.long)
 
-            data_list.append(data)
+        # Node features are the original features
+        node_features = torch.tensor(X_array, dtype=torch.float)
 
-        return data_list
+        # Create single graph with all nodes
+        if y is not None:
+            y_tensor = torch.tensor(y.values if hasattr(y, "values") else y, dtype=torch.long)
+            data = Data(x=node_features, edge_index=edge_index, y=y_tensor)
+        else:
+            data = Data(x=node_features, edge_index=edge_index)
+
+        print(
+            f"🔗 Created graph: {data.num_nodes} nodes, {data.num_edges} edges, {data.num_node_features} features per node"
+        )
+
+        return [data]  # Return single graph as list for consistency
 
     def _create_batches(self, data_list):
         """Create batches from graph data."""
-        batch_size = self.params['batch_size']
+        batch_size = self.params["batch_size"]
         for i in range(0, len(data_list), batch_size):
-            batch_data = data_list[i:i + batch_size]
+            batch_data = data_list[i : i + batch_size]
             yield Batch.from_data_list(batch_data)
 
 
-class GCNNet(nn.Module):
-    """Graph Convolutional Network architecture."""
+if _HAS_TORCH_GEOMETRIC:
+    class GCNNet(nn.Module):
+        """Graph Convolutional Network architecture."""
 
-    def __init__(self, input_dim, hidden_dims, output_dim, dropout=0.2, task='graph'):
-        super().__init__()
-        self.task = task
+        def __init__(self, input_dim, hidden_dims, output_dim, dropout=0.2, task="graph"):
+            super().__init__()
+            self.task = task
 
-        layers = []
-        dims = [input_dim] + hidden_dims
+            layers = []
+            dims = [input_dim] + hidden_dims
 
-        for i in range(len(dims) - 1):
-            layers.append(GCNConv(dims[i], dims[i + 1]))
+            for i in range(len(dims) - 1):
+                layers.append(GCNConv(dims[i], dims[i + 1]))
 
-        self.conv_layers = nn.ModuleList(layers)
-        self.dropout = dropout
-        self.classifier = nn.Linear(hidden_dims[-1], output_dim)
+            self.conv_layers = nn.ModuleList(layers)
+            self.dropout = dropout
+            self.classifier = nn.Linear(hidden_dims[-1], output_dim)
 
-    def forward(self, batch):
-        x, edge_index = batch.x, batch.edge_index
+        def forward(self, batch):
+            x, edge_index = batch.x, batch.edge_index
 
-        # Apply GCN layers
-        for conv in self.conv_layers:
-            x = conv(x, edge_index)
-            x = F.relu(x)
-            x = F.dropout(x, p=self.dropout, training=self.training)
+            # Apply GCN layers
+            for conv in self.conv_layers:
+                x = conv(x, edge_index)
+                x = F.relu(x)
+                x = F.dropout(x, p=self.dropout, training=self.training)
 
-        # Graph-level prediction (pool node features)
-        if self.task == 'graph':
-            x = global_mean_pool(x, batch.batch)
+            # Node-level prediction (each node gets its own prediction)
+            if self.task == "node":
+                x = self.classifier(x)
+            else:
+                # Graph-level prediction (pool node features)
+                x = global_mean_pool(x, batch.batch)
+                x = self.classifier(x)
+            
+            return x
 
-        # Final classification
-        x = self.classifier(x)
-        return x
 
-
-@register("model.gat")
-class GATModel(GCNModel):
-    """
-    Graph Attention Network for more sophisticated attention-based learning.
+@register("model.gnn_gat")
+class GATClassifier(GCNClassifier):
+    """Graph Attention Network for more sophisticated attention-based learning.
 
     Better for:
     - Complex particle interaction patterns
@@ -207,27 +251,26 @@ class GATModel(GCNModel):
             params = self.params
 
         self.model = GATNet(
-            input_dim=params['input_dim'],
-            hidden_dims=params['hidden_dims'],
-            output_dim=params['output_dim'],
-            dropout=params['dropout'],
-            task=params['task'],
-            heads=params.get('attention_heads', 4)
+            input_dim=params["input_dim"],
+            hidden_dims=params["hidden_dims"],
+            output_dim=params["output_dim"],
+            dropout=params["dropout"],
+            task=params["task"],
+            heads=params.get("attention_heads", 4),
         ).to(self.device)
 
-        self.optimizer = torch.optim.Adam(
-            self.model.parameters(),
-            lr=params['learning_rate']
-        )
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=params["learning_rate"])
         self.criterion = nn.CrossEntropyLoss()
 
-        print(f"✅ GAT model built with {sum(p.numel() for p in self.model.parameters())} parameters")
+        print(
+            f"✅ GAT model built with {sum(p.numel() for p in self.model.parameters())} parameters"
+        )
 
 
 class GATNet(nn.Module):
     """Graph Attention Network architecture."""
 
-    def __init__(self, input_dim, hidden_dims, output_dim, dropout=0.2, task='graph', heads=4):
+    def __init__(self, input_dim, hidden_dims, output_dim, dropout=0.2, task="node", heads=4):
         super().__init__()
         self.task = task
 
@@ -258,9 +301,12 @@ class GATNet(nn.Module):
                 x = F.relu(x)
             x = F.dropout(x, p=self.dropout, training=self.training)
 
-        # Graph-level prediction
-        if self.task == 'graph':
+        # Node-level prediction (each node gets its own prediction)
+        if self.task == "node":
+            x = self.classifier(x)
+        else:
+            # Graph-level prediction (pool node features)
             x = global_mean_pool(x, batch.batch)
-
-        x = self.classifier(x)
+            x = self.classifier(x)
+        
         return x

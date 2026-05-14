@@ -5,28 +5,28 @@ _target_: preprocessing.data_split
 
 # Basic split sizes (must sum to 1.0)
 train_size: 0.8
-val_size: 0.0      # Set to >0 for train/val/test splits (e.g., 0.15)
+val_size: 0.0 # Set to >0 for train/val/test splits (e.g., 0.15)
 test_size: 0.2
 
-# Split strategy  
-stratify: false    # Set to true for stratified sampling (classification)
-shuffle: true      # Set to false for time series
-random_state: 42   # For reproducibility
+# Split strategy
+stratify: false # Set to true for stratified sampling (classification)
+shuffle: true # Set to false for time series
+random_state: 42 # For reproducibility
 
 # Time series options (set time_series: true for temporal splits)
 time_series: false
-time_column: null  # Column name for time-based sorting (optional)
+time_column: null # Column name for time-based sorting (optional)
 
 # Control options
-verbose: true           # Print split information
-validate_splits: true  # Verify no overlapping indices
+verbose: true # Print split information
+validate_splits: true # Verify no overlapping indices
 
 # Usage examples (override in pipeline or code):
-# 
+#
 # Train/Val/Test (70/15/15) with stratification:
 # train_size: 0.7, val_size: 0.15, test_size: 0.15, stratify: true
 #
-# Time series split:  
+# Time series split:
 # train_size: 0.7, val_size: 0.15, test_size: 0.15, time_series: true, shuffle: false
 #
 # Simple 90/10 split:

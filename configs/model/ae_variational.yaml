@@ -8,5 +8,5 @@ params:
   max_epochs: 100
   dropout: 0.2
   weight_decay: 1e-5
-  beta: 1.0  # KL divergence weight
+  beta: 1.0 # KL divergence weight
   normalize_inputs: true

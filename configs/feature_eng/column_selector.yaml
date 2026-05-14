@@ -1,3 +1,15 @@
 block: feature.column_selector
-include: [lepton_pT, lepton_eta, lepton_phi, missing_energy_magnitude, missing_energy_phi, jet_1_pt, jet_1_eta, jet_1_phi, jet_1_b_tag, jet_2_pt]
+include:
+  [
+    lepton_pT,
+    lepton_eta,
+    lepton_phi,
+    missing_energy_magnitude,
+    missing_energy_phi,
+    jet_1_pt,
+    jet_1_eta,
+    jet_1_phi,
+    jet_1_b_tag,
+    jet_2_pt,
+  ]
 exclude: []

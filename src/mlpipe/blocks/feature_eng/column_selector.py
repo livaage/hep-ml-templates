@@ -1,4 +1,5 @@
 import pandas as pd
+
 from mlpipe.core.interfaces import FeatureBlock
 from mlpipe.core.registry import register
 
@@ -28,8 +29,8 @@ class ColumnSelector(FeatureBlock):
 
         # Allow config override for pipeline usage
         if config:
-            include = config.get('include', include) or include
-            exclude = config.get('exclude', exclude) or exclude
+            include = config.get("include", include) or include
+            exclude = config.get("exclude", exclude) or exclude
 
         cols = list(X.columns)
 

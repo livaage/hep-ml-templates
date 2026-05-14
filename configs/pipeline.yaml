@@ -1,6 +1,6 @@
-data: higgs_uci
+data: csv_demo
 preprocessing: standard
-feature_eng: column_selector
+feature_eng: all_columns
 model: xgb_classifier
 training: sklearn
 evaluation: classification

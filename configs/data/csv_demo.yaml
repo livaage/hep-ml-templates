@@ -6,14 +6,14 @@ block: ingest.csv
 
 # === REQUIRED SETTINGS ===
 # Specify the path to your CSV file and the target column name
-file_path: "data/demo_tabular.csv"  # Path to your CSV file
-target_column: "label"              # Name of column with target values
+file_path: "data/demo_tabular.csv" # Path to your CSV file
+target_column: "label" # Name of column with target values
 
 # === DATASET STRUCTURE ===
 # Tell us about your CSV file structure
-has_header: true                    # Does your CSV have column names in first row?
-separator: ","                      # What separates the columns? "," ";" "\t" "|"
-encoding: "utf-8"                   # File encoding (usually utf-8)
+has_header: true # Does your CSV have column names in first row?
+separator: "," # What separates the columns? "," ";" "\t" "|"
+encoding: "utf-8" # File encoding (usually utf-8)
 
 # === COLUMN NAMES (Optional) ===
 # If your CSV has no header OR you want to rename columns, list them here:
@@ -25,35 +25,35 @@ encoding: "utf-8"                   # File encoding (usually utf-8)
 
 # === DATA SAMPLING (Optional) ===
 # Useful for testing with large datasets
-nrows: 500                          # Load only first 500 rows
+nrows: 500 # Load only first 500 rows
 # sample_fraction: 0.1              # Alternative: load 10% random sample
 # skip_rows: 0                      # Skip rows at beginning
 
 # === TARGET INFORMATION ===
 # Help us understand your prediction task
-target_type: "auto"                 # "binary", "multiclass", "regression", or "auto"
+target_type: "auto" # "binary", "multiclass", "regression", or "auto"
 # positive_class_labels: [1, "yes", "true"]  # For binary: which values mean "positive"?
 
 # === DATA QUALITY ===
 # How to handle missing/bad data
-missing_values: ["", "NA", "NaN", "null", "NULL", "?"]  # Values to treat as missing
-drop_missing_threshold: 0.8         # Drop columns with >80% missing data
+missing_values: ["", "NA", "NaN", "null", "NULL", "?"] # Values to treat as missing
+drop_missing_threshold: 0.8 # Drop columns with >80% missing data
 
 # === PROCESSING OPTIONS ===
-validation: true                    # Check data quality and show warnings
-verbose: true                       # Show detailed loading information
+validation: true # Check data quality and show warnings
+verbose: true # Show detailed loading information
 
 # === EXAMPLES FOR DIFFERENT DATASETS ===
 #
 # For a medical dataset:
-# file_path: "data/medical_data.csv" 
+# file_path: "data/medical_data.csv"
 # target_column: "diagnosis"
 # target_type: "binary"
 # positive_class_labels: ["positive", "disease"]
 #
 # For a physics experiment:
 # file_path: "data/particle_data.csv"
-# target_column: "particle_type" 
+# target_column: "particle_type"
 # target_type: "multiclass"
 #
 # For financial prediction:
